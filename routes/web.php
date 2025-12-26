@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BankController;
+use App\Http\Controllers\FirmController;
+use App\Http\Controllers\RtoAgentController;
+use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -41,4 +45,20 @@ Route::group(['middleware' => ['auth']], function () {
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
     Route::resource('users', UserController::class);
+
+    Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
+    Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
+    Route::resource('banks', BankController::class);
+
+    Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
+    Route::post('firms/{firm}/toggle-status', [FirmController::class, 'toggleStatus'])->name('firms.toggle-status');
+    Route::resource('firms', FirmController::class);
+
+    Route::get('rto-agents/export', [RtoAgentController::class, 'export'])->name('rto-agents.export');
+    Route::post('rto-agents/{rtoAgent}/toggle-status', [RtoAgentController::class, 'toggleStatus'])->name('rto-agents.toggle-status');
+    Route::resource('rto-agents', RtoAgentController::class);
+
+    Route::get('insurances/export', [InsuranceController::class, 'export'])->name('insurances.export');
+    Route::post('insurances/{insurance}/toggle-status', [InsuranceController::class, 'toggleStatus'])->name('insurances.toggle-status');
+    Route::resource('insurances', InsuranceController::class);
 });

@@ -31,33 +31,53 @@ class UserSeeder extends Seeder
             'create permission',
             'edit permission',
             'delete permission',
+            'view bank',
+            'create bank',
+            'edit bank',
+            'delete bank',
+            'view firm',
+            'create firm',
+            'edit firm',
+            'delete firm',
+            'view rto agent',
+            'create rto agent',
+            'edit rto agent',
+            'delete rto agent',
+            'view insurance',
+            'create insurance',
+            'edit insurance',
+            'delete insurance',
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
         // Create roles
-        $adminRole = Role::create(['name' => 'admin']);
-        $adminRole->givePermissionTo($permissions);
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->syncPermissions($permissions);
 
-        $userRole = Role::create(['name' => 'user']);
-        $userRole->givePermissionTo(['view user']);
+        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $userRole->syncPermissions(['view user']);
 
 
         // Create users
-        $admin = User::create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-        ]);
+        $admin = User::firstOrCreate(
+            ['email' => 'admin@example.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('password'),
+            ]
+        );
         $admin->assignRole($adminRole);
 
-        $user = User::create([
-            'name' => 'User',
-            'email' => 'user@example.com',
-            'password' => Hash::make('password'),
-        ]);
+        $user = User::firstOrCreate(
+            ['email' => 'user@example.com'],
+            [
+                'name' => 'User',
+                'password' => Hash::make('password'),
+            ]
+        );
         $user->assignRole($userRole);
     }
 }

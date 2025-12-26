@@ -338,6 +338,30 @@ return [
             'icon' => 'fas fa-fw fa-key',
             'can' => 'view permission',
         ],
+        [
+            'text' => 'Banks',
+            'url' => 'banks',
+            'icon' => 'fas fa-fw fa-university',
+            'can' => 'view bank',
+        ],
+        [
+            'text' => 'Firms',
+            'url' => 'firms',
+            'icon' => 'fas fa-fw fa-building',
+            'can' => 'view firm',
+        ],
+        [
+            'text' => 'RTO Agents',
+            'url' => 'rto-agents',
+            'icon' => 'fas fa-fw fa-user-secret',
+            'can' => 'view rto agent',
+        ],
+        [
+            'text' => 'Insurances',
+            'url' => 'insurances',
+            'icon' => 'fas fa-fw fa-shield-alt',
+            'can' => 'view insurance',
+        ],
     ],
 
     /*

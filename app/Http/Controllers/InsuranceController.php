@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Insurance;
+use App\Models\InsuranceType;
+use App\Models\InsuranceSubType;
+use Illuminate\Http\Request;
+use App\Exports\InsuranceExport;
+
+class InsuranceController extends Controller
+{
+    public function __construct()
+    {
+        $this->middleware('permission:view insurance', ['only' => ['index']]);
+        $this->middleware('permission:create insurance', ['only' => ['create','store']]);
+        $this->middleware('permission:edit insurance', ['only' => ['edit','update']]);
+        $this->middleware('permission:delete insurance', ['only' => ['destroy']]);
+    }
+
+    public function index(Request $request)
+    {
+        $query = Insurance::with('types.subTypes');
+
+        if ($request->has('company_name') && $request->company_name != '') {
+            $query->where('company_name', 'like', '%' . $request->company_name . '%');
+        }
+
+        if ($request->has('status') && $request->status != '') {
+            $query->where('is_active', $request->status);
+        }
+
+        $insurances = $query->paginate(10);
+
+        return view('insurances.index', compact('insurances'));
+    }
+
+    public function create()
+    {
+        return view('insurances.create');
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'company_name' => 'required|unique:insurances,company_name',
+            'agent_name' => 'required',
+            'address' => 'required',
+            'types' => 'required|array',
+            'types.*.name' => 'required|string',
+            'types.*.sub_types' => 'nullable|array',
+            'types.*.sub_types.*' => 'nullable|string',
+        ]);
+
+        $insurance = Insurance::create([
+            'company_name' => $request->company_name,
+            'agent_name' => $request->agent_name,
+            'address' => $request->address,
+        ]);
+
+        foreach ($request->types as $typeData) {
+            $type = $insurance->types()->create(['name' => $typeData['name']]);
+            if (isset($typeData['sub_types'])) {
+                foreach ($typeData['sub_types'] as $subTypeName) {
+                    if (!empty($subTypeName)) {
+                        $type->subTypes()->create(['name' => $subTypeName]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('insurances.index')->with('success', 'Insurance created successfully');
+    }
+
+    public function edit(Insurance $insurance)
+    {
+        $insurance->load('types.subTypes');
+        return view('insurances.edit', compact('insurance'));
+    }
+
+    public function update(Request $request, Insurance $insurance)
+    {
+        $request->validate([
+            'company_name' => 'required|unique:insurances,company_name,' . $insurance->id,
+            'agent_name' => 'required',
+            'address' => 'required',
+            'types' => 'required|array',
+            'types.*.name' => 'required|string',
+            'types.*.sub_types' => 'nullable|array',
+            'types.*.sub_types.*' => 'nullable|string',
+        ]);
+
+        $insurance->update([
+            'company_name' => $request->company_name,
+            'agent_name' => $request->agent_name,
+            'address' => $request->address,
+        ]);
+
+        // Delete existing types and recreate (simplest approach for nested updates)
+        $insurance->types()->delete();
+
+        foreach ($request->types as $typeData) {
+            $type = $insurance->types()->create(['name' => $typeData['name']]);
+            if (isset($typeData['sub_types'])) {
+                foreach ($typeData['sub_types'] as $subTypeName) {
+                    if (!empty($subTypeName)) {
+                        $type->subTypes()->create(['name' => $subTypeName]);
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('insurances.index')->with('success', 'Insurance updated successfully');
+    }
+
+    public function destroy(Insurance $insurance)
+    {
+        $insurance->delete();
+        return redirect()->route('insurances.index')->with('success', 'Insurance deleted successfully');
+    }
+
+    public function toggleStatus(Insurance $insurance)
+    {
+        $insurance->update(['is_active' => !$insurance->is_active]);
+        return redirect()->route('insurances.index')->with('success', 'Insurance status updated successfully');
+    }
+
+    public function export(Request $request)
+    {
+        return (new InsuranceExport($request))->download();
+    }
+}
