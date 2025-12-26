@@ -14,20 +14,23 @@
                 @method('PUT')
                 <div class="form-group">
                     <label for="name">Agent Name</label>
-                    <input type="text" name="name" id="name" class="form-control" value="{{ $rtoAgent->name }}" required>
+                    <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $rtoAgent->name) }}" required>
+                    @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="number">Agent Number</label>
-                    <input type="text" name="number" id="number" class="form-control" value="{{ $rtoAgent->number }}" required>
+                    <input type="text" name="number" id="number" class="form-control @error('number') is-invalid @enderror" value="{{ old('number', $rtoAgent->number) }}" required>
+                    @error('number') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="cities">Cities</label>
-                    <select name="cities[]" id="cities" class="form-control" multiple="multiple" required>
-                        @foreach ($rtoAgent->cities as $city)
-                            <option value="{{ $city->city_name }}" selected>{{ $city->city_name }}</option>
+                    <select name="cities[]" id="cities" class="form-control @error('cities') is-invalid @enderror" multiple="multiple" required>
+                        @foreach ($cities as $city)
+                            <option value="{{ $city->name }}" {{ in_array($city->name, old('cities', $rtoAgent->cities->pluck('city_name')->toArray())) ? 'selected' : '' }}>{{ $city->name }}</option>
                         @endforeach
                     </select>
-                    <small class="form-text text-muted">Type city name and press enter to add.</small>
+                    @error('cities') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <small class="form-text text-muted">Select cities from the list.</small>
                 </div>
                 <button type="submit" class="btn btn-primary">Update</button>
             </form>
@@ -39,7 +42,7 @@
     <script>
         $(document).ready(function() {
             $('#cities').select2({
-                tags: true,
+                tags: false,
                 tokenSeparators: [',', ' ']
             });
         });

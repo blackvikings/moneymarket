@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
-use App\Models\BankBranch;
 use Illuminate\Http\Request;
 use App\Exports\BankExport;
 
@@ -43,15 +42,9 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name',
-            'branches' => 'required|array',
-            'branches.*' => 'required|string',
         ]);
 
-        $bank = Bank::create(['name' => $request->name]);
-
-        foreach ($request->branches as $branchName) {
-            $bank->branches()->create(['name' => $branchName]);
-        }
+        Bank::create($request->all());
 
         return redirect()->route('banks.index')->with('success', 'Bank created successfully');
     }
@@ -65,17 +58,9 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name,' . $bank->id,
-            'branches' => 'required|array',
-            'branches.*' => 'required|string',
         ]);
 
-        $bank->update(['name' => $request->name]);
-
-        // Sync branches: delete existing and recreate
-        $bank->branches()->delete();
-        foreach ($request->branches as $branchName) {
-            $bank->branches()->create(['name' => $branchName]);
-        }
+        $bank->update($request->all());
 
         return redirect()->route('banks.index')->with('success', 'Bank updated successfully');
     }

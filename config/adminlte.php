@@ -321,10 +321,10 @@ return [
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         [
-            'text' => 'Users',
-            'url' => 'users',
+            'text' => 'Employees',
+            'url' => 'employees',
             'icon' => 'fas fa-fw fa-users',
-            'can' => 'view user',
+            'can' => 'view employee',
         ],
         [
             'text' => 'Roles',
@@ -340,9 +340,19 @@ return [
         ],
         [
             'text' => 'Banks',
-            'url' => 'banks',
             'icon' => 'fas fa-fw fa-university',
-            'can' => 'view bank',
+            'submenu' => [
+                [
+                    'text' => 'Bank Master',
+                    'url' => 'banks',
+                    'can' => 'view bank',
+                ],
+                [
+                    'text' => 'Branch Master',
+                    'url' => 'bank-branches',
+                    'can' => 'view branch',
+                ],
+            ],
         ],
         [
             'text' => 'Firms',
@@ -361,6 +371,12 @@ return [
             'url' => 'insurances',
             'icon' => 'fas fa-fw fa-shield-alt',
             'can' => 'view insurance',
+        ],
+        [
+            'text' => 'Vehicle Manufactures',
+            'url' => 'vehicle-manufactures',
+            'icon' => 'fas fa-fw fa-car',
+            'can' => 'view vehicle manufacture',
         ],
     ],
 

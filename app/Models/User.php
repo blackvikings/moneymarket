@@ -22,6 +22,27 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'employee_type',
+        'contact_number',
+        'dob',
+        'blood_group',
+        'firm_id',
+        'current_address_line',
+        'current_address_pincode',
+        'current_address_city',
+        'current_address_state',
+        'permanent_address_line',
+        'permanent_address_pincode',
+        'permanent_address_city',
+        'permanent_address_state',
+        'address_proof_path',
+        'proof_id_type',
+        'reporting_manager_id',
+        'bank_id',
+        'bank_branch_id',
+        'account_holder_name',
+        'ifsc_code',
+        'status',
     ];
 
     /**
@@ -44,6 +65,32 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'dob' => 'date',
         ];
+    }
+
+    public function education()
+    {
+        return $this->hasMany(EmployeeEducation::class);
+    }
+
+    public function firm()
+    {
+        return $this->belongsTo(Firm::class);
+    }
+
+    public function reportingManager()
+    {
+        return $this->belongsTo(User::class, 'reporting_manager_id');
+    }
+
+    public function bank()
+    {
+        return $this->belongsTo(Bank::class);
+    }
+
+    public function bankBranch()
+    {
+        return $this->belongsTo(BankBranch::class);
     }
 }

@@ -13,27 +13,11 @@
                 @csrf
                 <div class="form-group">
                     <label for="name">Bank Name</label>
-                    <input type="text" name="name" id="name" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label for="branches">Branches</label>
-                    <select name="branches[]" id="branches" class="form-control" multiple="multiple" required>
-                    </select>
-                    <small class="form-text text-muted">Type branch name and press enter to add.</small>
+                    <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                    @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <button type="submit" class="btn btn-primary">Create</button>
             </form>
         </div>
     </div>
-@stop
-
-@section('js')
-    <script>
-        $(document).ready(function() {
-            $('#branches').select2({
-                tags: true,
-                tokenSeparators: [',', ' ']
-            });
-        });
-    </script>
 @stop

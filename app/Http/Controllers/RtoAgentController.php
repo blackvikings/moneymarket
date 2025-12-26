@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RtoAgent;
+use App\Models\City;
 use Illuminate\Http\Request;
 use App\Exports\RtoAgentExport;
 
@@ -35,7 +36,8 @@ class RtoAgentController extends Controller
 
     public function create()
     {
-        return view('rto_agents.create');
+        $cities = City::where('is_active', true)->get();
+        return view('rto_agents.create', compact('cities'));
     }
 
     public function store(Request $request)
@@ -61,7 +63,8 @@ class RtoAgentController extends Controller
 
     public function edit(RtoAgent $rtoAgent)
     {
-        return view('rto_agents.edit', compact('rtoAgent'));
+        $cities = City::where('is_active', true)->get();
+        return view('rto_agents.edit', compact('rtoAgent', 'cities'));
     }
 
     public function update(Request $request, RtoAgent $rtoAgent)

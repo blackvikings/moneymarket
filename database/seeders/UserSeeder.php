@@ -19,10 +19,10 @@ class UserSeeder extends Seeder
     {
         // Create permissions
         $permissions = [
-            'view user',
-            'create user',
-            'edit user',
-            'delete user',
+            'view employee',
+            'create employee',
+            'edit employee',
+            'delete employee',
             'view role',
             'create role',
             'edit role',
@@ -47,6 +47,18 @@ class UserSeeder extends Seeder
             'create insurance',
             'edit insurance',
             'delete insurance',
+            'view vehicle manufacture',
+            'create vehicle manufacture',
+            'edit vehicle manufacture',
+            'delete vehicle manufacture',
+            'view branch',
+            'create branch',
+            'edit branch',
+            'delete branch',
+            'view city',
+            'create city',
+            'edit city',
+            'delete city',
         ];
 
         foreach ($permissions as $permission) {
@@ -57,8 +69,11 @@ class UserSeeder extends Seeder
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
         $adminRole->syncPermissions($permissions);
 
-        $userRole = Role::firstOrCreate(['name' => 'user']);
-        $userRole->syncPermissions(['view user']);
+        $teamLeadRole = Role::firstOrCreate(['name' => 'Team Lead']);
+        $teamLeadRole->syncPermissions(['view employee', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm']);
+
+        $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);
+        $teleCallerRole->syncPermissions(['view rto agent', 'view insurance']);
 
 
         // Create users
@@ -67,17 +82,9 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Admin',
                 'password' => Hash::make('password'),
+                'employee_type' => 'Admin',
             ]
         );
         $admin->assignRole($adminRole);
-
-        $user = User::firstOrCreate(
-            ['email' => 'user@example.com'],
-            [
-                'name' => 'User',
-                'password' => Hash::make('password'),
-            ]
-        );
-        $user->assignRole($userRole);
     }
 }

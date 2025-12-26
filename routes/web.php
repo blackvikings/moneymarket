@@ -3,11 +3,14 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\BankController;
+use App\Http\Controllers\BankBranchController;
 use App\Http\Controllers\FirmController;
 use App\Http\Controllers\RtoAgentController;
 use App\Http\Controllers\InsuranceController;
+use App\Http\Controllers\VehicleManufactureController;
+use App\Http\Controllers\CityController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -44,11 +47,16 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::group(['middleware' => ['auth']], function () {
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
-    Route::resource('users', UserController::class);
+
+    Route::get('employees/export', [EmployeeController::class, 'export'])->name('employees.export');
+    Route::post('employees/{employee}/update-status', [EmployeeController::class, 'updateStatus'])->name('employees.update-status');
+    Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');
+    Route::resource('employees', EmployeeController::class);
 
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
     Route::resource('banks', BankController::class);
+    Route::resource('bank-branches', BankBranchController::class);
 
     Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
     Route::post('firms/{firm}/toggle-status', [FirmController::class, 'toggleStatus'])->name('firms.toggle-status');
@@ -61,4 +69,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('insurances/export', [InsuranceController::class, 'export'])->name('insurances.export');
     Route::post('insurances/{insurance}/toggle-status', [InsuranceController::class, 'toggleStatus'])->name('insurances.toggle-status');
     Route::resource('insurances', InsuranceController::class);
+
+    Route::get('vehicle-manufactures/export', [VehicleManufactureController::class, 'export'])->name('vehicle-manufactures.export');
+    Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
+    Route::resource('vehicle-manufactures', VehicleManufactureController::class);
+
+    // Cities module removed, but keeping route cleanup in mind if needed.
 });

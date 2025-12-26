@@ -13,7 +13,8 @@
                 @csrf
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" name="name" id="name" class="form-control" required>
+                    <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
+                    @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <button type="submit" class="btn btn-primary">Create</button>
             </form>
