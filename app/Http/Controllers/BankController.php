@@ -42,15 +42,26 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name',
+            'branches' => 'nullable|array',
+            'branches.*' => 'nullable|string',
         ]);
 
-        Bank::create($request->all());
+        $bank = Bank::create(['name' => $request->name]);
+
+        if ($request->has('branches')) {
+            foreach ($request->branches as $branchName) {
+                if (!empty($branchName)) {
+                    $bank->branches()->create(['name' => $branchName]);
+                }
+            }
+        }
 
         return redirect()->route('banks.index')->with('success', 'Bank created successfully');
     }
 
     public function edit(Bank $bank)
     {
+        $bank->load('branches');
         return view('banks.edit', compact('bank'));
     }
 
@@ -58,9 +69,22 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name,' . $bank->id,
+            'branches' => 'nullable|array',
+            'branches.*' => 'nullable|string',
         ]);
 
-        $bank->update($request->all());
+        $bank->update(['name' => $request->name]);
+
+        // Sync branches: delete all and recreate (simplest approach for this requirement)
+        $bank->branches()->delete();
+
+        if ($request->has('branches')) {
+            foreach ($request->branches as $branchName) {
+                if (!empty($branchName)) {
+                    $bank->branches()->create(['name' => $branchName]);
+                }
+            }
+        }
 
         return redirect()->route('banks.index')->with('success', 'Bank updated successfully');
     }

@@ -375,19 +375,9 @@ return [
         ],
         [
             'text' => 'Banks',
+            'url' => 'banks',
             'icon' => 'fas fa-fw fa-university',
-            'submenu' => [
-                [
-                    'text' => 'Bank Master',
-                    'url' => 'banks',
-                    'can' => 'view bank',
-                ],
-                [
-                    'text' => 'Branch Master',
-                    'url' => 'bank-branches',
-                    'can' => 'view branch',
-                ],
-            ],
+            'can' => 'view bank',
         ],
         [
             'text' => 'Firms',

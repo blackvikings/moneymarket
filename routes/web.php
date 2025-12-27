@@ -5,7 +5,6 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\BankController;
-use App\Http\Controllers\BankBranchController;
 use App\Http\Controllers\FirmController;
 use App\Http\Controllers\RtoAgentController;
 use App\Http\Controllers\InsuranceController;
@@ -59,7 +58,6 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
     Route::resource('banks', BankController::class);
-    Route::resource('bank-branches', BankBranchController::class);
 
     Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
     Route::post('firms/{firm}/toggle-status', [FirmController::class, 'toggleStatus'])->name('firms.toggle-status');
