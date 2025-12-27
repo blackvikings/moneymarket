@@ -41,6 +41,9 @@
             </form>
         </div>
         <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
             <table class="table table-bordered">
                 <thead>
                     <tr>
@@ -68,12 +71,24 @@
                                 @endcan
                                 @can('edit employee')
                                     <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">Edit</a>
+
+                                    {{-- Block/Unblock Button --}}
+                                    <form action="{{ route('employees.update-status', $employee->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        @if($employee->status == 'Active')
+                                            <input type="hidden" name="status" value="Blocked">
+                                            <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to block this employee?')">Block</button>
+                                        @elseif($employee->status == 'Blocked')
+                                            <input type="hidden" name="status" value="Active">
+                                            <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to unblock this employee?')">Unblock</button>
+                                        @endif
+                                    </form>
                                 @endcan
                                 @can('delete employee')
                                     <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')">Delete</button>
                                     </form>
                                 @endcan
                             </td>

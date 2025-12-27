@@ -59,6 +59,10 @@ class UserSeeder extends Seeder
             'create city',
             'edit city',
             'delete city',
+            'view lead',
+            'create lead',
+            'edit lead',
+            'delete lead',
         ];
 
         foreach ($permissions as $permission) {
@@ -70,10 +74,16 @@ class UserSeeder extends Seeder
         $adminRole->syncPermissions($permissions);
 
         $teamLeadRole = Role::firstOrCreate(['name' => 'Team Lead']);
-        $teamLeadRole->syncPermissions(['view employee', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm']);
+        $teamLeadRole->syncPermissions([
+            'view employee', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm',
+            'view lead', 'create lead', 'edit lead'
+        ]);
 
         $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);
-        $teleCallerRole->syncPermissions(['view rto agent', 'view insurance']);
+        $teleCallerRole->syncPermissions([
+            'view rto agent', 'view insurance',
+            'view lead', 'edit lead'
+        ]);
 
 
         // Create users
@@ -86,5 +96,26 @@ class UserSeeder extends Seeder
             ]
         );
         $admin->assignRole($adminRole);
+
+        // Create Tele Caller users
+        $teleCaller1 = User::firstOrCreate(
+            ['email' => 'telecaller1@example.com'],
+            [
+                'name' => 'Tele Caller 1',
+                'password' => Hash::make('password'),
+                'employee_type' => 'Tele Caller',
+            ]
+        );
+        $teleCaller1->assignRole($teleCallerRole);
+
+        $teleCaller2 = User::firstOrCreate(
+            ['email' => 'telecaller2@example.com'],
+            [
+                'name' => 'Tele Caller 2',
+                'password' => Hash::make('password'),
+                'employee_type' => 'Tele Caller',
+            ]
+        );
+        $teleCaller2->assignRole($teleCallerRole);
     }
 }

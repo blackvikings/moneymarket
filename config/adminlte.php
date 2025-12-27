@@ -156,7 +156,7 @@ return [
     'layout_boxed' => null,
     'layout_fixed_sidebar' => null,
     'layout_fixed_navbar' => null,
-    'layout_fixed_footer' => null,
+    'layout_fixed_footer' => false,
     'layout_dark_mode' => null,
 
     /*
@@ -321,22 +321,57 @@ return [
             'icon' => 'fas fa-fw fa-tachometer-alt',
         ],
         [
+            'text' => 'LMS',
+            'icon' => 'fas fa-fw fa-bullhorn',
+            'can' => 'view lead',
+            'submenu' => [
+                [
+                    'text' => 'Leads',
+                    'url' => 'leads',
+                    'can' => 'view lead',
+                ],
+            ],
+        ],
+        [
+            'text' => 'CRM',
+            'icon' => 'fas fa-fw fa-handshake',
+            'can' => 'view lead', // Assuming same permission for now
+            'submenu' => [
+                [
+                    'text' => 'Bank Assign',
+                    'url' => 'crm',
+                    'can' => 'view lead',
+                ],
+                [
+                    'text' => 'RTO',
+                    'url' => 'rto',
+                    'can' => 'view lead',
+                ],
+            ],
+        ],
+        [
             'text' => 'Employees',
-            'url' => 'employees',
             'icon' => 'fas fa-fw fa-users',
             'can' => 'view employee',
-        ],
-        [
-            'text' => 'Roles',
-            'url' => 'roles',
-            'icon' => 'fas fa-fw fa-user-tag',
-            'can' => 'view role',
-        ],
-        [
-            'text' => 'Permissions',
-            'url' => 'permissions',
-            'icon' => 'fas fa-fw fa-key',
-            'can' => 'view permission',
+            'submenu' => [
+                [
+                    'text' => 'All Employees',
+                    'url' => 'employees',
+                    'can' => 'view employee',
+                ],
+                [
+                    'text' => 'Roles',
+                    'url' => 'roles',
+                    'icon' => 'fas fa-fw fa-user-tag',
+                    'can' => 'view role',
+                ],
+                [
+                    'text' => 'Permissions',
+                    'url' => 'permissions',
+                    'icon' => 'fas fa-fw fa-key',
+                    'can' => 'view permission',
+                ],
+            ],
         ],
         [
             'text' => 'Banks',

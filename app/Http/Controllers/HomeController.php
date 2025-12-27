@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Lead;
 
 class HomeController extends Controller
 {
@@ -23,6 +24,10 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $totalLeads = Lead::count();
+        $confirmedLeads = Lead::where('status', 'Lead')->count();
+        $assignedToBank = Lead::whereNotNull('bank_id')->count();
+
+        return view('home', compact('totalLeads', 'confirmedLeads', 'assignedToBank'));
     }
 }

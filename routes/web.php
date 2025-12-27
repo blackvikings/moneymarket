@@ -11,6 +11,9 @@ use App\Http\Controllers\RtoAgentController;
 use App\Http\Controllers\InsuranceController;
 use App\Http\Controllers\VehicleManufactureController;
 use App\Http\Controllers\CityController;
+use App\Http\Controllers\LeadController;
+use App\Http\Controllers\CrmController;
+use App\Http\Controllers\RtoController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -73,6 +76,30 @@ Route::group(['middleware' => ['auth']], function () {
     Route::get('vehicle-manufactures/export', [VehicleManufactureController::class, 'export'])->name('vehicle-manufactures.export');
     Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
     Route::resource('vehicle-manufactures', VehicleManufactureController::class);
+
+    Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
+    Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
+    Route::resource('leads', LeadController::class);
+
+    // CRM Routes
+    Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
+    Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
+    Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
+    Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
+
+    // RTO Routes
+    Route::get('rto', [RtoController::class, 'index'])->name('rto.index');
+    Route::get('rto/create', [RtoController::class, 'create'])->name('rto.create');
+    Route::post('rto', [RtoController::class, 'store'])->name('rto.store');
+    Route::get('rto/create-insurance-lead', [RtoController::class, 'createInsuranceLead'])->name('rto.create-insurance-lead');
+    Route::post('rto/store-insurance-lead', [RtoController::class, 'storeInsuranceLead'])->name('rto.store-insurance-lead');
+    Route::get('rto/{lead}', [RtoController::class, 'show'])->name('rto.show');
+    Route::post('rto/{lead}/update-stage', [RtoController::class, 'updateStage'])->name('rto.update-stage');
+    Route::post('rto/{lead}/update-checklist', [RtoController::class, 'updateChecklist'])->name('rto.update-checklist');
+    Route::post('rto/{lead}/update-loan-return', [RtoController::class, 'updateLoanReturn'])->name('rto.update-loan-return');
+    Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
+    Route::post('rto/{lead}/update-insurance-details', [RtoController::class, 'updateInsuranceDetails'])->name('rto.update-insurance-details');
+
 
     // Cities module removed, but keeping route cleanup in mind if needed.
 });
