@@ -21,7 +21,7 @@ use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\HomeController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('login');
 });
 
 // Authentication Routes...
@@ -30,8 +30,8 @@ Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 // Registration Routes...
-Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('register', [RegisterController::class, 'register']);
+// Route::get('register', [RegisterController::class, 'showRegistrationForm'])->name('register');
+// Route::post('register', [RegisterController::class, 'register']);
 
 // Password Reset Routes...
 Route::get('password/reset', [ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
