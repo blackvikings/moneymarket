@@ -7,9 +7,18 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('firms.store') }}" method="POST">
+            <form action="{{ route('firms.store') }}" method="POST" id="createFirmForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Firm Name</label>
@@ -25,4 +34,13 @@
             </form>
         </div>
     </div>
+@stop
+
+@section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#createFirmForm').validate();
+        });
+    </script>
 @stop

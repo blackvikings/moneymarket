@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Exports\EmployeeExport;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class EmployeeController extends Controller
 {
@@ -62,10 +63,16 @@ class EmployeeController extends Controller
             'contact_number' => 'required|string',
             'dob' => 'nullable|date',
             'firm_id' => 'required|exists:firms,id',
-            'address_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'current_address_line' => 'required|string',
+            'permanent_address_line' => 'required|string',
+            'address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'education.*.degree' => 'required|string',
             'education.*.institution' => 'required|string',
             'education.*.passing_year' => 'required|string',
+            'bank_id' => 'required_with:account_holder_name,ifsc_code|exists:banks,id',
+            'bank_branch_id' => 'required_with:account_holder_name,ifsc_code|exists:bank_branches,id',
+            'account_holder_name' => 'required_with:bank_id,ifsc_code|string',
+            'ifsc_code' => 'required_with:bank_id,account_holder_name|string',
         ]);
 
         $data = $request->except('password', 'address_proof', 'education', 'role');

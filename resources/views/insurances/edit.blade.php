@@ -7,9 +7,21 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+        .select2-container--default .select2-selection--multiple.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('insurances.update', $insurance->id) }}" method="POST">
+            <form action="{{ route('insurances.update', $insurance->id) }}" method="POST" id="editInsuranceForm">
                 @csrf
                 @method('PUT')
                 <div class="row">
@@ -82,9 +94,13 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('#editInsuranceForm').validate();
+
             let typeIndex = {{ count(old('types', $insurance->types->toArray())) -1 }};
+            if (typeIndex < 0) typeIndex = 0;
 
             function initSelect2(element) {
                 element.select2({
@@ -94,6 +110,17 @@
             }
 
             initSelect2($('.sub-types-select'));
+
+            // Add validation rules for existing rows
+            $('.type-card').each(function() {
+                let index = $(this).data('index');
+                $(`[name="types[${index}][name]"]`).rules('add', {
+                    required: true,
+                    messages: {
+                        required: "Insurance type name is required"
+                    }
+                });
+            });
 
             $('#add-type').click(function() {
                 typeIndex++;
@@ -116,6 +143,14 @@
                 `;
                 $('#types-container').append(html);
                 initSelect2($('#types-container .type-card:last .sub-types-select'));
+
+                // Add validation for the new row
+                $(`[name="types[${typeIndex}][name]"]`).rules('add', {
+                    required: true,
+                    messages: {
+                        required: "Insurance type name is required"
+                    }
+                });
             });
 
             $(document).on('click', '.remove-type', function() {

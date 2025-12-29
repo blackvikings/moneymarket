@@ -7,9 +7,21 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+        .select2-container--default .select2-selection--multiple.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('vehicle-manufactures.store') }}" method="POST">
+            <form action="{{ route('vehicle-manufactures.store') }}" method="POST" id="createVehicleManufactureForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Manufacture Name</label>
@@ -35,11 +47,31 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#vehicle_names').select2({
                 tags: true,
                 tokenSeparators: [',', ' ']
+            });
+
+            $('#createVehicleManufactureForm').validate({
+                ignore: [], // To validate hidden select2 fields
+                rules: {
+                    name: { required: true },
+                    'vehicle_names[]': { required: true }
+                },
+                messages: {
+                    name: "Please enter the manufacture name",
+                    'vehicle_names[]': "Please add at least one vehicle name"
+                },
+                errorPlacement: function (error, element) {
+                    if (element.hasClass('select2-hidden-accessible')) {
+                        error.insertAfter(element.next('.select2-container'));
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
             });
         });
     </script>
