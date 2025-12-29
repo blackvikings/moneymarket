@@ -24,7 +24,7 @@ class RtoController extends Controller
     public function index(Request $request)
     {
         // Show leads that are either in an RTO stage OR have completed the CRM Disbursal stage
-        $query = Lead::where(function($q) {
+        $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
             $q->whereNotNull('rto_stage')
               ->orWhere('crm_stage', 'Closed');
         });
@@ -36,7 +36,18 @@ class RtoController extends Controller
         $leads = $query->latest()->paginate(10);
         $stages = $this->stages;
 
-        return view('rto.index', compact('leads', 'stages'));
+        // Calculate counts for each stage
+        $counts = [];
+        $counts['All'] = Lead::where(function($q) {
+            $q->whereNotNull('rto_stage')
+              ->orWhere('crm_stage', 'Closed');
+        })->count();
+
+        foreach ($stages as $stage) {
+            $counts[$stage] = Lead::where('rto_stage', $stage)->count();
+        }
+
+        return view('rto.index', compact('leads', 'stages', 'counts'));
     }
 
     public function create()
@@ -68,7 +79,7 @@ class RtoController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance']);
+        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture']);
         $stages = $this->stages;
         $currentStageIndex = array_search($lead->rto_stage, $stages);
         $banks = Bank::where('is_active', true)->get();
@@ -117,6 +128,22 @@ class RtoController extends Controller
 
         $lead->update($data);
 
+        if ($request->has('save_and_next')) {
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
+
+            // Special case: If stage is 'New', jump to 'Loan Return' (skipping 'Checking' state as we just completed it)
+            if ($lead->rto_stage === 'New') {
+                $lead->update(['rto_stage' => 'Loan Return']);
+                return redirect()->back()->with('success', 'Checklist updated and moved to Loan Return');
+            }
+
+            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
+                $nextStage = $this->stages[$currentStageIndex + 1];
+                $lead->update(['rto_stage' => $nextStage]);
+                return redirect()->back()->with('success', 'Checklist updated and moved to ' . $nextStage);
+            }
+        }
+
         return redirect()->back()->with('success', 'Checklist updated successfully.');
     }
 
@@ -131,6 +158,15 @@ class RtoController extends Controller
             'loan_return_date' => $request->loan_return_date,
             'loan_return_reason' => $request->loan_return_reason,
         ]);
+
+        if ($request->has('save_and_next')) {
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
+            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
+                $nextStage = $this->stages[$currentStageIndex + 1];
+                $lead->update(['rto_stage' => $nextStage]);
+                return redirect()->back()->with('success', 'Loan return details updated and moved to ' . $nextStage);
+            }
+        }
 
         return redirect()->back()->with('success', 'Loan return details updated successfully.');
     }
@@ -174,6 +210,15 @@ class RtoController extends Controller
                         'amount' => $challan['amount'],
                     ]);
                 }
+            }
+        }
+
+        if ($request->has('save_and_next')) {
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
+            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
+                $nextStage = $this->stages[$currentStageIndex + 1];
+                $lead->update(['rto_stage' => $nextStage]);
+                return redirect()->back()->with('success', 'Vehicle details updated and moved to ' . $nextStage);
             }
         }
 
@@ -226,6 +271,15 @@ class RtoController extends Controller
             'insurance_premium_amount' => $request->insurance_premium_amount,
             'insurance_idv_amount' => $request->insurance_idv_amount,
         ]);
+
+        if ($request->has('save_and_next')) {
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
+            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
+                $nextStage = $this->stages[$currentStageIndex + 1];
+                $lead->update(['rto_stage' => $nextStage]);
+                return redirect()->back()->with('success', 'Insurance details updated and moved to ' . $nextStage);
+            }
+        }
 
         return redirect()->back()->with('success', 'Insurance details updated successfully.');
     }

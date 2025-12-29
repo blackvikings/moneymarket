@@ -1,7 +1,7 @@
-<form action="{{ route('rto.update-insurance-details', $lead->id) }}" method="POST">
+<form action="{{ route('rto.update-insurance-details', $lead->id) }}" method="POST" class="rto-insurance-form">
     @csrf
     <h5>Vehicle Details</h5>
-    <p><strong>Model:</strong> {{ $lead->model_name ?? 'N/A' }} | <strong>RC Number:</strong> {{ $lead->rc_number ?? 'N/A' }}</p>
+    <p><strong>Model:</strong> {{ $lead->vehicleName->name ?? 'N/A' }} | <strong>RC Number:</strong> {{ $lead->rc_number ?? 'N/A' }}</p>
 
     <hr>
     <h5>Insurance Details</h5>
@@ -65,4 +65,5 @@
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Save Insurance Details</button>
+    <button type="submit" name="save_and_next" value="1" class="btn btn-success mt-3">Save & Next</button>
 </form>

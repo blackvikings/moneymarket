@@ -1,10 +1,10 @@
-<form action="{{ route('rto.update-vehicle-detail', $lead->id) }}" method="POST">
+<form action="{{ route('rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form">
     @csrf
     <div class="row">
         <div class="col-md-4">
             <div class="form-group">
                 <label>Vehicle Type</label>
-                <select name="rto_vehicle_type" id="rto_vehicle_type" class="form-control">
+                <select name="rto_vehicle_type" class="form-control rto-vehicle-type-select" required>
                     <option value="">Select Type</option>
                     <option value="New Vehicle" {{ $lead->rto_vehicle_type == 'New Vehicle' ? 'selected' : '' }}>New Vehicle</option>
                     <option value="Old Vehicle" {{ $lead->rto_vehicle_type == 'Old Vehicle' ? 'selected' : '' }}>Old Vehicle</option>
@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <div id="old_vehicle_details" style="{{ $lead->rto_vehicle_type == 'Old Vehicle' ? '' : 'display:none;' }}">
+    <div class="old-vehicle-details-section" style="{{ $lead->rto_vehicle_type == 'Old Vehicle' ? '' : 'display:none;' }}">
         <hr>
         <h5>Old Vehicle Details</h5>
         <div class="row">
@@ -25,20 +25,20 @@
             </div>
             <div class="col-md-4">
                 <div class="form-group form-check" style="margin-top: 40px;">
-                    <input type="checkbox" class="form-check-input" name="rto_loan_closed_status" id="rto_loan_closed_status" {{ $lead->rto_loan_closed_status ? 'checked' : '' }}>
-                    <label class="form-check-label" for="rto_loan_closed_status">Loan Closed</label>
+                    <input type="checkbox" class="form-check-input" name="rto_loan_closed_status" {{ $lead->rto_loan_closed_status ? 'checked' : '' }}>
+                    <label class="form-check-label">Loan Closed</label>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="form-group form-check" style="margin-top: 40px;">
-                    <input type="checkbox" class="form-check-input" name="rto_hp_termination_status" id="rto_hp_termination_status" {{ $lead->rto_hp_termination_status ? 'checked' : '' }}>
-                    <label class="form-check-label" for="rto_hp_termination_status">HP Termination</label>
+                    <input type="checkbox" class="form-check-input" name="rto_hp_termination_status" {{ $lead->rto_hp_termination_status ? 'checked' : '' }}>
+                    <label class="form-check-label">HP Termination</label>
                 </div>
             </div>
         </div>
 
         <h6>Closer Deposited</h6>
-        <div id="closer-deposits-container">
+        <div class="closer-deposits-container">
             @foreach($lead->rtoCloserDeposits as $index => $deposit)
                 <div class="row closer-deposit-row">
                     <div class="col-md-5"><div class="form-group"><input type="number" step="0.01" name="closer_deposits[{{$index}}][amount]" class="form-control" placeholder="Amount" value="{{$deposit->amount}}"></div></div>
@@ -47,7 +47,7 @@
                 </div>
             @endforeach
         </div>
-        <button type="button" class="btn btn-sm btn-success" id="add-closer-deposit">Add Deposit</button>
+        <button type="button" class="btn btn-sm btn-success add-closer-deposit">Add Deposit</button>
     </div>
 
     <hr>
@@ -67,7 +67,7 @@
     </div>
 
     <h6>Challan For</h6>
-    <div id="challans-container">
+    <div class="challans-container">
         @foreach($lead->rtoChallans as $index => $challan)
             <div class="row challan-row">
                 <div class="col-md-4"><div class="form-group"><input type="text" name="challans[{{$index}}][type]" class="form-control" placeholder="Challan Type" value="{{$challan->challan_type}}"></div></div>
@@ -77,7 +77,7 @@
             </div>
         @endforeach
     </div>
-    <button type="button" class="btn btn-sm btn-success" id="add-challan">Add Challan</button>
+    <button type="button" class="btn btn-sm btn-success add-challan">Add Challan</button>
 
     <hr>
     <div class="row">
@@ -87,48 +87,5 @@
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Save Vehicle Details</button>
+    <button type="submit" name="save_and_next" value="1" class="btn btn-success mt-3">Save & Next</button>
 </form>
-
-@section('js')
-    @parent
-    <script>
-        $(document).ready(function() {
-            $('#rto_vehicle_type').change(function() {
-                if ($(this).val() === 'Old Vehicle') {
-                    $('#old_vehicle_details').show();
-                } else {
-                    $('#old_vehicle_details').hide();
-                }
-            });
-
-            let depositIndex = {{ $lead->rtoCloserDeposits->count() }};
-            $('#add-closer-deposit').click(function() {
-                let html = `
-                    <div class="row closer-deposit-row">
-                        <div class="col-md-5"><div class="form-group"><input type="number" step="0.01" name="closer_deposits[${depositIndex}][amount]" class="form-control" placeholder="Amount"></div></div>
-                        <div class="col-md-5"><div class="form-group"><input type="date" name="closer_deposits[${depositIndex}][date]" class="form-control"></div></div>
-                        <div class="col-md-2"><button type="button" class="btn btn-danger remove-row">X</button></div>
-                    </div>`;
-                $('#closer-deposits-container').append(html);
-                depositIndex++;
-            });
-
-            let challanIndex = {{ $lead->rtoChallans->count() }};
-            $('#add-challan').click(function() {
-                let html = `
-                    <div class="row challan-row">
-                        <div class="col-md-4"><div class="form-group"><input type="text" name="challans[${challanIndex}][type]" class="form-control" placeholder="Challan Type"></div></div>
-                        <div class="col-md-3"><div class="form-group"><input type="date" name="challans[${challanIndex}][date]" class="form-control"></div></div>
-                        <div class="col-md-3"><div class="form-group"><input type="number" step="0.01" name="challans[${challanIndex}][amount]" class="form-control" placeholder="Amount"></div></div>
-                        <div class="col-md-2"><button type="button" class="btn btn-danger remove-row">X</button></div>
-                    </div>`;
-                $('#challans-container').append(html);
-                challanIndex++;
-            });
-
-            $(document).on('click', '.remove-row', function() {
-                $(this).closest('.row').remove();
-            });
-        });
-    </script>
-@stop
