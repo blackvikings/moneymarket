@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\LeadExport;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class LeadController extends Controller
 {
@@ -57,11 +58,25 @@ class LeadController extends Controller
 
     public function store(Request $request)
     {
-        // Basic validation, can be expanded based on requirements
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            'firm_id' => 'nullable|exists:firms,id',
+            'father_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'firm_id' => 'required|exists:firms,id',
+            'residence_type' => 'required|string',
+            'current_address_line' => 'required|string',
+            'permanent_address_line' => 'required|string',
+            'job_profile_type' => 'required|string',
+            'nature_of_work' => ['required_if:job_profile_type,Self Employed'],
+            'salaried_type' => ['required_if:job_profile_type,Salaried'],
+            'designation' => ['required_if:job_profile_type,Salaried'],
+            'other_company_name' => ['required_if:salaried_type,Other'],
+            'itr_amount' => ['required_if:income_proof_available,1'],
+            'approx_income' => ['required_if:income_proof_available,0'],
+            'old_loan_close_amount' => 'required|numeric|min:0',
+            'co_name' => ['required_if:has_co_applicant,1'],
+            'co_relation' => ['required_if:has_co_applicant,1'],
         ]);
 
         $data = $request->except(['itr_document', 'business_proof_document', 'co_itr_document', 'co_business_proof_document', 'guarantor_itr_document', 'guarantor_business_proof_document']);

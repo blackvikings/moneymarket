@@ -32,14 +32,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Father Name</label>
-                            <input type="text" name="father_name" class="form-control" value="{{ old('father_name') }}">
+                            <label>Father Name <span class="text-danger">*</span></label>
+                            <input type="text" name="father_name" class="form-control" value="{{ old('father_name') }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Enquire At (Firm)</label>
-                            <select name="firm_id" class="form-control">
+                            <label>Enquire At (Firm) <span class="text-danger">*</span></label>
+                            <select name="firm_id" class="form-control" required>
                                 <option value="">Select Firm</option>
                                 @foreach($firms as $firm)
                                     <option value="{{ $firm->id }}" {{ old('firm_id') == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
@@ -57,14 +57,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Email Id</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email') }}">
+                            <label>Email Id <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email') }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Residence Type</label>
-                            <select name="residence_type" class="form-control">
+                            <label>Residence Type <span class="text-danger">*</span></label>
+                            <select name="residence_type" class="form-control" required>
                                 <option value="">Select Type</option>
                                 <option value="Rented" {{ old('residence_type') == 'Rented' ? 'selected' : '' }}>Rented</option>
                                 <option value="Own" {{ old('residence_type') == 'Own' ? 'selected' : '' }}>Own</option>
@@ -77,10 +77,10 @@
                 {{-- Address Details --}}
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Current Address</h6>
+                        <h6>Current Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="current_address_line" class="form-control" value="{{ old('current_address_line') }}">
+                            <input type="text" name="current_address_line" class="form-control" value="{{ old('current_address_line') }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
@@ -104,10 +104,10 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6>Permanent Address</h6>
+                        <h6>Permanent Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="permanent_address_line" class="form-control" value="{{ old('permanent_address_line') }}">
+                            <input type="text" name="permanent_address_line" class="form-control" value="{{ old('permanent_address_line') }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
@@ -134,12 +134,12 @@
 
                 <hr>
                 {{-- Job Profile --}}
-                <h5>Job Profile</h5>
+                <h5>Job Profile <span class="text-danger">*</span></h5>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Profile Type</label>
-                            <select name="job_profile_type" id="job_profile_type" class="form-control">
+                            <select name="job_profile_type" id="job_profile_type" class="form-control" required>
                                 <option value="">Select Profile</option>
                                 <option value="Self Employed" {{ old('job_profile_type') == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
                                 <option value="Farmer" {{ old('job_profile_type') == 'Farmer' ? 'selected' : '' }}>Farmer</option>
@@ -411,8 +411,8 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Old Loan Close Amount</label>
-                            <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="0">
+                            <label>Old Loan Close Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="0" required>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -515,7 +515,87 @@
     <script>
         $(document).ready(function() {
             // Initialize validation
-            $('#createLeadForm').validate();
+            $('#createLeadForm').validate({
+                rules: {
+                    father_name: { required: true },
+                    email: { required: true, email: true },
+                    firm_id: { required: true },
+                    residence_type: { required: true },
+                    current_address_line: { required: true },
+                    permanent_address_line: { required: true },
+                    job_profile_type: { required: true },
+                    nature_of_work: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Self Employed';
+                        }
+                    },
+                    salaried_type: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Salaried';
+                        }
+                    },
+                    designation: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Salaried';
+                        }
+                    },
+                    other_company_name: {
+                        required: function(element) {
+                            return $("#salaried_type").val() === 'Other';
+                        }
+                    },
+                    itr_amount: {
+                        required: function(element) {
+                            return $("#income_proof_available").val() == '1';
+                        }
+                    },
+                    approx_income: {
+                        required: function(element) {
+                            return $("#income_proof_available").val() == '0';
+                        }
+                    },
+                    old_loan_close_amount: {
+                        required: true,
+                        number: true,
+                        min: 0
+                    },
+                    co_name: {
+                        required: function(element) {
+                            return $("#has_co_applicant").val() == '1';
+                        }
+                    },
+                    co_relation: {
+                        required: function(element) {
+                            return $("#has_co_applicant").val() == '1';
+                        }
+                    }
+                },
+                messages: {
+                    father_name: "Please enter the father's name",
+                    email: {
+                        required: "Please enter an email address",
+                        email: "Please enter a valid email address"
+                    },
+                    firm_id: "Please select a firm",
+                    residence_type: "Please select a residence type",
+                    current_address_line: "Please enter the current address",
+                    permanent_address_line: "Please enter the permanent address",
+                    job_profile_type: "Please select a job profile",
+                    nature_of_work: "Please enter the nature of work",
+                    salaried_type: "Please select a salaried type",
+                    designation: "Please enter a designation",
+                    other_company_name: "Please enter the company name",
+                    itr_amount: "Please enter the ITR amount",
+                    approx_income: "Please enter the approximate income",
+                    old_loan_close_amount: {
+                        required: "Please enter the old loan close amount",
+                        number: "Please enter a valid number",
+                        min: "Amount cannot be negative"
+                    },
+                    co_name: "Please enter the co-applicant's name",
+                    co_relation: "Please enter the co-applicant's relation"
+                }
+            });
 
             // Job Profile Logic
             $('#job_profile_type').change(function() {

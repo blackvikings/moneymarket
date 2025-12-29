@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('leads', function (Blueprint $table) {
-            $table->bigInteger('bank_branch_id')->nullable()->constrained('bank_branches')->onDelete('set null');
-        });
+        if (!Schema::hasColumn('leads', 'bank_branch_id')) {
+            Schema::table('leads', function (Blueprint $table) {
+                $table->bigInteger('bank_branch_id')->nullable()->constrained('bank_branches')->onDelete('set null');
+            });
+        }
+
+
     }
 
     /**
