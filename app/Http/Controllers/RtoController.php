@@ -59,8 +59,13 @@ class RtoController extends Controller
     {
         $request->validate([
             'customer_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
-            'rto_address_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'email' => 'required|email|max:255',
+            'residence_type' => 'required|string',
+            'current_address_line' => 'required|string',
+            'permanent_address_line' => 'required|string',
+            'rto_address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         $data = $request->except('rto_address_proof');

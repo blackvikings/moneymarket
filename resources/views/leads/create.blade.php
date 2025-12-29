@@ -485,8 +485,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Assign To</label>
-                            <select name="assigned_to" class="form-control">
+                            <label>Assign To <span class="text-danger">*</span></label>
+                            <select name="assigned_to" id="assigned_to" class="form-control" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -568,6 +568,21 @@
                         required: function(element) {
                             return $("#has_co_applicant").val() == '1';
                         }
+                    },
+                    guarantor_name: {
+                        required: function(element) {
+                            return $("#has_guarantor").val() == '1';
+                        }
+                    },
+                    guarantor_relation: {
+                        required: function(element) {
+                            return $("#has_guarantor").val() == '1';
+                        }
+                    },
+                    assigned_to: {
+                        required: function(element) {
+                            return $('#assigned_to').length > 0;
+                        }
                     }
                 },
                 messages: {
@@ -593,7 +608,10 @@
                         min: "Amount cannot be negative"
                     },
                     co_name: "Please enter the co-applicant's name",
-                    co_relation: "Please enter the co-applicant's relation"
+                    co_relation: "Please enter the co-applicant's relation",
+                    guarantor_name: "Please enter the guarantor's name",
+                    guarantor_relation: "Please enter the guarantor's relation",
+                    assigned_to: "Please select a user to assign the lead to"
                 }
             });
 
