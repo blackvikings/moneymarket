@@ -374,34 +374,40 @@ return [
             ],
         ],
         [
-            'text' => 'Banks',
-            'url' => 'banks',
-            'icon' => 'fas fa-fw fa-university',
-            'can' => 'view bank',
-        ],
-        [
-            'text' => 'Firms',
-            'url' => 'firms',
-            'icon' => 'fas fa-fw fa-building',
-            'can' => 'view firm',
-        ],
-        [
-            'text' => 'RTO Agents',
-            'url' => 'rto-agents',
-            'icon' => 'fas fa-fw fa-user-secret',
-            'can' => 'view rto agent',
-        ],
-        [
-            'text' => 'Insurances',
-            'url' => 'insurances',
-            'icon' => 'fas fa-fw fa-shield-alt',
-            'can' => 'view insurance',
-        ],
-        [
-            'text' => 'Vehicle Manufactures',
-            'url' => 'vehicle-manufactures',
-            'icon' => 'fas fa-fw fa-car',
-            'can' => 'view vehicle manufacture',
+            'text' => 'Masters',
+            'icon' => 'fas fa-fw fa-cogs',
+            'submenu' => [
+                [
+                    'text' => 'Banks',
+                    'url' => 'banks',
+                    'icon' => 'fas fa-fw fa-university',
+                    'can' => 'view bank',
+                ],
+                [
+                    'text' => 'Firms',
+                    'url' => 'firms',
+                    'icon' => 'fas fa-fw fa-building',
+                    'can' => 'view firm',
+                ],
+                [
+                    'text' => 'RTO Agents',
+                    'url' => 'rto-agents',
+                    'icon' => 'fas fa-fw fa-user-secret',
+                    'can' => 'view rto agent',
+                ],
+                [
+                    'text' => 'Insurances',
+                    'url' => 'insurances',
+                    'icon' => 'fas fa-fw fa-shield-alt',
+                    'can' => 'view insurance',
+                ],
+                [
+                    'text' => 'Vehicle Manufactures',
+                    'url' => 'vehicle-manufactures',
+                    'icon' => 'fas fa-fw fa-car',
+                    'can' => 'view vehicle manufacture',
+                ],
+            ],
         ],
     ],
 

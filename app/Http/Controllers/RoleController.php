@@ -43,12 +43,19 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        if ($role->name === 'admin') {
+            return redirect()->route('roles.index')->with('error', 'Cannot edit admin role.');
+        }
         $permissions = Permission::all();
         return view('roles.edit', compact('role', 'permissions'));
     }
 
     public function update(Request $request, Role $role)
     {
+        if ($role->name === 'admin') {
+            return redirect()->route('roles.index')->with('error', 'Cannot update admin role.');
+        }
+
         $request->validate([
             'name' => 'required|unique:roles,name,'.$role->id,
             'permissions' => 'required',
@@ -62,6 +69,10 @@ class RoleController extends Controller
 
     public function destroy(Role $role)
     {
+        if ($role->name === 'admin') {
+            return redirect()->route('roles.index')->with('error', 'Cannot delete admin role.');
+        }
+
         $role->delete();
         return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
     }
