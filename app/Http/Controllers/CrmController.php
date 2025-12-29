@@ -28,7 +28,7 @@ class CrmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::where('status', 'Lead'); // Only show owned leads
+        $query = Lead::with(['bank', 'bankBranch'])->where('status', 'Lead'); // Eager load relationships
 
         if ($request->has('stage') && $request->stage != '') {
             $query->where('crm_stage', $request->stage);
@@ -37,7 +37,14 @@ class CrmController extends Controller
         $leads = $query->latest()->paginate(10);
         $stages = $this->stages;
 
-        return view('crm.index', compact('leads', 'stages'));
+        // Calculate counts for each stage
+        $counts = [];
+        $counts['All'] = Lead::where('status', 'Lead')->count();
+        foreach ($stages as $stage) {
+            $counts[$stage] = Lead::where('status', 'Lead')->where('crm_stage', $stage)->count();
+        }
+
+        return view('crm.index', compact('leads', 'stages', 'counts'));
     }
 
     public function show(Lead $lead)

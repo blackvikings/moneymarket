@@ -101,7 +101,16 @@ class LeadController extends Controller
     public function show(Lead $lead)
     {
         $lead->load(['assignedTo', 'createdBy', 'bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'insurance']);
-        return view('leads.show', compact('lead'));
+
+        $branches = [];
+        if ($lead->bank_id) {
+            $bank = Bank::find($lead->bank_id);
+            if ($bank) {
+                $branches = $bank->branches;
+            }
+        }
+
+        return view('leads.show', compact('lead', 'branches'));
     }
 
     public function edit(Lead $lead)

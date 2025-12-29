@@ -7,9 +7,18 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('banks.update', $bank->id) }}" method="POST">
+            <form action="{{ route('banks.update', $bank->id) }}" method="POST" id="editBankForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">
@@ -51,8 +60,11 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('#editBankForm').validate();
+
             $('#add-branch').click(function() {
                 let html = `
                     <div class="row branch-row mb-2">

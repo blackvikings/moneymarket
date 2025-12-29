@@ -7,9 +7,15 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('leads.update', $lead->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('leads.update', $lead->id) }}" method="POST" enctype="multipart/form-data" id="editLeadForm">
                 @csrf
                 @method('PUT')
 
@@ -455,8 +461,12 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Initialize validation
+            $('#editLeadForm').validate();
+
             // Re-use the same JS logic from create.blade.php for toggling fields
             // Job Profile Logic
             $('#job_profile_type').change(function() {

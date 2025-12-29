@@ -7,9 +7,18 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('leads.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('leads.store') }}" method="POST" enctype="multipart/form-data" id="createLeadForm">
                 @csrf
 
                 {{-- Basic Details --}}
@@ -502,8 +511,12 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            // Initialize validation
+            $('#createLeadForm').validate();
+
             // Job Profile Logic
             $('#job_profile_type').change(function() {
                 let val = $(this).val();

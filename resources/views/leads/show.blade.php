@@ -139,6 +139,11 @@
                                 <label>Assign Branch</label>
                                 <select name="bank_branch_id" id="bank_branch_id" class="form-control">
                                     <option value="">Select Branch</option>
+                                    @if(isset($branches) && count($branches) > 0)
+                                        @foreach($branches as $branch)
+                                            <option value="{{ $branch->id }}" {{ $lead->bank_branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
+                                        @endforeach
+                                    @endif
                                 </select>
                             </div>
                         </div>
@@ -161,43 +166,38 @@
         $(document).ready(function() {
             function toggleFields() {
                 let status = $('#status-select').val();
-
-                // Show follow-up for New (Interested) and Prospect
-                if (status === 'New' || status === 'Prospect') {
-                    $('#follow-up-section').show();
-                } else {
-                    $('#follow-up-section').hide();
-                }
-
-                // Show bank selection only for Lead (Qualified)
-                if (status === 'Lead') {
-                    $('#bank-section').show();
-                } else {
-                    $('#bank-section').hide();
-                }
+                $('#follow-up-section').toggle(status === 'New' || status === 'Prospect');
+                $('#bank-section').toggle(status === 'Lead');
             }
 
             $('#status-select').change(toggleFields);
-            toggleFields(); // Run on load
 
-            // Fetch branches when bank changes
             $('#bank_id').change(function() {
                 let bankId = $(this).val();
                 let branchSelect = $('#bank_branch_id');
-                branchSelect.empty().append('<option value="">Select Branch</option>');
+                branchSelect.empty().append('<option value="">Loading...</option>');
 
                 if (bankId) {
                     $.ajax({
-                        url: '{{ route("get-branches", ["bank" => ":bankId"]) }}'.replace(':bankId', bankId),
+                        url: '{{ url("get-branches") }}/' + bankId,
                         type: 'GET',
                         success: function(data) {
+                            branchSelect.empty().append('<option value="">Select Branch</option>');
                             $.each(data, function(key, branch) {
                                 branchSelect.append('<option value="' + branch.id + '">' + branch.name + '</option>');
                             });
+                        },
+                        error: function() {
+                            branchSelect.empty().append('<option value="">Could not load branches</option>');
                         }
                     });
+                } else {
+                    branchSelect.empty().append('<option value="">Select Bank First</option>');
                 }
             });
+
+            // Initial load
+            toggleFields();
         });
     </script>
 @stop
