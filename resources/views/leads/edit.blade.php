@@ -12,6 +12,9 @@
             color: red;
             font-size: 0.875em;
         }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
     </style>
     <div class="card">
         <div class="card-body">
@@ -30,14 +33,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Father Name</label>
-                            <input type="text" name="father_name" class="form-control" value="{{ old('father_name', $lead->father_name) }}">
+                            <label>Father Name <span class="text-danger">*</span></label>
+                            <input type="text" name="father_name" class="form-control" value="{{ old('father_name', $lead->father_name) }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Enquire At (Firm)</label>
-                            <select name="firm_id" class="form-control">
+                            <label>Enquire At (Firm) <span class="text-danger">*</span></label>
+                            <select name="firm_id" class="form-control" required>
                                 <option value="">Select Firm</option>
                                 @foreach($firms as $firm)
                                     <option value="{{ $firm->id }}" {{ old('firm_id', $lead->firm_id) == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
@@ -55,14 +58,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Email Id</label>
-                            <input type="email" name="email" class="form-control" value="{{ old('email', $lead->email) }}">
+                            <label>Email Id <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email', $lead->email) }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Residence Type</label>
-                            <select name="residence_type" class="form-control">
+                            <label>Residence Type <span class="text-danger">*</span></label>
+                            <select name="residence_type" class="form-control" required>
                                 <option value="">Select Type</option>
                                 <option value="Rented" {{ old('residence_type', $lead->residence_type) == 'Rented' ? 'selected' : '' }}>Rented</option>
                                 <option value="Own" {{ old('residence_type', $lead->residence_type) == 'Own' ? 'selected' : '' }}>Own</option>
@@ -75,55 +78,68 @@
                 {{-- Address Details --}}
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Current Address</h6>
+                        <h6>Current Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="current_address_line" class="form-control" value="{{ old('current_address_line', $lead->current_address_line) }}">
+                            <input type="text" name="current_address_line" id="current_address_line" class="form-control" value="{{ old('current_address_line', $lead->current_address_line) }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="current_address_pincode" class="form-control" value="{{ old('current_address_pincode', $lead->current_address_pincode) }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <input type="text" name="current_address_city" class="form-control" value="{{ old('current_address_city', $lead->current_address_city) }}">
+                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input" value="{{ old('current_address_pincode', $lead->current_address_pincode) }}">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <input type="text" name="current_address_state" class="form-control" value="{{ old('current_address_state', $lead->current_address_state) }}">
+                                    <select name="current_address_state" id="current_state" class="form-control state-select" required>
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <select name="current_address_city" id="current_city" class="form-control city-select" required>
+                                        <option value="">Select State First</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6>Permanent Address</h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Permanent Address <span class="text-danger">*</span></h6>
+                            <div class="form-group mb-0">
+                                <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="permanent_address_line" class="form-control" value="{{ old('permanent_address_line', $lead->permanent_address_line) }}">
+                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control" value="{{ old('permanent_address_line', $lead->permanent_address_line) }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="permanent_address_pincode" class="form-control" value="{{ old('permanent_address_pincode', $lead->permanent_address_pincode) }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <input type="text" name="permanent_address_city" class="form-control" value="{{ old('permanent_address_city', $lead->permanent_address_city) }}">
+                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input" value="{{ old('permanent_address_pincode', $lead->permanent_address_pincode) }}">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <input type="text" name="permanent_address_state" class="form-control" value="{{ old('permanent_address_state', $lead->permanent_address_state) }}">
+                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select" required>
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select" required>
+                                        <option value="">Select State First</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -132,12 +148,12 @@
 
                 <hr>
                 {{-- Job Profile --}}
-                <h5>Job Profile</h5>
+                <h5>Job Profile <span class="text-danger">*</span></h5>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Profile Type</label>
-                            <select name="job_profile_type" id="job_profile_type" class="form-control">
+                            <select name="job_profile_type" id="job_profile_type" class="form-control" required>
                                 <option value="">Select Profile</option>
                                 <option value="Self Employed" {{ old('job_profile_type', $lead->job_profile_type) == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
                                 <option value="Farmer" {{ old('job_profile_type', $lead->job_profile_type) == 'Farmer' ? 'selected' : '' }}>Farmer</option>
@@ -145,13 +161,13 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4" id="nature_of_work_div" style="{{ $lead->job_profile_type == 'Self Employed' ? '' : 'display:none;' }}">
+                    <div class="col-md-4" id="nature_of_work_div" style="display:none;">
                         <div class="form-group">
                             <label>Nature of Work</label>
                             <input type="text" name="nature_of_work" class="form-control" value="{{ old('nature_of_work', $lead->nature_of_work) }}">
                         </div>
                     </div>
-                    <div class="col-md-4" id="salaried_type_div" style="{{ $lead->job_profile_type == 'Salaried' ? '' : 'display:none;' }}">
+                    <div class="col-md-4" id="salaried_type_div" style="display:none;">
                         <div class="form-group">
                             <label>Salaried Type</label>
                             <select name="salaried_type" id="salaried_type" class="form-control">
@@ -162,13 +178,13 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4" id="other_company_name_div" style="{{ $lead->salaried_type == 'Other' ? '' : 'display:none;' }}">
+                    <div class="col-md-4" id="other_company_name_div" style="display:none;">
                         <div class="form-group">
                             <label>Company Name</label>
                             <input type="text" name="other_company_name" class="form-control" value="{{ old('other_company_name', $lead->other_company_name) }}">
                         </div>
                     </div>
-                    <div class="col-md-4" id="designation_div" style="{{ $lead->job_profile_type == 'Salaried' ? '' : 'display:none;' }}">
+                    <div class="col-md-4" id="designation_div" style="display:none;">
                         <div class="form-group">
                             <label>Designation</label>
                             <input type="text" name="designation" class="form-control" value="{{ old('designation', $lead->designation) }}">
@@ -180,11 +196,11 @@
                         <div class="form-group">
                             <label>Income Proof Available?</label>
                             <select name="income_proof_available" id="income_proof_available" class="form-control">
-                                <option value="0" {{ $lead->income_proof_available == 0 ? 'selected' : '' }}>No</option>
-                                <option value="1" {{ $lead->income_proof_available == 1 ? 'selected' : '' }}>Yes</option>
+                                <option value="0" {{ old('income_proof_available', $lead->income_proof_available) == 0 ? 'selected' : '' }}>No</option>
+                                <option value="1" {{ old('income_proof_available', $lead->income_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
                             </select>
                         </div>
-                        <div id="itr_details_div" style="{{ $lead->income_proof_available == 1 ? '' : 'display:none;' }}">
+                        <div id="itr_details_div" style="display:none;">
                             <div class="form-group">
                                 <label>Last ITR Amount</label>
                                 <input type="number" step="0.01" name="itr_amount" class="form-control" value="{{ old('itr_amount', $lead->itr_amount) }}">
@@ -192,33 +208,29 @@
                             <div class="form-group">
                                 <label>ITR Document</label>
                                 <input type="file" name="itr_document" class="form-control-file">
-                                @if($lead->itr_document_path)
-                                    <small><a href="{{ asset('storage/' . $lead->itr_document_path) }}" target="_blank">View Current Document</a></small>
-                                @endif
+                                @if($lead->itr_document_path) <small><a href="{{ asset('storage/' . $lead->itr_document_path) }}" target="_blank">View Current</a></small> @endif
                             </div>
                         </div>
-                        <div id="approx_income_div" style="{{ $lead->income_proof_available == 0 ? '' : 'display:none;' }}">
+                        <div id="approx_income_div">
                             <div class="form-group">
                                 <label>Approx. Income</label>
                                 <input type="number" step="0.01" name="approx_income" class="form-control" value="{{ old('approx_income', $lead->approx_income) }}">
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6" id="business_proof_main_div" style="{{ $lead->job_profile_type == 'Self Employed' ? '' : 'display:none;' }}">
+                    <div class="col-md-6" id="business_proof_main_div" style="display:none;">
                         <div class="form-group">
                             <label>Business Proof Available?</label>
                             <select name="business_proof_available" id="business_proof_available" class="form-control">
-                                <option value="0" {{ $lead->business_proof_available == 0 ? 'selected' : '' }}>No</option>
-                                <option value="1" {{ $lead->business_proof_available == 1 ? 'selected' : '' }}>Yes</option>
+                                <option value="0" {{ old('business_proof_available', $lead->business_proof_available) == 0 ? 'selected' : '' }}>No</option>
+                                <option value="1" {{ old('business_proof_available', $lead->business_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
                             </select>
                         </div>
-                        <div id="business_proof_doc_div" style="{{ $lead->business_proof_available == 1 ? '' : 'display:none;' }}">
+                        <div id="business_proof_doc_div" style="display:none;">
                             <div class="form-group">
                                 <label>Business Proof Document</label>
                                 <input type="file" name="business_proof_document" class="form-control-file">
-                                @if($lead->business_proof_document_path)
-                                    <small><a href="{{ asset('storage/' . $lead->business_proof_document_path) }}" target="_blank">View Current Document</a></small>
-                                @endif
+                                @if($lead->business_proof_document_path) <small><a href="{{ asset('storage/' . $lead->business_proof_document_path) }}" target="_blank">View Current</a></small> @endif
                             </div>
                         </div>
                     </div>
@@ -233,16 +245,16 @@
                             <label>Loan Type Required</label>
                             <select name="loan_type" id="loan_type" class="form-control">
                                 <option value="">Select Type</option>
-                                <option value="Vehicle Loan" {{ $lead->loan_type == 'Vehicle Loan' ? 'selected' : '' }}>Vehicle Loan</option>
-                                <option value="Housing Loan" {{ $lead->loan_type == 'Housing Loan' ? 'selected' : '' }}>Housing Loan</option>
-                                <option value="LAP" {{ $lead->loan_type == 'LAP' ? 'selected' : '' }}>Loan Against Property (LAP)</option>
-                                <option value="Business Loan" {{ $lead->loan_type == 'Business Loan' ? 'selected' : '' }}>Business Loan</option>
-                                <option value="Personal Loan" {{ $lead->loan_type == 'Personal Loan' ? 'selected' : '' }}>Personal Loan</option>
-                                <option value="Other" {{ $lead->loan_type == 'Other' ? 'selected' : '' }}>Other</option>
+                                <option value="Vehicle Loan" {{ old('loan_type', $lead->loan_type) == 'Vehicle Loan' ? 'selected' : '' }}>Vehicle Loan</option>
+                                <option value="Housing Loan" {{ old('loan_type', $lead->loan_type) == 'Housing Loan' ? 'selected' : '' }}>Housing Loan</option>
+                                <option value="LAP" {{ old('loan_type', $lead->loan_type) == 'LAP' ? 'selected' : '' }}>Loan Against Property (LAP)</option>
+                                <option value="Business Loan" {{ old('loan_type', $lead->loan_type) == 'Business Loan' ? 'selected' : '' }}>Business Loan</option>
+                                <option value="Personal Loan" {{ old('loan_type', $lead->loan_type) == 'Personal Loan' ? 'selected' : '' }}>Personal Loan</option>
+                                <option value="Other" {{ old('loan_type', $lead->loan_type) == 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4" id="other_loan_name_div" style="{{ $lead->loan_type == 'Other' ? '' : 'display:none;' }}">
+                    <div class="col-md-4" id="other_loan_name_div" style="display:none;">
                         <div class="form-group">
                             <label>Other Loan Name</label>
                             <input type="text" name="other_loan_name" class="form-control" value="{{ old('other_loan_name', $lead->other_loan_name) }}">
@@ -251,7 +263,7 @@
                 </div>
 
                 {{-- Vehicle Loan Specifics --}}
-                <div id="vehicle_loan_details_div" style="{{ $lead->loan_type == 'Vehicle Loan' ? '' : 'display:none;' }}">
+                <div id="vehicle_loan_details_div" style="display:none;">
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
@@ -266,7 +278,7 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-4" id="other_vehicle_loan_name_div" style="{{ $lead->vehicle_loan_type == 'Other' ? '' : 'display:none;' }}">
+                        <div class="col-md-4" id="other_vehicle_loan_name_div" style="display:none;">
                             <div class="form-group">
                                 <label>Other Vehicle Name</label>
                                 <input type="text" name="other_vehicle_loan_name" class="form-control" value="{{ old('other_vehicle_loan_name', $lead->other_vehicle_loan_name) }}">
@@ -287,7 +299,7 @@
                     </div>
 
                     {{-- New Purchase --}}
-                    <div id="new_purchase_div" style="{{ $lead->vehicle_purchase_type == 'New Purchase' ? '' : 'display:none;' }}">
+                    <div id="new_purchase_div" style="display:none;">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
@@ -322,7 +334,7 @@
                     </div>
 
                     {{-- Repurchase/Refinance/BT --}}
-                    <div id="repurchase_div" style="{{ in_array($lead->vehicle_purchase_type, ['Repurchase', 'Refinance', 'Balance Transfer']) ? '' : 'display:none;' }}">
+                    <div id="repurchase_div" style="display:none;">
                         <h6>RC Details</h6>
                         <div class="row">
                             <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rc_number" class="form-control" value="{{ old('rc_number', $lead->rc_number) }}"></div></div>
@@ -346,7 +358,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-9" id="insurance_details_div" style="{{ $lead->insurance_available == 1 ? '' : 'display:none;' }}">
+                            <div class="col-md-9" id="insurance_details_div" style="display:none;">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -377,7 +389,7 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-9" id="hp_details_div" style="{{ $lead->hypothecation_status == 1 ? '' : 'display:none;' }}">
+                            <div class="col-md-9" id="hp_details_div" style="display:none;">
                                 <div class="row">
                                     <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="old_financer" class="form-control" value="{{ old('old_financer', $lead->old_financer) }}"></div></div>
                                     <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control" value="{{ old('close_amount', $lead->close_amount) }}"></div></div>
@@ -414,8 +426,8 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Old Loan Close Amount</label>
-                            <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}">
+                            <label>Old Loan Close Amount <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}" required>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -427,8 +439,42 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Total Amount</label>
-                            <input type="text" id="total_loan_amount" class="form-control" disabled value="{{ $lead->total_loan_amount }}">
+                            <input type="text" id="total_loan_amount" class="form-control" value="{{ old('total_loan_amount', $lead->total_loan_amount) }}" disabled>
                         </div>
+                    </div>
+                </div>
+
+                <hr>
+                {{-- Co-Applicant --}}
+                <h5>Co-Applicant Details</h5>
+                <div class="form-group">
+                    <label>Has Co-Applicant?</label>
+                    <select name="has_co_applicant" id="has_co_applicant" class="form-control" style="width: 200px;">
+                        <option value="0" {{ old('has_co_applicant', $lead->has_co_applicant) == 0 ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('has_co_applicant', $lead->has_co_applicant) == 1 ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
+                <div id="co_applicant_div" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="co_name" class="form-control" value="{{ old('co_name', $lead->co_name) }}"></div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="co_relation" class="form-control" value="{{ old('co_relation', $lead->co_relation) }}"></div></div>
+                    </div>
+                </div>
+
+                <hr>
+                {{-- Guarantor --}}
+                <h5>Guarantor Details</h5>
+                <div class="form-group">
+                    <label>Has Guarantor?</label>
+                    <select name="has_guarantor" id="has_guarantor" class="form-control" style="width: 200px;">
+                        <option value="0" {{ old('has_guarantor', $lead->has_guarantor) == 0 ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('has_guarantor', $lead->has_guarantor) == 1 ? 'selected' : '' }}>Yes</option>
+                    </select>
+                </div>
+                <div id="guarantor_div" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="guarantor_name" class="form-control" value="{{ old('guarantor_name', $lead->guarantor_name) }}"></div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="guarantor_relation" class="form-control" value="{{ old('guarantor_relation', $lead->guarantor_relation) }}"></div></div>
                     </div>
                 </div>
 
@@ -437,8 +483,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Assign To</label>
-                            <select name="assigned_to" class="form-control">
+                            <label>Assign To <span class="text-danger">*</span></label>
+                            <select name="assigned_to" id="assigned_to" class="form-control" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to', $lead->assigned_to) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -447,131 +493,287 @@
                         </div>
                     </div>
                 </div>
+                @else
+                    <input type="hidden" name="assigned_to" value="{{ $lead->assigned_to }}">
                 @endif
 
                 <button type="submit" class="btn btn-primary mt-3">Update Lead</button>
             </form>
         </div>
     </div>
-
-    {{-- Back to Top Button --}}
-    <button id="back-to-top" class="btn btn-primary" style="display: none; position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-        <i class="fas fa-arrow-up"></i>
-    </button>
 @stop
 
 @section('js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Initialize validation
-            $('#editLeadForm').validate();
+            // --- Validation ---
+            $('#editLeadForm').validate({
+                rules: {
+                    father_name: { required: true },
+                    email: { required: true, email: true },
+                    firm_id: { required: true },
+                    residence_type: { required: true },
+                    current_address_line: { required: true },
+                    permanent_address_line: { required: true },
+                    job_profile_type: { required: true },
+                    nature_of_work: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Self Employed';
+                        }
+                    },
+                    salaried_type: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Salaried';
+                        }
+                    },
+                    designation: {
+                        required: function(element) {
+                            return $("#job_profile_type").val() === 'Salaried';
+                        }
+                    },
+                    other_company_name: {
+                        required: function(element) {
+                            return $("#salaried_type").val() === 'Other';
+                        }
+                    },
+                    itr_amount: {
+                        required: function(element) {
+                            return $("#income_proof_available").val() == '1';
+                        }
+                    },
+                    approx_income: {
+                        required: function(element) {
+                            return $("#income_proof_available").val() == '0';
+                        }
+                    },
+                    old_loan_close_amount: {
+                        required: true,
+                        number: true,
+                        min: 0
+                    },
+                    co_name: {
+                        required: function(element) {
+                            return $("#has_co_applicant").val() == '1';
+                        }
+                    },
+                    co_relation: {
+                        required: function(element) {
+                            return $("#has_co_applicant").val() == '1';
+                        }
+                    },
+                    guarantor_name: {
+                        required: function(element) {
+                            return $("#has_guarantor").val() == '1';
+                        }
+                    },
+                    guarantor_relation: {
+                        required: function(element) {
+                            return $("#has_guarantor").val() == '1';
+                        }
+                    },
+                    assigned_to: {
+                        required: function(element) {
+                            return $('#assigned_to').length > 0;
+                        }
+                    }
+                },
+                messages: {
+                    father_name: "Please enter the father's name",
+                    email: {
+                        required: "Please enter an email address",
+                        email: "Please enter a valid email address"
+                    },
+                    firm_id: "Please select a firm",
+                    residence_type: "Please select a residence type",
+                    current_address_line: "Please enter the current address",
+                    permanent_address_line: "Please enter the permanent address",
+                    job_profile_type: "Please select a job profile",
+                    nature_of_work: "Please enter the nature of work",
+                    salaried_type: "Please select a salaried type",
+                    designation: "Please enter a designation",
+                    other_company_name: "Please enter the company name",
+                    itr_amount: "Please enter the ITR amount",
+                    approx_income: "Please enter the approximate income",
+                    old_loan_close_amount: {
+                        required: "Please enter the old loan close amount",
+                        number: "Please enter a valid number",
+                        min: "Amount cannot be negative"
+                    },
+                    co_name: "Please enter the co-applicant's name",
+                    co_relation: "Please enter the co-applicant's relation",
+                    guarantor_name: "Please enter the guarantor's name",
+                    guarantor_relation: "Please enter the guarantor's relation",
+                    assigned_to: "Please select a user to assign the lead to"
+                }
+            });
 
-            // Re-use the same JS logic from create.blade.php for toggling fields
-            // Job Profile Logic
+            // --- Location Scripts ---
+            function populateStates(selector, selectedState = null) {
+                let stateSelects = $(selector);
+                stateSelects.empty().append('<option value="">Loading...</option>');
+
+                $.ajax({
+                    url: '{{ route("get-states") }}',
+                    type: 'GET',
+                    success: function(data) {
+                        stateSelects.each(function() {
+                            let currentDropdown = $(this);
+                            let preselectedValue = currentDropdown.data('selected');
+                            currentDropdown.empty().append('<option value="">Select State</option>');
+                            $.each(data, function(key, state) {
+                                let option = $('<option></option>').attr('value', state.id).text(state.name);
+                                if (state.id == preselectedValue) {
+                                    option.prop('selected', true);
+                                }
+                                currentDropdown.append(option);
+                            });
+                            currentDropdown.trigger('change');
+                        });
+                    }
+                });
+            }
+
+            function populateCities(stateElement, cityElement, pincodeElement, selectedCity = null) {
+                let stateId = $(stateElement).val();
+                $(cityElement).empty().append('<option value="">Loading...</option>');
+                if(pincodeElement) $(pincodeElement).val('');
+
+                if (stateId) {
+                    $.ajax({
+                        url: '{{ url("get-cities") }}/' + stateId,
+                        type: 'GET',
+                        success: function(data) {
+                            $(cityElement).empty().append('<option value="">Select City</option>');
+                            $.each(data, function(key, city) {
+                                let option = $('<option></option>').attr('value', city.id).text(city.name).data('pincode', city.pincode);
+                                let cityToSelect = selectedCity || $(cityElement).data('selected');
+                                if (city.id == cityToSelect) {
+                                    option.prop('selected', true);
+                                    if(pincodeElement) $(pincodeElement).val(city.pincode);
+                                }
+                                $(cityElement).append(option);
+                            });
+                        }
+                    });
+                } else {
+                    $(cityElement).empty().append('<option value="">Select State First</option>');
+                }
+            }
+
+            // Set initial selected data
+            $('#current_state').data('selected', '{{ old('current_address_state', $lead->current_address_state) }}');
+            $('#current_city').data('selected', '{{ old('current_address_city', $lead->current_address_city) }}');
+            $('#permanent_state').data('selected', '{{ old('permanent_address_state', $lead->permanent_address_state) }}');
+            $('#permanent_city').data('selected', '{{ old('permanent_address_city', $lead->permanent_address_city) }}');
+
+            // Initial population
+            populateStates('.state-select');
+
+            // Event Handlers
+            $('.state-select').change(function() {
+                let citySelect = $(this).closest('.row').find('.city-select');
+                let pincodeInput = $(this).closest('.row').find('.pincode-input');
+                populateCities(this, citySelect, pincodeInput);
+            });
+
+            $('.city-select').change(function() {
+                let pincode = $(this).find(':selected').data('pincode');
+                let pincodeInput = $(this).closest('.row').find('.pincode-input');
+                pincodeInput.val(pincode);
+            });
+
+            $('.pincode-input').on('input', function() {
+                let pincode = $(this).val();
+                if (pincode.length === 6) {
+                    let stateSelect = $(this).closest('.row').find('.state-select');
+                    let citySelect = $(this).closest('.row').find('.city-select');
+
+                    $.ajax({
+                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
+                        type: 'GET',
+                        success: function(data) {
+                            if (data) {
+                                stateSelect.val(data.state.id);
+                                populateCities(stateSelect, citySelect, null, data.city.id);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status == 404) {
+                                alert('Invalid Pincode');
+                            }
+                        }
+                    });
+                }
+            });
+
+            $('#same_as_current').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#permanent_address_line').val($('#current_address_line').val());
+                    $('#permanent_pincode').val($('#current_pincode').val());
+                    let currentStateVal = $('#current_state').val();
+                    $('#permanent_state').val(currentStateVal).trigger('change');
+                } else {
+                    $('#permanent_address_line, #permanent_pincode, #permanent_state, #permanent_city').val('');
+                    $('#permanent_city').empty().append('<option value="">Select State First</option>');
+                }
+            });
+
+            // --- Other Form Logic ---
             $('#job_profile_type').change(function() {
                 let val = $(this).val();
-                $('#nature_of_work_div').hide();
-                $('#salaried_type_div').hide();
-                $('#other_company_name_div').hide();
-                $('#designation_div').hide();
-                $('#business_proof_main_div').hide();
-
+                $('#nature_of_work_div, #salaried_type_div, #other_company_name_div, #designation_div, #business_proof_main_div').hide();
                 if (val === 'Self Employed') {
-                    $('#nature_of_work_div').show();
-                    $('#business_proof_main_div').show();
-                } else if (val === 'Farmer') {
-                    // Farmer specific logic if any
+                    $('#nature_of_work_div, #business_proof_main_div').show();
                 } else if (val === 'Salaried') {
-                    $('#salaried_type_div').show();
-                    $('#designation_div').show();
+                    $('#salaried_type_div, #designation_div').show();
                 }
-            });
+            }).trigger('change');
 
             $('#salaried_type').change(function() {
-                if ($(this).val() === 'Other') {
-                    $('#other_company_name_div').show();
-                } else {
-                    $('#other_company_name_div').hide();
-                }
-            });
+                $('#other_company_name_div').toggle($(this).val() === 'Other');
+            }).trigger('change');
 
-            // Income Proof Logic
             $('#income_proof_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#itr_details_div').show();
-                    $('#approx_income_div').hide();
-                } else {
-                    $('#itr_details_div').hide();
-                    $('#approx_income_div').show();
-                }
-            });
+                $('#itr_details_div').toggle($(this).val() == '1');
+                $('#approx_income_div').toggle($(this).val() == '0');
+            }).trigger('change');
 
-            // Business Proof Logic
             $('#business_proof_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#business_proof_doc_div').show();
-                } else {
-                    $('#business_proof_doc_div').hide();
-                }
-            });
+                $('#business_proof_doc_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // Loan Type Logic
             $('#loan_type').change(function() {
-                let val = $(this).val();
-                if (val === 'Other') {
-                    $('#other_loan_name_div').show();
-                } else {
-                    $('#other_loan_name_div').hide();
-                }
+                $('#other_loan_name_div').toggle($(this).val() === 'Other');
+                $('#vehicle_loan_details_div').toggle($(this).val() === 'Vehicle Loan');
+            }).trigger('change');
 
-                if (val === 'Vehicle Loan') {
-                    $('#vehicle_loan_details_div').show();
-                } else {
-                    $('#vehicle_loan_details_div').hide();
-                }
-            });
-
-            // Vehicle Loan Logic
             $('#vehicle_loan_type').change(function() {
-                if ($(this).val() === 'Other') {
-                    $('#other_vehicle_loan_name_div').show();
-                } else {
-                    $('#other_vehicle_loan_name_div').hide();
-                }
-            });
+                $('#other_vehicle_loan_name_div').toggle($(this).val() === 'Other');
+            }).trigger('change');
 
             $('#vehicle_purchase_type').change(function() {
                 let val = $(this).val();
-                $('#new_purchase_div').hide();
-                $('#repurchase_div').hide();
+                $('#new_purchase_div').toggle(val === 'New Purchase');
+                $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
+            }).trigger('change');
 
-                if (val === 'New Purchase') {
-                    $('#new_purchase_div').show();
-                } else if (val === 'Repurchase' || val === 'Refinance' || val === 'Balance Transfer') {
-                    $('#repurchase_div').show();
-                }
-            });
-
-            // Insurance Logic
             $('#insurance_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#insurance_details_div').show();
-                } else {
-                    $('#insurance_details_div').hide();
-                }
-            });
+                $('#insurance_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // HP Logic
             $('#hypothecation_status').change(function() {
-                if ($(this).val() == '1') {
-                    $('#hp_details_div').show();
-                } else {
-                    $('#hp_details_div').hide();
-                }
-            });
+                $('#hp_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // Calculate Total Loan Amount
+            $('#has_co_applicant').change(function() {
+                $('#co_applicant_div').toggle($(this).val() == '1');
+            }).trigger('change');
+
+            $('#has_guarantor').change(function() {
+                $('#guarantor_div').toggle($(this).val() == '1');
+            }).trigger('change');
+
             function calculateTotal() {
                 let oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
                 let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
@@ -580,7 +782,6 @@
 
             $('#old_loan_close_amount, #required_in_hand_amount').on('input', calculateTotal);
 
-            // Back to Top Button Logic
             $(window).scroll(function() {
                 if ($(this).scrollTop() > 100) {
                     $('#back-to-top').fadeIn();

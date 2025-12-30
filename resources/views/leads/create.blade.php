@@ -80,52 +80,65 @@
                         <h6>Current Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="current_address_line" class="form-control" value="{{ old('current_address_line') }}" required>
+                            <input type="text" name="current_address_line" id="current_address_line" class="form-control" value="{{ old('current_address_line') }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="current_address_pincode" class="form-control" value="{{ old('current_address_pincode') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <input type="text" name="current_address_city" class="form-control" value="{{ old('current_address_city') }}">
+                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input" value="{{ old('current_address_pincode') }}">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <input type="text" name="current_address_state" class="form-control" value="{{ old('current_address_state') }}">
+                                    <select name="current_address_state" id="current_state" class="form-control state-select" required>
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <select name="current_address_city" id="current_city" class="form-control city-select" required>
+                                        <option value="">Select State First</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <h6>Permanent Address <span class="text-danger">*</span></h6>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6>Permanent Address <span class="text-danger">*</span></h6>
+                            <div class="form-group mb-0">
+                                <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="permanent_address_line" class="form-control" value="{{ old('permanent_address_line') }}" required>
+                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control" value="{{ old('permanent_address_line') }}" required>
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="permanent_address_pincode" class="form-control" value="{{ old('permanent_address_pincode') }}">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>City</label>
-                                    <input type="text" name="permanent_address_city" class="form-control" value="{{ old('permanent_address_city') }}">
+                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input" value="{{ old('permanent_address_pincode') }}">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <input type="text" name="permanent_address_state" class="form-control" value="{{ old('permanent_address_state') }}">
+                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select" required>
+                                        <option value="">Select State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>City</label>
+                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select" required>
+                                        <option value="">Select State First</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -615,121 +628,158 @@
                 }
             });
 
-            // Job Profile Logic
+            // --- Location Scripts ---
+            function populateStates(selector) {
+                $.ajax({
+                    url: '{{ route("get-states") }}',
+                    type: 'GET',
+                    success: function(data) {
+                        let stateSelects = $(selector);
+                        stateSelects.empty().append('<option value="">Select State</option>');
+                        $.each(data, function(key, state) {
+                            stateSelects.append('<option value="' + state.id + '">' + state.name + '</option>');
+                        });
+                    }
+                });
+            }
+
+            function populateCities(stateElement, cityElement, pincodeElement, selectedCity = null) {
+                let stateId = $(stateElement).val();
+                $(cityElement).empty().append('<option value="">Loading...</option>');
+                if(pincodeElement) $(pincodeElement).val('');
+
+                if (stateId) {
+                    $.ajax({
+                        url: '{{ url("get-cities") }}/' + stateId,
+                        type: 'GET',
+                        success: function(data) {
+                            $(cityElement).empty().append('<option value="">Select City</option>');
+                            $.each(data, function(key, city) {
+                                let option = $('<option></option>').attr('value', city.id).text(city.name).data('pincode', city.pincode);
+                                if (selectedCity && city.id == selectedCity) {
+                                    option.prop('selected', true);
+                                    if(pincodeElement) $(pincodeElement).val(city.pincode);
+                                }
+                                $(cityElement).append(option);
+                            });
+                        }
+                    });
+                } else {
+                    $(cityElement).empty().append('<option value="">Select State First</option>');
+                }
+            }
+
+            // Initial population
+            populateStates('.state-select');
+
+            // Event Handlers
+            $('.state-select').change(function() {
+                let citySelect = $(this).closest('.row').find('.city-select');
+                let pincodeInput = $(this).closest('.row').find('.pincode-input');
+                populateCities(this, citySelect, pincodeInput);
+            });
+
+            $('.city-select').change(function() {
+                let pincode = $(this).find(':selected').data('pincode');
+                let pincodeInput = $(this).closest('.row').find('.pincode-input');
+                pincodeInput.val(pincode);
+            });
+
+            $('.pincode-input').on('input', function() {
+                let pincode = $(this).val();
+                if (pincode.length === 6) {
+                    let stateSelect = $(this).closest('.row').find('.state-select');
+                    let citySelect = $(this).closest('.row').find('.city-select');
+
+                    $.ajax({
+                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
+                        type: 'GET',
+                        success: function(data) {
+                            if (data) {
+                                stateSelect.val(data.state.id);
+                                populateCities(stateSelect, citySelect, null, data.city.id);
+                            }
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            if(jqXHR.status == 404) {
+                                alert('Invalid Pincode');
+                            }
+                        }
+                    });
+                }
+            });
+
+            $('#same_as_current').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#permanent_address_line').val($('#current_address_line').val());
+                    $('#permanent_pincode').val($('#current_pincode').val());
+                    let currentStateVal = $('#current_state').val();
+                    $('#permanent_state').val(currentStateVal);
+
+                    // Explicitly populate cities for permanent address
+                    populateCities('#permanent_state', '#permanent_city', '#permanent_pincode', $('#current_city').val());
+                } else {
+                    $('#permanent_address_line, #permanent_pincode, #permanent_state, #permanent_city').val('');
+                    $('#permanent_city').empty().append('<option value="">Select State First</option>');
+                }
+            });
+
+
+            // --- Other Form Logic ---
             $('#job_profile_type').change(function() {
                 let val = $(this).val();
-                $('#nature_of_work_div').hide();
-                $('#salaried_type_div').hide();
-                $('#other_company_name_div').hide();
-                $('#designation_div').hide();
-                $('#business_proof_main_div').hide();
-
+                $('#nature_of_work_div, #salaried_type_div, #other_company_name_div, #designation_div, #business_proof_main_div').hide();
                 if (val === 'Self Employed') {
-                    $('#nature_of_work_div').show();
-                    $('#business_proof_main_div').show();
-                } else if (val === 'Farmer') {
-                    // Farmer specific logic if any
+                    $('#nature_of_work_div, #business_proof_main_div').show();
                 } else if (val === 'Salaried') {
-                    $('#salaried_type_div').show();
-                    $('#designation_div').show();
+                    $('#salaried_type_div, #designation_div').show();
                 }
-            });
+            }).trigger('change');
 
             $('#salaried_type').change(function() {
-                if ($(this).val() === 'Other') {
-                    $('#other_company_name_div').show();
-                } else {
-                    $('#other_company_name_div').hide();
-                }
-            });
+                $('#other_company_name_div').toggle($(this).val() === 'Other');
+            }).trigger('change');
 
-            // Income Proof Logic
             $('#income_proof_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#itr_details_div').show();
-                    $('#approx_income_div').hide();
-                } else {
-                    $('#itr_details_div').hide();
-                    $('#approx_income_div').show();
-                }
-            });
+                $('#itr_details_div').toggle($(this).val() == '1');
+                $('#approx_income_div').toggle($(this).val() == '0');
+            }).trigger('change');
 
-            // Business Proof Logic
             $('#business_proof_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#business_proof_doc_div').show();
-                } else {
-                    $('#business_proof_doc_div').hide();
-                }
-            });
+                $('#business_proof_doc_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // Loan Type Logic
             $('#loan_type').change(function() {
-                let val = $(this).val();
-                if (val === 'Other') {
-                    $('#other_loan_name_div').show();
-                } else {
-                    $('#other_loan_name_div').hide();
-                }
+                $('#other_loan_name_div').toggle($(this).val() === 'Other');
+                $('#vehicle_loan_details_div').toggle($(this).val() === 'Vehicle Loan');
+            }).trigger('change');
 
-                if (val === 'Vehicle Loan') {
-                    $('#vehicle_loan_details_div').show();
-                } else {
-                    $('#vehicle_loan_details_div').hide();
-                }
-            });
-
-            // Vehicle Loan Logic
             $('#vehicle_loan_type').change(function() {
-                if ($(this).val() === 'Other') {
-                    $('#other_vehicle_loan_name_div').show();
-                } else {
-                    $('#other_vehicle_loan_name_div').hide();
-                }
-            });
+                $('#other_vehicle_loan_name_div').toggle($(this).val() === 'Other');
+            }).trigger('change');
 
             $('#vehicle_purchase_type').change(function() {
                 let val = $(this).val();
-                $('#new_purchase_div').hide();
-                $('#repurchase_div').hide();
+                $('#new_purchase_div').toggle(val === 'New Purchase');
+                $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
+            }).trigger('change');
 
-                if (val === 'New Purchase') {
-                    $('#new_purchase_div').show();
-                } else if (val === 'Repurchase' || val === 'Refinance' || val === 'Balance Transfer') {
-                    $('#repurchase_div').show();
-                }
-            });
-
-            // Insurance Logic
             $('#insurance_available').change(function() {
-                if ($(this).val() == '1') {
-                    $('#insurance_details_div').show();
-                } else {
-                    $('#insurance_details_div').hide();
-                }
-            });
+                $('#insurance_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // HP Logic
             $('#hypothecation_status').change(function() {
-                if ($(this).val() == '1') {
-                    $('#hp_details_div').show();
-                } else {
-                    $('#hp_details_div').hide();
-                }
-            });
+                $('#hp_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // Co-Applicant & Guarantor Toggles
             $('#has_co_applicant').change(function() {
-                if ($(this).val() == '1') $('#co_applicant_div').show();
-                else $('#co_applicant_div').hide();
-            });
+                $('#co_applicant_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
             $('#has_guarantor').change(function() {
-                if ($(this).val() == '1') $('#guarantor_div').show();
-                else $('#guarantor_div').hide();
-            });
+                $('#guarantor_div').toggle($(this).val() == '1');
+            }).trigger('change');
 
-            // Calculate Total Loan Amount
             function calculateTotal() {
                 let oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
                 let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
@@ -738,7 +788,6 @@
 
             $('#old_loan_close_amount, #required_in_hand_amount').on('input', calculateTotal);
 
-            // Back to Top Button Logic
             $(window).scroll(function() {
                 if ($(this).scrollTop() > 100) {
                     $('#back-to-top').fadeIn();

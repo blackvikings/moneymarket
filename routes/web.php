@@ -13,6 +13,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\CrmController;
 use App\Http\Controllers\RtoController;
+use App\Http\Controllers\LocationController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -98,6 +99,10 @@ Route::group(['middleware' => ['auth']], function () {
     Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
     Route::post('rto/{lead}/update-insurance-details', [RtoController::class, 'updateInsuranceDetails'])->name('rto.update-insurance-details');
 
+    // Location Routes
+    Route::get('/get-states', [LocationController::class, 'getStates'])->name('get-states');
+    Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->name('get-cities');
+    Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 
     // Cities module removed, but keeping route cleanup in mind if needed.
 });

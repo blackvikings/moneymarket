@@ -28,7 +28,7 @@ class CrmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::with(['bank', 'bankBranch'])->where('status', 'Lead'); // Eager load relationships
+        $query = Lead::with(['bank', 'bankBranch'])->where('status', 'Lead')->where('bank_id', '!=', null); // Eager load relationships
 
         if ($request->has('stage') && $request->stage != '') {
             $query->where('crm_stage', $request->stage);
@@ -39,9 +39,9 @@ class CrmController extends Controller
 
         // Calculate counts for each stage
         $counts = [];
-        $counts['All'] = Lead::where('status', 'Lead')->count();
+        $counts['All'] = Lead::where('status', 'Lead')->where('bank_id', '!=', null)->count();
         foreach ($stages as $stage) {
-            $counts[$stage] = Lead::where('status', 'Lead')->where('crm_stage', $stage)->count();
+            $counts[$stage] = Lead::where('status', 'Lead')->where('bank_id', '!=', null)->where('crm_stage', $stage)->count();
         }
 
         return view('crm.index', compact('leads', 'stages', 'counts'));

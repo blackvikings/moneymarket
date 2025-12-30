@@ -7,9 +7,21 @@
 @stop
 
 @section('content')
+    <style>
+        .error {
+            color: red;
+            font-size: 0.875em;
+        }
+        input.error, select.error, textarea.error {
+            border: 1px solid red;
+        }
+        .select2-container--default .select2-selection--multiple.error {
+            border: 1px solid red;
+        }
+    </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('roles.update', $role->id) }}" method="POST">
+            <form action="{{ route('roles.update', $role->id) }}" method="POST" id="editRoleForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">
@@ -33,9 +45,29 @@
 @stop
 
 @section('js')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
             $('#permissions').select2();
+
+            $('#editRoleForm').validate({
+                ignore: [], // To validate hidden select2 fields
+                rules: {
+                    name: { required: true },
+                    'permissions[]': { required: true }
+                },
+                messages: {
+                    name: "Please enter a role name",
+                    'permissions[]': "Please select at least one permission"
+                },
+                errorPlacement: function (error, element) {
+                    if (element.hasClass('select2-hidden-accessible')) {
+                        error.insertAfter(element.next('.select2-container'));
+                    } else {
+                        error.insertAfter(element);
+                    }
+                }
+            });
         });
     </script>
 @stop

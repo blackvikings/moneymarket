@@ -9,5 +9,10 @@ class City extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'is_active'];
+    protected $fillable = ['name', 'state_id', 'pincode', 'is_active'];
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
 }
