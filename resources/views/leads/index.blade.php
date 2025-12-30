@@ -115,7 +115,7 @@
                 @foreach($statuses as $status)
                     <div class="leads-tab-container">
                         <a href="{{ route('leads.index', ['status' => $status]) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
-                            <span class="leads-tab-title">{{ str_replace('_', ' ', $status) }}</span>
+                            <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : str_replace('_', ' ', $status) }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
                         </a>
                     </div>
@@ -165,9 +165,11 @@
                                 @can('edit lead')
                                     <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                    Action
-                                </button>
+                                @if($lead->status !== 'Lead' && $lead->status !== 'Rejected' && $lead->status !== 'Not_Active')
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
+                                        Action
+                                    </button>
+                                @endif
                                 @can('delete lead')
                                     <form action="{{ route('leads.destroy', $lead->id) }}" method="POST" style="display:inline;">
                                         @csrf
@@ -181,61 +183,107 @@
                                     <div class="modal-dialog" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title">Update Status for {{ $lead->customer_name }}</h5>
+                                                <h5 class="modal-title">Action for {{ $lead->customer_name }}</h5>
                                                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                                                     <span aria-hidden="true">&times;</span>
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <form action="{{ route('leads.update-status', $lead->id) }}" method="POST">
+                                                <form action="{{ route('leads.update-status', $lead->id) }}" method="POST" class="action-form">
                                                     @csrf
-                                                    <div class="form-group">
-                                                        <label>Change Status</label>
-                                                        <select name="status" class="form-control status-select" data-lead-id="{{ $lead->id }}" required>
-                                                            <option value="">Select Status</option>
-                                                            <option value="New" {{ $lead->status == 'New' ? 'selected' : '' }}>New</option>
-                                                            <option value="Prospect" {{ $lead->status == 'Prospect' ? 'selected' : '' }}>Prospect</option>
-                                                            <option value="Lead" {{ $lead->status == 'Lead' ? 'selected' : '' }}>Lead (Qualified)</option>
-                                                            <option value="Rejected" {{ $lead->status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                                            <option value="Not_Active" {{ $lead->status == 'Not_Active' ? 'selected' : '' }}>Not Active</option>
-                                                        </select>
-                                                    </div>
+                                                    <input type="hidden" name="action" class="action-input">
 
-                                                    <div class="follow-up-section" style="display: none;">
+                                                    @if($lead->status == 'New')
                                                         <div class="form-group">
-                                                            <label>Follow Up Date</label>
-                                                            <input type="date" name="follow_up_date" class="form-control" value="{{ $lead->follow_up_date ? $lead->follow_up_date->format('Y-m-d') : '' }}">
+                                                            <label>Select Action:</label><br>
+                                                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                <label class="btn btn-outline-success active">
+                                                                    <input type="radio" name="action_radio" value="interested" data-lead-id="{{ $lead->id }}" checked> Interested
+                                                                </label>
+                                                                <label class="btn btn-outline-danger">
+                                                                    <input type="radio" name="action_radio" value="not_interested" data-lead-id="{{ $lead->id }}"> Not Interested
+                                                                </label>
+                                                            </div>
+                                                        </div>
+                                                        <div class="remark-section" id="remark-section-{{ $lead->id }}" style="display: none;">
+                                                            <div class="form-group">
+                                                                <label>Remark <span class="text-danger">*</span></label>
+                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <hr>
+                                                        <h5><i class="far fa-clock"></i> Set Follow-up (Optional)</h5>
+                                                        <div class="form-group">
+                                                            <label>Date</label>
+                                                            <input type="date" name="follow_up_date" class="form-control">
                                                         </div>
                                                         <div class="form-group">
-                                                            <label>Follow Up Time</label>
-                                                            <input type="time" name="follow_up_time" class="form-control" value="{{ $lead->follow_up_time }}">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="bank-section" style="display: none;">
-                                                        <div class="form-group">
-                                                            <label>Assign Bank</label>
-                                                            <select name="bank_id" class="form-control bank-select" data-lead-id="{{ $lead->id }}">
-                                                                <option value="">Select Bank</option>
-                                                                @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                                                    <option value="{{ $bank->id }}" {{ $lead->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                                                @endforeach
-                                                            </select>
+                                                            <label>Time</label>
+                                                            <input type="time" name="follow_up_time" class="form-control">
                                                         </div>
                                                         <div class="form-group">
-                                                            <label>Assign Branch</label>
-                                                            <select name="bank_branch_id" class="form-control branch-select">
-                                                                <option value="">Select Branch</option>
-                                                            </select>
+                                                            <label>Follow-up Remark</label>
+                                                            <textarea name="follow_up_remark" class="form-control" rows="2"></textarea>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="form-group">
-                                                        <label>Remark</label>
-                                                        <textarea name="remark" class="form-control" rows="3">{{ $lead->remark }}</textarea>
-                                                    </div>
+                                                    @elseif($lead->status == 'Prospect')
+                                                        <div class="form-group">
+                                                            <label>Select Action:</label><br>
+                                                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                <label class="btn btn-outline-info active">
+                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
+                                                                </label>
+                                                                <label class="btn btn-outline-success">
+                                                                    <input type="radio" name="action_radio" value="qualify" data-lead-id="{{ $lead->id }}"> Qualify to Lead
+                                                                </label>
+                                                                <label class="btn btn-outline-danger">
+                                                                    <input type="radio" name="action_radio" value="reject" data-lead-id="{{ $lead->id }}"> Reject
+                                                                </label>
+                                                            </div>
+                                                        </div>
 
-                                                    <button type="submit" class="btn btn-success">Update Status</button>
+                                                        <div class="action-fields" id="follow-up-fields-{{ $lead->id }}">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="follow_up_date" class="form-control">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label>Time <span class="text-danger">*</span></label>
+                                                                <input type="time" name="follow_up_time" class="form-control">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label>Remark <span class="text-danger">*</span></label>
+                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="action-fields" id="qualify-fields-{{ $lead->id }}" style="display: none;">
+                                                            <div class="form-group">
+                                                                <label>Assign Bank <span class="text-danger">*</span></label>
+                                                                <select name="bank_id" class="form-control bank-select">
+                                                                    <option value="">Select Bank</option>
+                                                                    @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label>Assign Branch <span class="text-danger">*</span></label>
+                                                                <select name="bank_branch_id" class="form-control branch-select">
+                                                                    <option value="">Select Bank First</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="action-fields" id="reject-fields-{{ $lead->id }}" style="display: none;">
+                                                            <div class="form-group">
+                                                                <label>Remark <span class="text-danger">*</span></label>
+                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+
+                                                    <button type="submit" class="btn btn-primary btn-block mt-3">Submit</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -254,16 +302,56 @@
 @section('js')
     <script>
         $(document).ready(function() {
-            function toggleFields(selectElement) {
-                let status = $(selectElement).val();
-                let modal = $(selectElement).closest('.modal');
-                modal.find('.follow-up-section').toggle(status === 'New' || status === 'Prospect');
-                modal.find('.bank-section').toggle(status === 'Lead');
-            }
+            // General handler for all action radios
+            $(document).on('change', 'input[name="action_radio"]', function() {
+                let action = $(this).val();
+                let leadId = $(this).data('lead-id');
+                let modal = $(this).closest('.modal');
 
-            function fetchBranches(bankSelect, selectedBranchId = null) {
-                let bankId = $(bankSelect).val();
-                let modal = $(bankSelect).closest('.modal');
+                // For New Task Modal
+                if (modal.find('#remark-section-' + leadId).length > 0) {
+                    let remarkSection = $('#remark-section-' + leadId);
+                    if (action === 'not_interested') {
+                        remarkSection.show();
+                        remarkSection.find('textarea').prop('required', true);
+                    } else {
+                        remarkSection.hide();
+                        remarkSection.find('textarea').prop('required', false);
+                    }
+                }
+
+                // For Prospect Modal
+                if (modal.find('.action-fields').length > 0) {
+                    modal.find('.action-fields').hide();
+                    modal.find('.action-fields').find('input, select, textarea').prop('required', false);
+
+                    let sectionToShow = modal.find('#' + action + '-fields-' + leadId);
+                    sectionToShow.show();
+                    sectionToShow.find('input, select, textarea').prop('required', true);
+                }
+            });
+
+            // Trigger change on load to set initial state for checked radios
+            $('input[name="action_radio"]:checked').trigger('change');
+
+            $('.action-form').submit(function(e) {
+                let modal = $(this).closest('.modal');
+                let selectedAction = modal.find('input[name="action_radio"]:checked').val();
+
+                // Special handling for "New Task" follow-up logic
+                let followUpDateInput = modal.find('input[name="follow_up_date"]');
+                // Only override action if we are in the "New Task" modal (which has the follow-up date outside the radio logic)
+                // AND the user has actually entered a date.
+                if (followUpDateInput.length > 0 && followUpDateInput.is(':visible') && followUpDateInput.val() && modal.find('#remark-section-' + $(this).find('.action-radio-new').data('lead-id')).length > 0) {
+                     modal.find('.action-input').val('follow_up');
+                } else {
+                    modal.find('.action-input').val(selectedAction);
+                }
+            });
+
+            $('.bank-select').change(function() {
+                let bankId = $(this).val();
+                let modal = $(this).closest('.modal');
                 let branchSelect = modal.find('.branch-select');
                 branchSelect.empty().append('<option value="">Loading...</option>');
 
@@ -274,37 +362,13 @@
                         success: function(data) {
                             branchSelect.empty().append('<option value="">Select Branch</option>');
                             $.each(data, function(key, branch) {
-                                let option = $('<option></option>').attr('value', branch.id).text(branch.name);
-                                if (branch.id == selectedBranchId) {
-                                    option.prop('selected', true);
-                                }
-                                branchSelect.append(option);
+                                branchSelect.append('<option value="' + branch.id + '">' + branch.name + '</option>');
                             });
                         }
                     });
                 } else {
                     branchSelect.empty().append('<option value="">Select Bank First</option>');
                 }
-            }
-
-            $('.status-select').each(function() {
-                toggleFields(this);
-            });
-
-            $('.status-select').change(function() {
-                toggleFields(this);
-            });
-
-            $('.bank-select').each(function() {
-                let leadId = $(this).data('lead-id');
-                let lead = @json($leads->keyBy('id'));
-                if (lead[leadId] && lead[leadId].bank_id) {
-                    fetchBranches(this, lead[leadId].bank_branch_id);
-                }
-            });
-
-            $('.bank-select').change(function() {
-                fetchBranches(this);
             });
         });
     </script>

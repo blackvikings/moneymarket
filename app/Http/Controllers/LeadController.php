@@ -27,13 +27,10 @@ class LeadController extends Controller
     public function index(Request $request)
     {
         $query = Lead::with(['assignedTo', 'bank']);
+        $statuses = ['New', 'Prospect', 'Lead', 'Rejected', 'Not_Active'];
+        $currentStatus = $request->input('status');
 
-        $statuses = ['New Task', 'Interested', 'Not Interested', 'Follow-Up', 'Lead', 'Rejected'];
-        $currentStatus = $request->input('status', 'New Task'); // Default to 'New Task'
-
-        if ($currentStatus === 'New Task') {
-            $query->where('status', 'New');
-        } elseif (in_array($currentStatus, $statuses)) {
+        if ($currentStatus && in_array($currentStatus, $statuses)) {
             $query->where('status', $currentStatus);
         }
 
@@ -50,12 +47,9 @@ class LeadController extends Controller
 
         $counts = [];
         $counts['All'] = Lead::count();
-        $counts['New Task'] = Lead::where('status', 'New')->count();
-        $counts['Interested'] = Lead::where('status', 'Interested')->count();
-        $counts['Not Interested'] = Lead::where('status', 'Not Interested')->count();
-        $counts['Follow-Up'] = Lead::where('status', 'Follow-Up')->count();
-        $counts['Lead'] = Lead::where('status', 'Lead')->count();
-        $counts['Rejected'] = Lead::where('status', 'Rejected')->count();
+        foreach ($statuses as $status) {
+            $counts[$status] = Lead::where('status', $status)->count();
+        }
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
@@ -132,14 +126,14 @@ class LeadController extends Controller
         $action = $request->input('action');
 
         if ($action === 'interested') {
-            $lead->update(['status' => 'Interested']);
-            return redirect()->back()->with('success', 'Lead status updated to Interested.');
+            $lead->update(['status' => 'Prospect']);
+            return redirect()->back()->with('success', 'Lead status updated to Prospect.');
         }
 
         if ($action === 'not_interested') {
             $request->validate(['remark' => 'required|string']);
-            $lead->update(['status' => 'Not Interested', 'remark' => $request->remark]);
-            return redirect()->back()->with('success', 'Lead status updated to Not Interested.');
+            $lead->update(['status' => 'Not_Active', 'remark' => $request->remark]);
+            return redirect()->back()->with('success', 'Lead status updated to Not Active.');
         }
 
         if ($action === 'follow_up') {
@@ -149,7 +143,7 @@ class LeadController extends Controller
                 'remark' => 'required|string',
             ]);
             $lead->update([
-                'status' => 'Follow-Up',
+                'status' => 'Prospect', // Stays as prospect
                 'follow_up_date' => $request->follow_up_date,
                 'follow_up_time' => $request->follow_up_time,
                 'remark' => $request->remark,
