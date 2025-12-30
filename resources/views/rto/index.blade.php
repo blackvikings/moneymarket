@@ -53,9 +53,12 @@
             text-decoration: none !important;
             color: #4b5563;
             background-color: white;
-            border-top: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
+            border: 1px solid #d1d5db; /* Added border */
+            border-right: none; /* Remove right border to avoid double borders with overlap */
+        }
+
+        .rto-tab-container:last-child .rto-tab-content {
+            border-right: 1px solid #d1d5db;
         }
 
         .rto-tab-content:hover {
@@ -112,24 +115,28 @@
         </div>
     </div>
 
-    <div class="rto-tabs-wrapper">
-        {{-- All Tab --}}
-        <div class="rto-tab-container">
-            <a href="{{ route('rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
-                <span class="rto-tab-title">All</span>
-                <span class="rto-tab-subtitle">{{ $counts['All'] }}</span>
-            </a>
-        </div>
+    <div class="card">
+        <div class="card-body p-2">
+            <div class="rto-tabs-wrapper mb-0">
+                {{-- All Tab --}}
+                <div class="rto-tab-container">
+                    <a href="{{ route('rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
+                        <span class="rto-tab-subtitle">View</span>
+                        <span class="rto-tab-title">{{ $counts['All'] }}</span>
+                    </a>
+                </div>
 
-        {{-- Stages Tabs --}}
-        @foreach($stages as $stage)
-            <div class="rto-tab-container">
-                <a href="{{ route('rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
-                    <span class="rto-tab-title">{{ $stage }}</span>
-                    <span class="rto-tab-subtitle">{{ $counts[$stage] ?? 0 }}</span>
-                </a>
+                {{-- Stages Tabs --}}
+                @foreach($stages as $stage)
+                    <div class="rto-tab-container">
+                        <a href="{{ route('rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
+                            <span class="rto-tab-subtitle">{{ $stage }}</span>
+                            <span class="rto-tab-title">{{ $counts[$stage] ?? 0 }}</span>
+                        </a>
+                    </div>
+                @endforeach
             </div>
-        @endforeach
+        </div>
     </div>
 
     <div class="card">

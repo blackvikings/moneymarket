@@ -43,7 +43,14 @@ class LeadController extends Controller
         $leads = $query->latest()->paginate(10);
         $users = User::role('Tele Caller')->get();
 
-        return view('leads.index', compact('leads', 'users'));
+        $statuses = ['New', 'Prospect', 'Lead', 'Rejected', 'Not_Active'];
+        $counts = [];
+        $counts['All'] = Lead::count();
+        foreach ($statuses as $status) {
+            $counts[$status] = Lead::where('status', $status)->count();
+        }
+
+        return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
 
     public function create()

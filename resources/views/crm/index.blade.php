@@ -55,9 +55,12 @@
             text-decoration: none !important;
             color: #4b5563;
             background-color: white;
-            border-top: 1px solid #e5e7eb;
-            border-bottom: 1px solid #e5e7eb;
-            border-right: 1px solid #e5e7eb;
+            border: 1px solid #d1d5db; /* Added border */
+            border-right: none; /* Remove right border to avoid double borders with overlap */
+        }
+
+        .crm-tab-container:last-child .crm-tab-content {
+            border-right: 1px solid #d1d5db;
         }
 
         .crm-tab-content:hover {
@@ -102,24 +105,28 @@
         }
     </style>
 
-    <div class="crm-tabs-wrapper">
-        {{-- All Tab --}}
-        <div class="crm-tab-container">
-            <a href="{{ route('crm.index') }}" class="crm-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
-                <span class="crm-tab-title">All</span>
-                <span class="crm-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
-            </a>
-        </div>
+    <div class="card">
+        <div class="card-body p-2">
+            <div class="crm-tabs-wrapper mb-0">
+                {{-- All Tab --}}
+                <div class="crm-tab-container">
+                    <a href="{{ route('crm.index') }}" class="crm-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
+                        <span class="crm-tab-title">All</span>
+                        <span class="crm-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
+                    </a>
+                </div>
 
-        {{-- Stages Tabs --}}
-        @foreach($stages as $stage)
-            <div class="crm-tab-container">
-                <a href="{{ route('crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
-                    <span class="crm-tab-title">{{ $stage }}</span>
-                    <span class="crm-tab-subtitle">{{ $counts[$stage] ?? 0 }}</span>
-                </a>
+                {{-- Stages Tabs --}}
+                @foreach($stages as $stage)
+                    <div class="crm-tab-container">
+                        <a href="{{ route('crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
+                            <span class="crm-tab-title">{{ $stage }}</span>
+                            <span class="crm-tab-subtitle">{{ $counts[$stage] ?? 0 }}</span>
+                        </a>
+                    </div>
+                @endforeach
             </div>
-        @endforeach
+        </div>
     </div>
 
     <div class="card">

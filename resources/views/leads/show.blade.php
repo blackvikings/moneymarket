@@ -3,12 +3,15 @@
 @section('title', 'Lead Details')
 
 @section('content_header')
-    <h1>Lead Details: {{ $lead->customer_name }}</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>Lead Details: {{ $lead->customer_name }}</h1>
+        <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-primary">Edit Lead</a>
+    </div>
 @stop
 
 @section('content')
     <div class="row">
-        <div class="col-md-8">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Customer Information</h3>
@@ -94,110 +97,5 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Current Status: <span class="badge badge-info">{{ $lead->status }}</span></h3>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('leads.update-status', $lead->id) }}" method="POST">
-                        @csrf
-                        <div class="form-group">
-                            <label>Change Status</label>
-                            <select name="status" id="status-select" class="form-control" required>
-                                <option value="">Select Status</option>
-                                <option value="New" {{ $lead->status == 'New' ? 'selected' : '' }}>New</option>
-                                <option value="Prospect" {{ $lead->status == 'Prospect' ? 'selected' : '' }}>Prospect</option>
-                                <option value="Lead" {{ $lead->status == 'Lead' ? 'selected' : '' }}>Lead (Qualified)</option>
-                                <option value="Rejected" {{ $lead->status == 'Rejected' ? 'selected' : '' }}>Rejected</option>
-                                <option value="Not_Active" {{ $lead->status == 'Not_Active' ? 'selected' : '' }}>Not Active</option>
-                            </select>
-                        </div>
-
-                        <div id="follow-up-section" style="display: none;">
-                            <div class="form-group">
-                                <label>Follow Up Date</label>
-                                <input type="date" name="follow_up_date" class="form-control" value="{{ $lead->follow_up_date ? $lead->follow_up_date->format('Y-m-d') : '' }}">
-                            </div>
-                            <div class="form-group">
-                                <label>Follow Up Time</label>
-                                <input type="time" name="follow_up_time" class="form-control" value="{{ $lead->follow_up_time }}">
-                            </div>
-                        </div>
-
-                        <div id="bank-section" style="display: none;">
-                            <div class="form-group">
-                                <label>Assign Bank</label>
-                                <select name="bank_id" id="bank_id" class="form-control">
-                                    <option value="">Select Bank</option>
-                                    @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                        <option value="{{ $bank->id }}" {{ $lead->bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Assign Branch</label>
-                                <select name="bank_branch_id" id="bank_branch_id" class="form-control">
-                                    <option value="">Select Branch</option>
-                                    @if(isset($branches) && count($branches) > 0)
-                                        @foreach($branches as $branch)
-                                            <option value="{{ $branch->id }}" {{ $lead->bank_branch_id == $branch->id ? 'selected' : '' }}>{{ $branch->name }}</option>
-                                        @endforeach
-                                    @endif
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Remark</label>
-                            <textarea name="remark" class="form-control" rows="3">{{ $lead->remark }}</textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-success">Update Status</button>
-                    </form>
-                </div>
-            </div>
-        </div>
     </div>
-@stop
-
-@section('js')
-    <script>
-        $(document).ready(function() {
-            function toggleFields() {
-                let status = $('#status-select').val();
-                $('#follow-up-section').toggle(status === 'New' || status === 'Prospect');
-                $('#bank-section').toggle(status === 'Lead');
-            }
-
-            $('#status-select').change(toggleFields);
-
-            $('#bank_id').change(function() {
-                let bankId = $(this).val();
-                let branchSelect = $('#bank_branch_id');
-                branchSelect.empty().append('<option value="">Loading...</option>');
-
-                if (bankId) {
-                    $.ajax({
-                        url: '{{ url("get-branches") }}/' + bankId,
-                        type: 'GET',
-                        success: function(data) {
-                            branchSelect.empty().append('<option value="">Select Branch</option>');
-                            $.each(data, function(key, branch) {
-                                branchSelect.append('<option value="' + branch.id + '">' + branch.name + '</option>');
-                            });
-                        },
-                        error: function() {
-                            branchSelect.empty().append('<option value="">Could not load branches</option>');
-                        }
-                    });
-                } else {
-                    branchSelect.empty().append('<option value="">Select Bank First</option>');
-                }
-            });
-
-            // Initial load
-            toggleFields();
-        });
-    </script>
 @stop
