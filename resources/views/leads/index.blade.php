@@ -326,7 +326,6 @@
                     modal.find('.action-fields').find('input, select, textarea').prop('required', false);
 
                     let sectionToShow = modal.find('#' + action + '-fields-' + leadId);
-                    console.log(sectionToShow);
                     sectionToShow.show();
                     sectionToShow.find('input, select, textarea').prop('required', true);
                 }

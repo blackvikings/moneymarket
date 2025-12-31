@@ -112,10 +112,10 @@ class LeadController extends Controller
     public function update(Request $request, Lead $lead)
     {
         // This remains unchanged for detailed editing
+        // This remains unchanged for detailed editing
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            // ... all other detailed validation rules
         ]);
         $lead->update($request->all());
         return redirect()->route('leads.index')->with('success', 'Lead updated successfully.');
