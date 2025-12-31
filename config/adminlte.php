@@ -312,10 +312,6 @@ return [
 
         // Sidebar items:
         [
-            'type' => 'sidebar-menu-search',
-            'text' => 'search',
-        ],
-        [
             'text' => 'Dashboard',
             'url' => 'home',
             'icon' => 'fas fa-fw fa-tachometer-alt',

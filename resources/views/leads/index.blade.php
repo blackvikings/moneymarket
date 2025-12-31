@@ -231,7 +231,7 @@
                                                             <label>Select Action:</label><br>
                                                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                                                 <label class="btn btn-outline-info active">
-                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
+                                                                    <input type="radio" name="action_radio" value="follow-up" data-lead-id="{{ $lead->id }}" checked> Follow-up
                                                                 </label>
                                                                 <label class="btn btn-outline-success">
                                                                     <input type="radio" name="action_radio" value="qualify" data-lead-id="{{ $lead->id }}"> Qualify to Lead
@@ -302,15 +302,15 @@
 @section('js')
     <script>
         $(document).ready(function() {
-            // General handler for all action radios
-            $(document).on('change', 'input[name="action_radio"]', function() {
-                let action = $(this).val();
-                let leadId = $(this).data('lead-id');
-                let modal = $(this).closest('.modal');
+            // Function to handle radio change within a specific modal
+            function handleRadioChange(modal) {
+                let checkedRadio = modal.find('input[name="action_radio"]:checked');
+                let action = checkedRadio.val();
+                let leadId = checkedRadio.data('lead-id');
 
                 // For New Task Modal
                 if (modal.find('#remark-section-' + leadId).length > 0) {
-                    let remarkSection = $('#remark-section-' + leadId);
+                    let remarkSection = modal.find('#remark-section-' + leadId);
                     if (action === 'not_interested') {
                         remarkSection.show();
                         remarkSection.find('textarea').prop('required', true);
@@ -326,13 +326,22 @@
                     modal.find('.action-fields').find('input, select, textarea').prop('required', false);
 
                     let sectionToShow = modal.find('#' + action + '-fields-' + leadId);
+                    console.log(sectionToShow);
                     sectionToShow.show();
                     sectionToShow.find('input, select, textarea').prop('required', true);
                 }
+            }
+
+            // Bind change event to radio buttons
+            $(document).on('change', 'input[name="action_radio"]', function() {
+                let modal = $(this).closest('.modal');
+                handleRadioChange(modal);
             });
 
-            // Trigger change on load to set initial state for checked radios
-            $('input[name="action_radio"]:checked').trigger('change');
+            // Trigger change when modal is shown to set initial state
+            $('.modal').on('shown.bs.modal', function () {
+                handleRadioChange($(this));
+            });
 
             $('.action-form').submit(function(e) {
                 let modal = $(this).closest('.modal');
@@ -342,7 +351,7 @@
                 let followUpDateInput = modal.find('input[name="follow_up_date"]');
                 // Only override action if we are in the "New Task" modal (which has the follow-up date outside the radio logic)
                 // AND the user has actually entered a date.
-                if (followUpDateInput.length > 0 && followUpDateInput.is(':visible') && followUpDateInput.val() && modal.find('#remark-section-' + $(this).find('.action-radio-new').data('lead-id')).length > 0) {
+                if (followUpDateInput.length > 0 && followUpDateInput.is(':visible') && followUpDateInput.val() && modal.find('.remark-section').length > 0) {
                      modal.find('.action-input').val('follow_up');
                 } else {
                     modal.find('.action-input').val(selectedAction);
