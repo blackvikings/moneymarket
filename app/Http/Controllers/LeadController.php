@@ -26,9 +26,28 @@ class LeadController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::with(['assignedTo', 'bank']);
         $statuses = ['New', 'Prospect', 'Lead', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
+
+        // Base query for filtering
+        $baseQuery = Lead::query();
+
+        if ($request->has('start_date') && $request->start_date != '') {
+            $baseQuery->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->has('end_date') && $request->end_date != '') {
+            $baseQuery->whereDate('created_at', '<=', $request->end_date);
+        }
+
+        // Calculate counts based on the filtered query
+        $counts = [];
+        $counts['All'] = $baseQuery->clone()->count();
+        foreach ($statuses as $status) {
+            $counts[$status] = $baseQuery->clone()->where('status', $status)->count();
+        }
+
+        // Main query for fetching paginated leads
+        $query = $baseQuery->clone()->with(['assignedTo', 'bank']);
 
         if ($currentStatus && in_array($currentStatus, $statuses)) {
             $query->where('status', $currentStatus);
@@ -42,14 +61,8 @@ class LeadController extends Controller
              $query->where('assigned_to', Auth::id());
         }
 
-        $leads = $query->latest()->paginate(10);
+        $leads = $query->latest()->paginate(10)->appends($request->except('page'));
         $users = User::role('Tele Caller')->get();
-
-        $counts = [];
-        $counts['All'] = Lead::count();
-        foreach ($statuses as $status) {
-            $counts[$status] = Lead::where('status', $status)->count();
-        }
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
@@ -112,10 +125,10 @@ class LeadController extends Controller
     public function update(Request $request, Lead $lead)
     {
         // This remains unchanged for detailed editing
-        // This remains unchanged for detailed editing
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
+            // ... all other detailed validation rules
         ]);
         $lead->update($request->all());
         return redirect()->route('leads.index')->with('success', 'Lead updated successfully.');

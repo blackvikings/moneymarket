@@ -100,12 +100,30 @@
         }
     </style>
 
+    <div class="card mb-3">
+        <div class="card-body p-2">
+            <form action="{{ route('leads.index') }}" method="GET" class="form-inline">
+                <input type="hidden" name="status" value="{{ request('status') }}">
+                <div class="form-group mr-2">
+                    <label for="start_date" class="mr-2">Start Date:</label>
+                    <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label for="end_date" class="mr-2">End Date:</label>
+                    <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a href="{{ route('leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-body p-2">
             <div class="leads-tabs-wrapper mb-0">
                 {{-- All Tab --}}
                 <div class="leads-tab-container">
-                    <a href="{{ route('leads.index') }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
+                    <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
                         <span class="leads-tab-title">All</span>
                         <span class="leads-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
                     </a>
@@ -114,7 +132,7 @@
                 {{-- Statuses Tabs --}}
                 @foreach($statuses as $status)
                     <div class="leads-tab-container">
-                        <a href="{{ route('leads.index', ['status' => $status]) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
+                        <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
                             <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : str_replace('_', ' ', $status) }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
                         </a>
@@ -133,6 +151,7 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Created At</th>
                         <th>Customer Name</th>
                         <th>Contact</th>
                         <th>Status</th>
@@ -145,6 +164,7 @@
                     @foreach($leads as $lead)
                         <tr>
                             <td>{{ $lead->id }}</td>
+                            <td>{{ $lead->created_at->format('d-m-Y') }}</td>
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
                             <td>
@@ -203,27 +223,32 @@
                                                                 <label class="btn btn-outline-danger">
                                                                     <input type="radio" name="action_radio" value="not_interested" data-lead-id="{{ $lead->id }}"> Not Interested
                                                                 </label>
+                                                                <label class="btn btn-outline-info">
+                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}"> Follow Up
+                                                                </label>
                                                             </div>
                                                         </div>
-                                                        <div class="remark-section" id="remark-section-{{ $lead->id }}" style="display: none;">
+
+                                                        <div class="action-fields" id="not_interested-fields-{{ $lead->id }}" style="display: none;">
                                                             <div class="form-group">
                                                                 <label>Remark <span class="text-danger">*</span></label>
                                                                 <textarea name="remark" class="form-control" rows="3"></textarea>
                                                             </div>
                                                         </div>
-                                                        <hr>
-                                                        <h5><i class="far fa-clock"></i> Set Follow-up (Optional)</h5>
-                                                        <div class="form-group">
-                                                            <label>Date</label>
-                                                            <input type="date" name="follow_up_date" class="form-control">
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label>Time</label>
-                                                            <input type="time" name="follow_up_time" class="form-control">
-                                                        </div>
-                                                        <div class="form-group">
-                                                            <label>Follow-up Remark</label>
-                                                            <textarea name="follow_up_remark" class="form-control" rows="2"></textarea>
+
+                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}" style="display: none;">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="follow_up_date" class="form-control">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label>Time <span class="text-danger">*</span></label>
+                                                                <input type="time" name="follow_up_time" class="form-control">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label>Remark <span class="text-danger">*</span></label>
+                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                            </div>
                                                         </div>
 
                                                     @elseif($lead->status == 'Prospect')
@@ -231,7 +256,7 @@
                                                             <label>Select Action:</label><br>
                                                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                                                 <label class="btn btn-outline-info active">
-                                                                    <input type="radio" name="action_radio" value="follow-up" data-lead-id="{{ $lead->id }}" checked> Follow-up
+                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
                                                                 </label>
                                                                 <label class="btn btn-outline-success">
                                                                     <input type="radio" name="action_radio" value="qualify" data-lead-id="{{ $lead->id }}"> Qualify to Lead
@@ -242,7 +267,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="action-fields" id="follow-up-fields-{{ $lead->id }}">
+                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
                                                             <div class="form-group">
                                                                 <label>Date <span class="text-danger">*</span></label>
                                                                 <input type="date" name="follow_up_date" class="form-control">
@@ -308,26 +333,22 @@
                 let action = checkedRadio.val();
                 let leadId = checkedRadio.data('lead-id');
 
-                // For New Task Modal
-                if (modal.find('#remark-section-' + leadId).length > 0) {
-                    let remarkSection = modal.find('#remark-section-' + leadId);
-                    if (action === 'not_interested') {
-                        remarkSection.show();
-                        remarkSection.find('textarea').prop('required', true);
-                    } else {
-                        remarkSection.hide();
-                        remarkSection.find('textarea').prop('required', false);
+                // Hide all conditional sections first
+                modal.find('.action-fields').hide();
+                modal.find('.action-fields input, .action-fields select, .action-fields textarea').prop('required', false);
+
+                // Show the relevant section based on action
+                // Note: 'interested' has no extra fields, so no section to show
+                if (action === 'not_interested' || action === 'follow_up' || action === 'qualify' || action === 'reject') {
+                    // Normalize action name for ID (e.g., follow_up -> follow_up-fields)
+                    // My IDs use underscore: not_interested-fields, follow_up-fields
+                    let sectionId = '#' + action + '-fields-' + leadId;
+                    let sectionToShow = modal.find(sectionId);
+
+                    if (sectionToShow.length > 0) {
+                        sectionToShow.show();
+                        sectionToShow.find('input, select, textarea').prop('required', true);
                     }
-                }
-
-                // For Prospect Modal
-                if (modal.find('.action-fields').length > 0) {
-                    modal.find('.action-fields').hide();
-                    modal.find('.action-fields').find('input, select, textarea').prop('required', false);
-
-                    let sectionToShow = modal.find('#' + action + '-fields-' + leadId);
-                    sectionToShow.show();
-                    sectionToShow.find('input, select, textarea').prop('required', true);
                 }
             }
 
@@ -345,16 +366,7 @@
             $('.action-form').submit(function(e) {
                 let modal = $(this).closest('.modal');
                 let selectedAction = modal.find('input[name="action_radio"]:checked').val();
-
-                // Special handling for "New Task" follow-up logic
-                let followUpDateInput = modal.find('input[name="follow_up_date"]');
-                // Only override action if we are in the "New Task" modal (which has the follow-up date outside the radio logic)
-                // AND the user has actually entered a date.
-                if (followUpDateInput.length > 0 && followUpDateInput.is(':visible') && followUpDateInput.val() && modal.find('.remark-section').length > 0) {
-                     modal.find('.action-input').val('follow_up');
-                } else {
-                    modal.find('.action-input').val(selectedAction);
-                }
+                modal.find('.action-input').val(selectedAction);
             });
 
             $('.bank-select').change(function() {
