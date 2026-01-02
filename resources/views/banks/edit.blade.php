@@ -18,7 +18,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('banks.update', $bank->id) }}" method="POST" id="editBankForm">
+            <form action="{{ route('admin.banks.update', $bank->id) }}" method="POST" id="editBankForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">

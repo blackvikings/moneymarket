@@ -56,7 +56,7 @@ class BankController extends Controller
             }
         }
 
-        return redirect()->route('banks.index')->with('success', 'Bank created successfully');
+        return redirect()->route('admin.banks.index')->with('success', 'Bank created successfully');
     }
 
     public function edit(Bank $bank)
@@ -86,19 +86,19 @@ class BankController extends Controller
             }
         }
 
-        return redirect()->route('banks.index')->with('success', 'Bank updated successfully');
+        return redirect()->route('admin.banks.index')->with('success', 'Bank updated successfully');
     }
 
     public function destroy(Bank $bank)
     {
         $bank->delete();
-        return redirect()->route('banks.index')->with('success', 'Bank deleted successfully');
+        return redirect()->route('admin.banks.index')->with('success', 'Bank deleted successfully');
     }
 
     public function toggleStatus(Bank $bank)
     {
         $bank->update(['is_active' => !$bank->is_active]);
-        return redirect()->route('banks.index')->with('success', 'Bank status updated successfully');
+        return redirect()->route('admin.banks.index')->with('success', 'Bank status updated successfully');
     }
 
     public function export(Request $request)

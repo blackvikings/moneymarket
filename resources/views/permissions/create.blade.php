@@ -9,7 +9,7 @@
 @section('content')
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('permissions.store') }}" method="POST">
+            <form action="{{ route('admin.permissions.store') }}" method="POST">
                 @csrf
                 <div class="form-group">
                     <label for="name">Name</label>

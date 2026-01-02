@@ -92,7 +92,7 @@ class EmployeeController extends Controller
             }
         }
 
-        return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
     }
 
     public function show(User $employee)
@@ -104,7 +104,7 @@ class EmployeeController extends Controller
     public function edit(User $employee)
     {
         if ($employee->hasRole('admin')) {
-            return redirect()->route('employees.index')->with('error', 'Cannot edit admin user.');
+            return redirect()->route('admin.employees.index')->with('error', 'Cannot edit admin user.');
         }
         $firms = Firm::all();
         $banks = Bank::all();
@@ -119,7 +119,7 @@ class EmployeeController extends Controller
     public function update(Request $request, User $employee)
     {
         if ($employee->hasRole('admin')) {
-            return redirect()->route('employees.index')->with('error', 'Cannot update admin user.');
+            return redirect()->route('admin.employees.index')->with('error', 'Cannot update admin user.');
         }
 
         $request->validate([
@@ -155,26 +155,26 @@ class EmployeeController extends Controller
             }
         }
 
-        return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee updated successfully.');
     }
 
     public function destroy(User $employee)
     {
         if ($employee->hasRole('admin')) {
-            return redirect()->route('employees.index')->with('error', 'Cannot delete admin user.');
+            return redirect()->route('admin.employees.index')->with('error', 'Cannot delete admin user.');
         }
         $employee->delete();
-        return redirect()->route('employees.index')->with('success', 'Employee deleted successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee deleted successfully.');
     }
 
     public function updateStatus(Request $request, User $employee)
     {
         if ($employee->hasRole('admin')) {
-            return redirect()->route('employees.index')->with('error', 'Cannot change status of admin user.');
+            return redirect()->route('admin.employees.index')->with('error', 'Cannot change status of admin user.');
         }
         $request->validate(['status' => 'required|in:Active,Blocked,Exited']);
         $employee->update(['status' => $request->status]);
-        return redirect()->route('employees.index')->with('success', 'Employee status updated successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee status updated successfully.');
     }
 
     public function export(Request $request)

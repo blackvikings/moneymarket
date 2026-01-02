@@ -167,7 +167,7 @@
                     <p>Do you want to mark this stage as complete and move to the next one?</p>
                 </div>
                 <div class="modal-footer">
-                    <form action="{{ route('crm.update-stage', $lead->id) }}" method="POST" class="d-inline">
+                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" class="d-inline">
                         @csrf
                         <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
                         <button type="submit" name="action" value="Yes" class="btn btn-success">Yes</button>

@@ -127,7 +127,7 @@
             <div class="crm-tabs-wrapper mb-0">
                 {{-- All Tab --}}
                 <div class="crm-tab-container">
-                    <a href="{{ route('crm.index') }}" class="crm-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
+                    <a href="{{ route(get_route_prefix() . 'crm.index') }}" class="crm-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
                         <span class="crm-tab-title">All</span>
                         <span class="crm-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
                         <span class="upper-line"></span>
@@ -137,7 +137,7 @@
                 {{-- Stages Tabs --}}
                 @foreach($stages as $stage)
                     <div class="crm-tab-container">
-                        <a href="{{ route('crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
+                        <a href="{{ route(get_route_prefix() . 'crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
                             <span class="crm-tab-title">{{ $stage }}</span>
                             <span class="crm-tab-subtitle">{{ $counts[$stage] ?? 0 }}</span>
                             <span class="upper-line"></span>
@@ -172,7 +172,7 @@
                             <td>{{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</td>
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
                             <td>
-                                <a href="{{ route('crm.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
+                                <a href="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
                                 @if($lead->crm_stage !== 'Closed')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
@@ -193,7 +193,7 @@
                                                 <p>Do you want to mark this stage as complete and move to the next one?</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <form action="{{ route('crm.update-stage', $lead->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
                                                     <button type="submit" name="action" value="Yes" class="btn btn-success">Yes</button>

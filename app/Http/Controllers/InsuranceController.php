@@ -69,7 +69,7 @@ class InsuranceController extends Controller
             }
         }
 
-        return redirect()->route('insurances.index')->with('success', 'Insurance created successfully');
+        return redirect()->route('admin.insurances.index')->with('success', 'Insurance created successfully');
     }
 
     public function edit(Insurance $insurance)
@@ -110,19 +110,19 @@ class InsuranceController extends Controller
             }
         }
 
-        return redirect()->route('insurances.index')->with('success', 'Insurance updated successfully');
+        return redirect()->route('admin.insurances.index')->with('success', 'Insurance updated successfully');
     }
 
     public function destroy(Insurance $insurance)
     {
         $insurance->delete();
-        return redirect()->route('insurances.index')->with('success', 'Insurance deleted successfully');
+        return redirect()->route('admin.insurances.index')->with('success', 'Insurance deleted successfully');
     }
 
     public function toggleStatus(Insurance $insurance)
     {
         $insurance->update(['is_active' => !$insurance->is_active]);
-        return redirect()->route('insurances.index')->with('success', 'Insurance status updated successfully');
+        return redirect()->route('admin.insurances.index')->with('success', 'Insurance status updated successfully');
     }
 
     public function export(Request $request)

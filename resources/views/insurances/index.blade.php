@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create insurance')
-                        <a href="{{ route('insurances.create') }}" class="btn btn-primary">Create Insurance</a>
+                        <a href="{{ route(get_route_prefix(). 'insurances.create') }}" class="btn btn-primary">Create Insurance</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('insurances.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route(get_route_prefix(). 'insurances.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('insurances.index') }}" method="GET">
+            <form action="{{ route(get_route_prefix(). 'insurances.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="company_name" class="form-control" placeholder="Search by Company Name" value="{{ request('company_name') }}">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('insurances.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route(get_route_prefix(). 'insurances.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -65,8 +65,8 @@
                             </td>
                             <td>
                                 @can('edit insurance')
-                                    <a href="{{ route('insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route('insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
+                                    <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <form action="{{ route(get_route_prefix(). 'insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $insurance->is_active ? 'Block' : 'Unblock' }}
@@ -74,7 +74,7 @@
                                     </form>
                                 @endcan
                                 @can('delete insurance')
-                                    <form action="{{ route('insurances.destroy', $insurance->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route(get_route_prefix(). 'insurances.destroy', $insurance->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>

@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('vehicle-manufactures.update', $vehicleManufacture->id) }}" method="POST" id="editVehicleManufactureForm">
+            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.update', $vehicleManufacture->id) }}" method="POST" id="editVehicleManufactureForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">

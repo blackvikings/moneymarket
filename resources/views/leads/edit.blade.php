@@ -24,7 +24,7 @@
                 </div>
             @endif
 
-            <form action="{{ route('leads.update', $lead->id) }}" method="POST" enctype="multipart/form-data" id="editLeadForm">
+            <form action="{{ route(get_route_prefix() . 'leads.update', $lead->id) }}" method="POST" enctype="multipart/form-data" id="editLeadForm">
                 @csrf
                 @method('PUT')
 

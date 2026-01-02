@@ -47,7 +47,7 @@ class FirmController extends Controller
 
         Firm::create($request->all());
 
-        return redirect()->route('firms.index')->with('success', 'Firm created successfully');
+        return redirect()->route('admin.firms.index')->with('success', 'Firm created successfully');
     }
 
     public function edit(Firm $firm)
@@ -64,19 +64,19 @@ class FirmController extends Controller
 
         $firm->update($request->all());
 
-        return redirect()->route('firms.index')->with('success', 'Firm updated successfully');
+        return redirect()->route('admin.firms.index')->with('success', 'Firm updated successfully');
     }
 
     public function destroy(Firm $firm)
     {
         $firm->delete();
-        return redirect()->route('firms.index')->with('success', 'Firm deleted successfully');
+        return redirect()->route('admin.firms.index')->with('success', 'Firm deleted successfully');
     }
 
     public function toggleStatus(Firm $firm)
     {
         $firm->update(['is_active' => !$firm->is_active]);
-        return redirect()->route('firms.index')->with('success', 'Firm status updated successfully');
+        return redirect()->route('admin.firms.index')->with('success', 'Firm status updated successfully');
     }
 
     public function export(Request $request)

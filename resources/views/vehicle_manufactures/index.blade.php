@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create vehicle manufacture')
-                        <a href="{{ route('vehicle-manufactures.create') }}" class="btn btn-primary">Create Vehicle Manufacture</a>
+                        <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.create') }}" class="btn btn-primary">Create Vehicle Manufacture</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('vehicle-manufactures.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('vehicle-manufactures.index') }}" method="GET">
+            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('vehicle-manufactures.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -67,8 +67,8 @@
                             </td>
                             <td>
                                 @can('edit vehicle manufacture')
-                                    <a href="{{ route('vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route('vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
+                                    <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
@@ -76,7 +76,7 @@
                                     </form>
                                 @endcan
                                 @can('delete vehicle manufacture')
-                                    <form action="{{ route('vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>

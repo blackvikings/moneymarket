@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('rto-agents.store') }}" method="POST" id="createRtoAgentForm">
+            <form action="{{ route('admin.rto-agents.store') }}" method="POST" id="createRtoAgentForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Agent Name</label>

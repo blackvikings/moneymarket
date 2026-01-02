@@ -18,7 +18,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('rto.store') }}" method="POST" enctype="multipart/form-data" id="createRtoLeadForm">
+            <form action="{{ route(get_route_prefix(). 'rto.store') }}" method="POST" enctype="multipart/form-data" id="createRtoLeadForm">
                 @csrf
                 <h5>Customer Details</h5>
                 <div class="row">
@@ -209,7 +209,7 @@
 
                 if (stateId) {
                     $.ajax({
-                        url: '{{ url("get-cities") }}/' + stateId,
+                        url: '{{ route("get-cities", ["state" => ":stateId"]) }}'.replace(':stateId', stateId),
                         type: 'GET',
                         success: function(data) {
                             $(cityElement).empty().append('<option value="">Select City</option>');
@@ -251,7 +251,7 @@
                     let citySelect = $(this).closest('.row').find('.city-select');
 
                     $.ajax({
-                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
+                        url: '{{ route("get-location-by-pincode", ["pincode" => ":pincode"]) }}'.replace(':pincode', pincode),
                         type: 'GET',
                         success: function(data) {
                             if (data) {

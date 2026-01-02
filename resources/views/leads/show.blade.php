@@ -5,7 +5,7 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>Lead Details: {{ $lead->customer_name }}</h1>
-        <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-primary">Edit Lead</a>
+        <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-primary">Edit Lead</a>
     </div>
 @stop
 

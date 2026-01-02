@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h1>Leads</h1>
         @can('create lead')
-            <a href="{{ route('leads.create') }}" class="btn btn-success">Add Lead</a>
+            <a href="{{ route(get_route_prefix() . 'leads.create') }}" class="btn btn-success">Add Lead</a>
         @endcan
     </div>
 @stop
@@ -112,7 +112,7 @@
 
     <div class="card mb-3">
         <div class="card-body p-2">
-            <form action="{{ route('leads.index') }}" method="GET" class="form-inline">
+            <form action="{{ route(get_route_prefix() . 'leads.index') }}" method="GET" class="form-inline">
                 <input type="hidden" name="status" value="{{ request('status') }}">
                 <div class="form-group mr-2">
                     <label for="start_date" class="mr-2">Start Date:</label>
@@ -123,7 +123,7 @@
                     <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
-                <a href="{{ route('leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
+                <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
             </form>
         </div>
     </div>
@@ -133,7 +133,7 @@
             <div class="leads-tabs-wrapper mb-0">
                 {{-- All Tab --}}
                 <div class="leads-tab-container">
-                    <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
+                    <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
                         <span class="leads-tab-title">All</span>
                         <span class="leads-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
                         <span class="upper-line"></span>
@@ -143,7 +143,7 @@
                 {{-- Statuses Tabs --}}
                 @foreach($statuses as $status)
                     <div class="leads-tab-container">
-                        <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
+                        <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
                             <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : str_replace('_', ' ', $status) }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
                             <span class="upper-line"></span>
@@ -193,9 +193,9 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('leads.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
+                                <a href="{{ route(get_route_prefix() . 'leads.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
                                 @can('edit lead')
-                                    <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                    <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
                                 @if($lead->status !== 'Lead' && $lead->status !== 'Rejected' && $lead->status !== 'Not_Active')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
@@ -203,7 +203,7 @@
                                     </button>
                                 @endif
                                 @can('delete lead')
-                                    <form action="{{ route('leads.destroy', $lead->id) }}" method="POST" style="display:inline;">
+                                    <form action="{{ route(get_route_prefix() . 'leads.destroy', $lead->id) }}" method="POST" style="display:inline;">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
@@ -221,7 +221,7 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <form action="{{ route('leads.update-status', $lead->id) }}" method="POST" class="action-form">
+                                                <form action="{{ route(get_route_prefix() . 'leads.update-status', $lead->id) }}" method="POST" class="action-form">
                                                     @csrf
                                                     <input type="hidden" name="action" class="action-input">
 
@@ -279,7 +279,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="action-fields" id="follow-up-fields-{{ $lead->id }}">
+                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
                                                             <div class="form-group">
                                                                 <label>Date <span class="text-danger">*</span></label>
                                                                 <input type="date" name="follow_up_date" class="form-control">
@@ -389,7 +389,7 @@
 
                 if (bankId) {
                     $.ajax({
-                        url: '{{ url("get-branches") }}/' + bankId,
+                        url: '{{ route(get_route_prefix() . "get-branches", ["bank" => ":bankId"]) }}'.replace(':bankId', bankId),
                         type: 'GET',
                         success: function(data) {
                             branchSelect.empty().append('<option value="">Select Branch</option>');

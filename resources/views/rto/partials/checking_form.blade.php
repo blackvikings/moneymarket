@@ -1,4 +1,4 @@
-<form action="{{ route('rto.update-checklist', $lead->id) }}" method="POST" class="rto-checking-form">
+<form action="{{ route(get_route_prefix() . 'rto.update-checklist', $lead->id) }}" method="POST" class="rto-checking-form">
     @csrf
     <div class="row">
         <div class="col-md-6">

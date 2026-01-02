@@ -32,19 +32,21 @@ class RoleController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:roles,name',
-            'permissions' => 'required',
+            'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role = Role::create(['name' => $request->name]);
-        $role->givePermissionTo($request->permissions);
+        $permissions = Permission::whereIn('id', $request->permissions)->get();
+        $role->syncPermissions($permissions);
 
-        return redirect()->route('roles.index')->with('success', 'Role created successfully');
+        return redirect()->route('admin.roles.index')->with('success', 'Role created successfully');
     }
 
     public function edit(Role $role)
     {
         if ($role->name === 'admin') {
-            return redirect()->route('roles.index')->with('error', 'Cannot edit admin role.');
+            return redirect()->route('admin.roles.index')->with('error', 'Cannot edit admin role.');
         }
         $permissions = Permission::all();
         return view('roles.edit', compact('role', 'permissions'));
@@ -53,27 +55,29 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         if ($role->name === 'admin') {
-            return redirect()->route('roles.index')->with('error', 'Cannot update admin role.');
+            return redirect()->route('admin.roles.index')->with('error', 'Cannot update admin role.');
         }
 
         $request->validate([
             'name' => 'required|unique:roles,name,'.$role->id,
-            'permissions' => 'required',
+            'permissions' => 'required|array',
+            'permissions.*' => 'exists:permissions,id',
         ]);
 
         $role->update(['name' => $request->name]);
-        $role->syncPermissions($request->permissions);
+        $permissions = Permission::whereIn('id', $request->permissions)->get();
+        $role->syncPermissions($permissions);
 
-        return redirect()->route('roles.index')->with('success', 'Role updated successfully');
+        return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully');
     }
 
     public function destroy(Role $role)
     {
         if ($role->name === 'admin') {
-            return redirect()->route('roles.index')->with('error', 'Cannot delete admin role.');
+            return redirect()->route('admin.roles.index')->with('error', 'Cannot delete admin role.');
         }
 
         $role->delete();
-        return redirect()->route('roles.index')->with('success', 'Role deleted successfully');
+        return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully');
     }
 }

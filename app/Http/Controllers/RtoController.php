@@ -79,7 +79,7 @@ class RtoController extends Controller
 
         Lead::create($data);
 
-        return redirect()->route('rto.index')->with('success', 'New RTO Lead added successfully.');
+        return redirect()->route(get_route_prefix() . 'rto.index')->with('success', 'New RTO Lead added successfully.');
     }
 
     public function show(Lead $lead)
@@ -254,7 +254,7 @@ class RtoController extends Controller
 
         $lead = Lead::create($data);
 
-        return redirect()->route('rto.show', $lead)->with('success', 'New Insurance Lead added successfully.');
+        return redirect()->route(get_route_prefix() . 'rto.show', $lead)->with('success', 'New Insurance Lead added successfully.');
     }
 
     public function updateInsuranceDetails(Request $request, Lead $lead)

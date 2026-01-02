@@ -18,7 +18,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('leads.store') }}" method="POST" enctype="multipart/form-data" id="createLeadForm">
+            <form action="{{ route(get_route_prefix() . 'leads.store') }}" method="POST" enctype="multipart/form-data" id="createLeadForm">
                 @csrf
 
                 {{-- Basic Details --}}

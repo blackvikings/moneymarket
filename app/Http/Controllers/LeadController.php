@@ -118,7 +118,7 @@ class LeadController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        return redirect()->route('leads.index')->with('success', 'Lead created successfully.');
+        return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead created successfully.');
     }
 
     public function show(Lead $lead)
@@ -173,10 +173,10 @@ class LeadController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
-            return redirect()->route('leads.index')->with('success', 'Lead details updated and qualified successfully!');
+            return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead details updated and qualified successfully!');
         }
 
-        return redirect()->route('leads.index')->with('success', 'Lead updated successfully.');
+        return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead updated successfully.');
     }
 
     public function updateStatus(Request $request, Lead $lead)
@@ -211,7 +211,7 @@ class LeadController extends Controller
             $logData['remark'] = 'Follow-up set: ' . $request->remark;
         } elseif ($action === 'qualify') {
             if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
-                return redirect()->route('leads.edit', $lead->id)
+                return redirect()->route(get_route_prefix() . 'leads.edit', $lead->id)
                     ->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.')
                     ->withInput($request->only('bank_id', 'bank_branch_id'));
             }
@@ -246,7 +246,7 @@ class LeadController extends Controller
     public function destroy(Lead $lead)
     {
         $lead->delete();
-        return redirect()->route('leads.index')->with('success', 'Lead deleted successfully.');
+        return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead deleted successfully.');
     }
 
     public function export(Request $request)

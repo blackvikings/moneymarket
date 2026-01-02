@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('vehicle-manufactures.store') }}" method="POST" id="createVehicleManufactureForm">
+            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.store') }}" method="POST" id="createVehicleManufactureForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Manufacture Name</label>

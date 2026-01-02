@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create bank')
-                        <a href="{{ route('banks.create') }}" class="btn btn-primary">Create Bank</a>
+                        <a href="{{ route('admin.banks.create') }}" class="btn btn-primary">Create Bank</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('banks.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route('admin.banks.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('banks.index') }}" method="GET">
+            <form action="{{ route('admin.banks.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('banks.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route('admin.banks.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -68,16 +68,16 @@
                             </td>
                             <td>
                                 @can('edit bank')
-                                    <a href="{{ route('banks.edit', $bank->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                 @endcan
                                 @can('delete bank')
-                                    <form action="{{ route('banks.destroy', $bank->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.banks.destroy', $bank->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
                                     </form>
                                 @endcan
-                                <form action="{{ route('banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
+                                <form action="{{ route('admin.banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     <button type="submit" class="btn btn-sm btn-{{ $bank->is_active ? 'warning' : 'success' }}">
                                         {{ $bank->is_active ? 'Deactivate' : 'Activate' }}

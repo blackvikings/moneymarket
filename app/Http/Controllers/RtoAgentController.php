@@ -58,7 +58,7 @@ class RtoAgentController extends Controller
             $agent->cities()->create(['city_name' => $cityName]);
         }
 
-        return redirect()->route('rto-agents.index')->with('success', 'RTO Agent created successfully');
+        return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent created successfully');
     }
 
     public function edit(RtoAgent $rtoAgent)
@@ -87,19 +87,19 @@ class RtoAgentController extends Controller
             $rtoAgent->cities()->create(['city_name' => $cityName]);
         }
 
-        return redirect()->route('rto-agents.index')->with('success', 'RTO Agent updated successfully');
+        return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent updated successfully');
     }
 
     public function destroy(RtoAgent $rtoAgent)
     {
         $rtoAgent->delete();
-        return redirect()->route('rto-agents.index')->with('success', 'RTO Agent deleted successfully');
+        return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent deleted successfully');
     }
 
     public function toggleStatus(RtoAgent $rtoAgent)
     {
         $rtoAgent->update(['is_active' => !$rtoAgent->is_active]);
-        return redirect()->route('rto-agents.index')->with('success', 'RTO Agent status updated successfully');
+        return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent status updated successfully');
     }
 
     public function export(Request $request)

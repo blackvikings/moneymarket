@@ -1,4 +1,4 @@
-<form action="{{ route('crm.store-disbursal', $lead->id) }}" method="POST">
+<form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST">
     @csrf
     <div class="row">
         <div class="col-md-4">

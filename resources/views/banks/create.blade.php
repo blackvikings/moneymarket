@@ -18,7 +18,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('banks.store') }}" method="POST" id="createBankForm">
+            <form action="{{ route('admin.banks.store') }}" method="POST" id="createBankForm">
                 @csrf
                 <div class="form-group">
                     <label>Bank Name</label>

@@ -52,7 +52,7 @@ class VehicleManufactureController extends Controller
             $manufacture->vehicleNames()->create(['name' => $vehicleName]);
         }
 
-        return redirect()->route('vehicle-manufactures.index')->with('success', 'Vehicle Manufacture created successfully');
+        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture created successfully');
     }
 
     public function edit(VehicleManufacture $vehicleManufacture)
@@ -76,19 +76,19 @@ class VehicleManufactureController extends Controller
             $vehicleManufacture->vehicleNames()->create(['name' => $vehicleName]);
         }
 
-        return redirect()->route('vehicle-manufactures.index')->with('success', 'Vehicle Manufacture updated successfully');
+        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture updated successfully');
     }
 
     public function destroy(VehicleManufacture $vehicleManufacture)
     {
         $vehicleManufacture->delete();
-        return redirect()->route('vehicle-manufactures.index')->with('success', 'Vehicle Manufacture deleted successfully');
+        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture deleted successfully');
     }
 
     public function toggleStatus(VehicleManufacture $vehicleManufacture)
     {
         $vehicleManufacture->update(['is_active' => !$vehicleManufacture->is_active]);
-        return redirect()->route('vehicle-manufactures.index')->with('success', 'Vehicle Manufacture status updated successfully');
+        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture status updated successfully');
     }
 
     public function export(Request $request)

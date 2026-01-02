@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('insurances.store') }}" method="POST" id="createInsuranceForm">
+            <form action="{{ route(get_route_prefix(). 'insurances.store') }}" method="POST" id="createInsuranceForm">
                 @csrf
                 <div class="row">
                     <div class="col-md-6">

@@ -18,12 +18,11 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data" id="editEmployeeForm">
+            <form action="{{ route('admin.employees.update', $employee->id) }}" method="POST" enctype="multipart/form-data" id="editEmployeeForm">
                 @csrf
                 @method('PUT')
 
                 <h5>Personal Details</h5>
-                {{-- Fields are the same as create, just pre-filled with $employee data --}}
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -49,7 +48,38 @@
                         </div>
                     </div>
                 </div>
-                {{-- ... other personal fields ... --}}
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Email <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" value="{{ old('email', $employee->email) }}" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>DOB</label>
+                            <input type="date" name="dob" class="form-control" value="{{ old('dob', $employee->dob ? $employee->dob->format('Y-m-d') : '') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Blood Group</label>
+                            <input type="text" name="blood_group" class="form-control" value="{{ old('blood_group', $employee->blood_group) }}">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Joined Firm <span class="text-danger">*</span></label>
+                            <select name="firm_id" class="form-control" required>
+                                @foreach($firms as $firm)
+                                    <option value="{{ $firm->id }}" {{ old('firm_id', $employee->firm_id) == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 <hr>
                 <h5>Address Details</h5>
@@ -122,7 +152,94 @@
                         </div>
                     </div>
                 </div>
-                {{-- ... other sections ... --}}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof (File)</label>
+                            <input type="file" name="address_proof" class="form-control-file">
+                            @if($employee->address_proof_path)
+                                <small><a href="{{ asset('storage/' . $employee->address_proof_path) }}" target="_blank">View Current Proof</a></small>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Proof ID Type</label>
+                            <input type="text" name="proof_id_type" class="form-control" placeholder="e.g. Aadhar, PAN" value="{{ old('proof_id_type', $employee->proof_id_type) }}">
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Education Details</h5>
+                <div id="education-container">
+                    @foreach($employee->education as $index => $edu)
+                        <div class="card education-card mt-2">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3"><div class="form-group"><label>Degree</label><input type="text" name="education[{{$index}}][degree]" class="form-control" value="{{ $edu->degree }}" required></div></div>
+                                    <div class="col-md-3"><div class="form-group"><label>Institution</label><input type="text" name="education[{{$index}}][institution]" class="form-control" value="{{ $edu->institution }}" required></div></div>
+                                    <div class="col-md-3"><div class="form-group"><label>Passing Year</label><input type="text" name="education[{{$index}}][passing_year]" class="form-control" value="{{ $edu->passing_year }}" required></div></div>
+                                    <div class="col-md-2"><div class="form-group"><label>Percentage</label><input type="text" name="education[{{$index}}][percentage]" class="form-control" value="{{ $edu->percentage }}"></div></div>
+                                    <div class="col-md-1"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-block remove-education">X</button></div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <button type="button" class="btn btn-success btn-sm" id="add-education">Add Education</button>
+
+                <hr>
+                <h5>Official Details</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Reporting Manager</label>
+                            <select name="reporting_manager_id" class="form-control">
+                                <option value="">Select Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $employee->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Account Details</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Bank Name</label>
+                            <select name="bank_id" id="bank_id" class="form-control">
+                                <option value="">Select Bank</option>
+                                @foreach($banks as $bank)
+                                    <option value="{{ $bank->id }}" {{ old('bank_id', $employee->bank_id) == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Branch Name</label>
+                            <select name="bank_branch_id" id="bank_branch_id" class="form-control">
+                                <option value="">Select Branch</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Account Holder Name</label>
+                            <input type="text" name="account_holder_name" class="form-control" value="{{ old('account_holder_name', $employee->account_holder_name) }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>IFSC Code</label>
+                            <input type="text" name="ifsc_code" class="form-control" value="{{ old('ifsc_code', $employee->ifsc_code) }}">
+                        </div>
+                    </div>
+                </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Update Employee</button>
             </form>
@@ -135,19 +252,26 @@
     <script>
         $(document).ready(function() {
             $('#editEmployeeForm').validate({
-                // All rules from create form are applicable here
+                // Rules similar to create, but password not required
+                rules: {
+                    role: { required: true },
+                    name: { required: true },
+                    contact_number: { required: true, number: true, minlength: 10, maxlength: 10 },
+                    email: { required: true, email: true },
+                    firm_id: { required: true },
+                    current_address_line: { required: true },
+                    permanent_address_line: { required: true },
+                    // address_proof not required on edit
+                }
             });
 
             // --- Location Scripts ---
-            function populateStates(selector, selectedState = null) {
-                let stateSelects = $(selector);
-                stateSelects.empty().append('<option value="">Loading...</option>');
-
+            function populateStates(selector) {
                 $.ajax({
                     url: '{{ route("get-states") }}',
                     type: 'GET',
                     success: function(data) {
-                        stateSelects.each(function() {
+                        $(selector).each(function() {
                             let currentDropdown = $(this);
                             let preselectedValue = currentDropdown.data('selected');
                             currentDropdown.empty().append('<option value="">Select State</option>');
@@ -158,7 +282,10 @@
                                 }
                                 currentDropdown.append(option);
                             });
-                            currentDropdown.trigger('change');
+                            // Trigger change to load cities if a state is pre-selected
+                            if(preselectedValue) {
+                                currentDropdown.trigger('change');
+                            }
                         });
                     }
                 });
@@ -167,18 +294,19 @@
             function populateCities(stateElement, cityElement, pincodeElement, selectedCity = null) {
                 let stateId = $(stateElement).val();
                 $(cityElement).empty().append('<option value="">Loading...</option>');
-                if(pincodeElement) $(pincodeElement).val('');
+                if(pincodeElement && !selectedCity) $(pincodeElement).val('');
 
                 if (stateId) {
                     $.ajax({
-                        url: '{{ url("get-cities") }}/' + stateId,
+                        url: '{{ route("get-cities", ["state" => ":stateId"]) }}'.replace(':stateId', stateId),
                         type: 'GET',
                         success: function(data) {
                             $(cityElement).empty().append('<option value="">Select City</option>');
+                            let preselectedCity = selectedCity || $(cityElement).data('selected');
+
                             $.each(data, function(key, city) {
                                 let option = $('<option></option>').attr('value', city.id).text(city.name).data('pincode', city.pincode);
-                                let cityToSelect = selectedCity || $(cityElement).data('selected');
-                                if (city.id == cityToSelect) {
+                                if (city.id == preselectedCity) {
                                     option.prop('selected', true);
                                     if(pincodeElement) $(pincodeElement).val(city.pincode);
                                 }
@@ -191,7 +319,7 @@
                 }
             }
 
-            // Set initial selected data from the employee model
+            // Set initial selected data
             $('#current_state').data('selected', '{{ old('current_address_state', $employee->current_address_state) }}');
             $('#current_city').data('selected', '{{ old('current_address_city', $employee->current_address_city) }}');
             $('#permanent_state').data('selected', '{{ old('permanent_address_state', $employee->permanent_address_state) }}');
@@ -204,13 +332,14 @@
             $('.state-select').change(function() {
                 let citySelect = $(this).closest('.row').find('.city-select');
                 let pincodeInput = $(this).closest('.row').find('.pincode-input');
+                // Pass null for selectedCity to rely on data-selected attribute or user selection
                 populateCities(this, citySelect, pincodeInput);
             });
 
             $('.city-select').change(function() {
                 let pincode = $(this).find(':selected').data('pincode');
                 let pincodeInput = $(this).closest('.row').find('.pincode-input');
-                pincodeInput.val(pincode);
+                if(pincode) pincodeInput.val(pincode);
             });
 
             $('.pincode-input').on('input', function() {
@@ -220,17 +349,13 @@
                     let citySelect = $(this).closest('.row').find('.city-select');
 
                     $.ajax({
-                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
+                        url: '{{ route("get-location-by-pincode", ["pincode" => ":pincode"]) }}'.replace(':pincode', pincode),
                         type: 'GET',
                         success: function(data) {
                             if (data) {
                                 stateSelect.val(data.state.id);
+                                // Pass the city ID explicitly to select it after loading cities
                                 populateCities(stateSelect, citySelect, null, data.city.id);
-                            }
-                        },
-                        error: function(jqXHR, textStatus, errorThrown) {
-                            if(jqXHR.status == 404) {
-                                alert('Invalid Pincode');
                             }
                         }
                     });
@@ -242,14 +367,67 @@
                     $('#permanent_address_line').val($('#current_address_line').val());
                     $('#permanent_pincode').val($('#current_pincode').val());
                     let currentStateVal = $('#current_state').val();
-                    $('#permanent_state').val(currentStateVal).trigger('change');
+                    let currentCityVal = $('#current_city').val();
+
+                    $('#permanent_state').val(currentStateVal);
+                    // Trigger change on state to load cities, then select the correct city
+                    populateCities($('#permanent_state'), $('#permanent_city'), $('#permanent_pincode'), currentCityVal);
                 } else {
                     $('#permanent_address_line, #permanent_pincode, #permanent_state, #permanent_city').val('');
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');
                 }
             });
 
-            // --- Other form logic from create page ---
+            // --- Education & Bank Logic ---
+            let eduIndex = {{ $employee->education->count() }};
+            $('#add-education').click(function() {
+                let html = `
+                    <div class="card education-card mt-2">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3"><div class="form-group"><label>Degree</label><input type="text" name="education[${eduIndex}][degree]" class="form-control" required></div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Institution</label><input type="text" name="education[${eduIndex}][institution]" class="form-control" required></div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Passing Year</label><input type="text" name="education[${eduIndex}][passing_year]" class="form-control" required></div></div>
+                                <div class="col-md-2"><div class="form-group"><label>Percentage</label><input type="text" name="education[${eduIndex}][percentage]" class="form-control"></div></div>
+                                <div class="col-md-1"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-block remove-education">X</button></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#education-container').append(html);
+                eduIndex++;
+            });
+
+            $(document).on('click', '.remove-education', function() {
+                $(this).closest('.education-card').remove();
+            });
+
+            function fetchBranches(bankId, selectedBranchId = null) {
+                let branchSelect = $('#bank_branch_id');
+                branchSelect.empty().append('<option value="">Select Branch</option>');
+
+                if (bankId) {
+                    $.ajax({
+                        url: '{{ route("admin.get-branches", ["bank" => ":bankId"]) }}'.replace(':bankId', bankId),
+                        type: 'GET',
+                        success: function(data) {
+                            $.each(data, function(key, branch) {
+                                let selected = selectedBranchId == branch.id ? 'selected' : '';
+                                branchSelect.append('<option value="' + branch.id + '" ' + selected + '>' + branch.name + '</option>');
+                            });
+                        }
+                    });
+                }
+            }
+
+            $('#bank_id').change(function() {
+                fetchBranches($(this).val());
+            });
+
+            let initialBankId = $('#bank_id').val();
+            if (initialBankId) {
+                fetchBranches(initialBankId, {{ old('bank_branch_id', $employee->bank_branch_id) ?? 'null' }});
+            }
         });
     </script>
 @stop

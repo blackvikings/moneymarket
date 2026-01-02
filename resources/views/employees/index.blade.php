@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create employee')
-                        <a href="{{ route('employees.create') }}" class="btn btn-primary">Create Employee</a>
+                        <a href="{{ route(get_route_prefix(). 'employees.create') }}" class="btn btn-primary">Create Employee</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('employees.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route(get_route_prefix(). 'employees.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('employees.index') }}" method="GET">
+            <form action="{{ route(get_route_prefix(). 'employees.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -35,7 +35,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('employees.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route(get_route_prefix(). 'employees.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -71,13 +71,13 @@
                             <td>
                                 @if(!$employee->hasRole('admin'))
                                     @can('view employee')
-                                        <a href="{{ route('employees.show', $employee->id) }}" class="btn btn-sm btn-info">View</a>
+                                        <a href="{{ route(get_route_prefix(). 'employees.show', $employee->id) }}" class="btn btn-sm btn-info">View</a>
                                     @endcan
                                     @can('edit employee')
-                                        <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="{{ route(get_route_prefix(). 'employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">Edit</a>
 
                                         {{-- Block/Unblock Button --}}
-                                        <form action="{{ route('employees.update-status', $employee->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route(get_route_prefix(). 'employees.update-status', $employee->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @if($employee->status == 'Active')
                                                 <input type="hidden" name="status" value="Blocked">
@@ -89,7 +89,7 @@
                                         </form>
                                     @endcan
                                     @can('delete employee')
-                                        <form action="{{ route('employees.destroy', $employee->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route(get_route_prefix(). 'employees.destroy', $employee->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')">Delete</button>

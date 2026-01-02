@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('insurances.update', $insurance->id) }}" method="POST" id="editInsuranceForm">
+            <form action="{{ route(get_route_prefix(). 'insurances.update', $insurance->id) }}" method="POST" id="editInsuranceForm">
                 @csrf
                 @method('PUT')
                 <div class="row">

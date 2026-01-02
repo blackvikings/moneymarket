@@ -118,8 +118,8 @@
 
     <div class="row mb-3">
         <div class="col-md-12 text-right">
-            <a href="{{ route('rto.create') }}" class="btn btn-success btn-sm mr-1">Add New RTO Lead</a>
-            <a href="{{ route('rto.create-insurance-lead') }}" class="btn btn-info btn-sm">Add New Insurance Lead</a>
+            <a href="{{ route(get_route_prefix() . 'rto.create') }}" class="btn btn-success btn-sm mr-1">Add New RTO Lead</a>
+            <a href="{{ route(get_route_prefix() . 'rto.create-insurance-lead') }}" class="btn btn-info btn-sm">Add New Insurance Lead</a>
         </div>
     </div>
 
@@ -128,7 +128,7 @@
             <div class="rto-tabs-wrapper mb-0">
                 {{-- All Tab --}}
                 <div class="rto-tab-container">
-                    <a href="{{ route('rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
+                    <a href="{{ route(get_route_prefix() . 'rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
                         <span class="rto-tab-subtitle">View</span>
                         <span class="rto-tab-title">{{ $counts['All'] }}</span>
                         <span class="upper-line"></span>
@@ -138,7 +138,7 @@
                 {{-- Stages Tabs --}}
                 @foreach($stages as $stage)
                     <div class="rto-tab-container">
-                        <a href="{{ route('rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
+                        <a href="{{ route(get_route_prefix() . 'rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
                             <span class="rto-tab-subtitle">{{ $stage }}</span>
                             <span class="rto-tab-title">{{ $counts[$stage] ?? 0 }}</span>
                             <span class="upper-line"></span>
@@ -188,7 +188,7 @@
                                             </div>
                                             <div class="modal-body">
                                                 @if($lead->rto_stage == 'New')
-                                                    <form action="{{ route('rto.update-stage', $lead->id) }}" method="POST">
+                                                    <form action="{{ route(get_route_prefix() . 'rto.update-stage', $lead->id) }}" method="POST">
                                                         @csrf
                                                         <input type="hidden" name="current_stage" value="{{ $lead->rto_stage }}">
                                                         <p>Move to next stage?</p>

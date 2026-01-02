@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('roles.store') }}" method="POST" id="createRoleForm">
+            <form action="{{ route('admin.roles.store') }}" method="POST" id="createRoleForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Name</label>

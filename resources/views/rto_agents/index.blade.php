@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create rto agent')
-                        <a href="{{ route('rto-agents.create') }}" class="btn btn-primary">Create RTO Agent</a>
+                        <a href="{{ route('admin.rto-agents.create') }}" class="btn btn-primary">Create RTO Agent</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('rto-agents.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route('admin.rto-agents.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('rto-agents.index') }}" method="GET">
+            <form action="{{ route('admin.rto-agents.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('rto-agents.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route('admin.rto-agents.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -69,8 +69,8 @@
                             </td>
                             <td>
                                 @can('edit rto agent')
-                                    <a href="{{ route('rto-agents.edit', $agent->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route('rto-agents.toggle-status', $agent->id) }}" method="POST" class="d-inline">
+                                    <a href="{{ route('admin.rto-agents.edit', $agent->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <form action="{{ route('admin.rto-agents.toggle-status', $agent->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm {{ $agent->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $agent->is_active ? 'Block' : 'Unblock' }}
@@ -78,7 +78,7 @@
                                     </form>
                                 @endcan
                                 @can('delete rto agent')
-                                    <form action="{{ route('rto-agents.destroy', $agent->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.rto-agents.destroy', $agent->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>

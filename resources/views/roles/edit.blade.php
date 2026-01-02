@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('roles.update', $role->id) }}" method="POST" id="editRoleForm">
+            <form action="{{ route('admin.roles.update', $role->id) }}" method="POST" id="editRoleForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">

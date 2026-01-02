@@ -18,7 +18,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('firms.store') }}" method="POST" id="createFirmForm">
+            <form action="{{ route('admin.firms.store') }}" method="POST" id="createFirmForm">
                 @csrf
                 <div class="form-group">
                     <label for="name">Firm Name</label>

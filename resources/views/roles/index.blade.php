@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-between align-items-center">
         <h1>Roles</h1>
         @can('create role')
-            <a href="{{ route('roles.create') }}" class="btn btn-success">
+            <a href="{{ route('admin.roles.create') }}" class="btn btn-success">
                 <i class="fas fa-plus"></i> Create New Role
             </a>
         @endcan
@@ -39,12 +39,12 @@
                     </div>
                     <div class="card-footer text-right">
                         @can('edit role')
-                            <a href="{{ route('roles.edit', $role->id) }}" class="btn btn-sm btn-default" title="Edit Role">
+                            <a href="{{ route('admin.roles.edit', $role->id) }}" class="btn btn-sm btn-default" title="Edit Role">
                                 <i class="fas fa-edit text-primary"></i> Edit
                             </a>
                         @endcan
                         @can('delete role')
-                            <form action="{{ route('roles.destroy', $role->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?');">
+                            <form action="{{ route('admin.roles.destroy', $role->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?');">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-default" title="Delete Role">

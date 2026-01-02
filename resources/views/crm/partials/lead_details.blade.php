@@ -4,7 +4,7 @@
             <div class="card-header">
                 <h3 class="card-title">Lead Details</h3>
                 <div class="card-tools">
-                    <a href="{{ route('leads.edit', $lead->id) }}" class="btn btn-sm btn-warning">Edit Full Lead</a>
+                    <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-sm btn-warning">Edit Full Lead</a>
                 </div>
             </div>
             <div class="card-body">

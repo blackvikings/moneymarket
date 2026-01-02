@@ -1,4 +1,4 @@
-<form action="{{ route('rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form">
+<form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form">
     @csrf
     <div class="row">
         <div class="col-md-4">

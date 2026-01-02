@@ -113,6 +113,6 @@ class CrmController extends Controller
             'crm_stage' => 'Closed', // Move to final stage
         ]);
 
-        return redirect()->route('crm.show', $lead)->with('success', 'Disbursal details saved successfully.');
+        return redirect()->route(get_route_prefix() . 'crm.show', $lead)->with('success', 'Disbursal details saved successfully.');
     }
 }

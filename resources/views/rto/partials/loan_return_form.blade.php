@@ -1,4 +1,4 @@
-<form action="{{ route('rto.update-loan-return', $lead->id) }}" method="POST" class="rto-loan-return-form">
+<form action="{{ route(get_route_prefix(). 'rto.update-loan-return', $lead->id) }}" method="POST" class="rto-loan-return-form">
     @csrf
     <div class="form-group">
         <label>Date</label>

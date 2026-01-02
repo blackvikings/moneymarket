@@ -12,15 +12,15 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create firm')
-                        <a href="{{ route('firms.create') }}" class="btn btn-primary">Create Firm</a>
+                        <a href="{{ route('admin.firms.create') }}" class="btn btn-primary">Create Firm</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('firms.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    <a href="{{ route('admin.firms.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                 </div>
             </div>
             <br>
-            <form action="{{ route('firms.index') }}" method="GET">
+            <form action="{{ route('admin.firms.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -34,7 +34,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route('firms.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route('admin.firms.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -63,8 +63,8 @@
                             </td>
                             <td>
                                 @can('edit firm')
-                                    <a href="{{ route('firms.edit', $firm->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route('firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
+                                    <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <form action="{{ route('admin.firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $firm->is_active ? 'Block' : 'Unblock' }}
@@ -72,7 +72,7 @@
                                     </form>
                                 @endcan
                                 @can('delete firm')
-                                    <form action="{{ route('firms.destroy', $firm->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.firms.destroy', $firm->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger">Delete</button>
