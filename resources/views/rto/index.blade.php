@@ -106,6 +106,14 @@
             color: red;
             font-size: 0.875em;
         }
+        .upper-line {
+            display: block;
+            height: 1px;
+            width: 90%;
+            background-color: #2563eb;
+            padding-bottom: 2px;
+            margin: 0 auto;
+        }
     </style>
 
     <div class="row mb-3">
@@ -123,6 +131,7 @@
                     <a href="{{ route('rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
                         <span class="rto-tab-subtitle">View</span>
                         <span class="rto-tab-title">{{ $counts['All'] }}</span>
+                        <span class="upper-line"></span>
                     </a>
                 </div>
 
@@ -132,6 +141,7 @@
                         <a href="{{ route('rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
                             <span class="rto-tab-subtitle">{{ $stage }}</span>
                             <span class="rto-tab-title">{{ $counts[$stage] ?? 0 }}</span>
+                            <span class="upper-line"></span>
                         </a>
                     </div>
                 @endforeach

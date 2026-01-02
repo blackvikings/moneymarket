@@ -98,6 +98,16 @@
         .leads-tab-container:first-child .clip-chevron {
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%);
         }
+
+        .upper-line {
+            display: block;
+            height: 1px;
+            width: 90%;
+            background-color: #2563eb;
+            padding-bottom: 2px;
+            margin: 0 auto;
+        }
+
     </style>
 
     <div class="card mb-3">
@@ -126,6 +136,7 @@
                     <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
                         <span class="leads-tab-title">All</span>
                         <span class="leads-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
+                        <span class="upper-line"></span>
                     </a>
                 </div>
 
@@ -135,6 +146,7 @@
                         <a href="{{ route('leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
                             <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : str_replace('_', ' ', $status) }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
+                            <span class="upper-line"></span>
                         </a>
                     </div>
                 @endforeach
@@ -267,7 +279,7 @@
                                                             </div>
                                                         </div>
 
-                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
+                                                        <div class="action-fields" id="follow-up-fields-{{ $lead->id }}">
                                                             <div class="form-group">
                                                                 <label>Date <span class="text-danger">*</span></label>
                                                                 <input type="date" name="follow_up_date" class="form-control">

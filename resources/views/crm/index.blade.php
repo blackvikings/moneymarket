@@ -23,7 +23,7 @@
         .crm-tab-container {
             position: relative;
             flex: 1 1 0%;
-            min-width: 120px;
+            min-width: 173px;
             margin-left: -1rem;
             z-index: 1;
         }
@@ -44,7 +44,7 @@
         .crm-tab-container:nth-child(10) { z-index: 1; }
 
         .crm-tab-content {
-            height: 4rem;
+            height: 6rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -76,10 +76,12 @@
         .crm-tab-content.active .crm-tab-subtitle,
         .crm-tab-content.active .crm-tab-title {
             color: white;
+            word-wrap: break-word;
         }
 
         .crm-tab-content.active .crm-tab-subtitle {
             opacity: 0.8;
+            word-wrap: break-word;
         }
 
         .crm-tab-title {
@@ -88,6 +90,8 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: #1e3a8a;
+            word-break: break-word;
+            text-align: center;
         }
 
         .crm-tab-subtitle {
@@ -103,6 +107,20 @@
         .crm-tab-container:first-child .clip-chevron {
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%);
         }
+        .upper-line {
+            display: block;
+            height: 1px;
+            width: 70%;
+            background-color: #2563eb;
+            padding-bottom: 2px;
+            margin-top: 12px;
+        }
+        @media(max-width: 768px)
+        {
+            .crm-tabs-wrapper {
+               flex-wrap: wrap;
+            }
+        }
     </style>
 
     <div class="card">
@@ -113,6 +131,7 @@
                     <a href="{{ route('crm.index') }}" class="crm-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
                         <span class="crm-tab-title">All</span>
                         <span class="crm-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
+                        <span class="upper-line"></span>
                     </a>
                 </div>
 
@@ -122,6 +141,7 @@
                         <a href="{{ route('crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
                             <span class="crm-tab-title">{{ $stage }}</span>
                             <span class="crm-tab-subtitle">{{ $counts[$stage] ?? 0 }}</span>
+                            <span class="upper-line"></span>
                         </a>
                     </div>
                 @endforeach
