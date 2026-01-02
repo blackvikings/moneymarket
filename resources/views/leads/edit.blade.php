@@ -18,9 +18,22 @@
     </style>
     <div class="card">
         <div class="card-body">
+            @if(session('error'))
+                <div class="alert alert-danger">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             <form action="{{ route('leads.update', $lead->id) }}" method="POST" enctype="multipart/form-data" id="editLeadForm">
                 @csrf
                 @method('PUT')
+
+                {{-- Hidden fields for "Qualify on Save" flow --}}
+                <input type="hidden" name="qualify_on_save" value="{{ old('bank_id') ? '1' : '0' }}">
+                @if(old('bank_id'))
+                    <input type="hidden" name="bank_id" value="{{ old('bank_id') }}">
+                    <input type="hidden" name="bank_branch_id" value="{{ old('bank_branch_id') }}">
+                @endif
 
                 {{-- Basic Details --}}
                 <h5>Basic Details</h5>
@@ -419,7 +432,6 @@
                         <div class="form-group"><label>Address</label><textarea name="ref2_address" class="form-control" rows="1">{{ old('ref2_address', $lead->ref2_address) }}</textarea></div>
                     </div>
                 </div>
-
                 <hr>
                 {{-- Loan Amount Breakdown --}}
                 <h5>Amount Required</h5>
@@ -497,7 +509,7 @@
                     <input type="hidden" name="assigned_to" value="{{ $lead->assigned_to }}">
                 @endif
 
-                <button type="submit" class="btn btn-primary mt-3">Update Lead</button>
+                <button type="submit" class="btn btn-primary mt-3">{{ old('bank_id') ? 'Update & Qualify' : 'Update Lead' }}</button>
             </form>
         </div>
     </div>

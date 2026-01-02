@@ -8,6 +8,7 @@ use App\Models\Bank;
 use App\Models\Firm;
 use App\Models\VehicleManufacture;
 use App\Models\Insurance;
+use App\Models\LeadStatusLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\LeadExport;
@@ -26,6 +27,7 @@ class LeadController extends Controller
 
     public function index(Request $request)
     {
+        $query = Lead::with(['assignedTo', 'bank']);
         $statuses = ['New', 'Prospect', 'Lead', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
 
@@ -57,12 +59,25 @@ class LeadController extends Controller
             $query->where('assigned_to', $request->assigned_to);
         }
 
+        if ($request->has('start_date') && $request->start_date != '') {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->has('end_date') && $request->end_date != '') {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+
         if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('Team Lead')) {
              $query->where('assigned_to', Auth::id());
         }
 
         $leads = $query->latest()->paginate(10)->appends($request->except('page'));
         $users = User::role('Tele Caller')->get();
+
+        $counts = [];
+        $counts['All'] = Lead::count();
+        foreach ($statuses as $status) {
+            $counts[$status] = Lead::where('status', $status)->count();
+        }
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
@@ -94,14 +109,21 @@ class LeadController extends Controller
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
 
-        Lead::create($data);
+        $lead = Lead::create($data);
+
+        // Log initial status
+        $lead->statusLogs()->create([
+            'status' => 'New',
+            'remark' => 'Lead created.',
+            'created_by' => Auth::id(),
+        ]);
 
         return redirect()->route('leads.index')->with('success', 'Lead created successfully.');
     }
 
     public function show(Lead $lead)
     {
-        $lead->load(['assignedTo', 'createdBy', 'bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'insurance']);
+        $lead->load(['assignedTo', 'createdBy', 'bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'insurance', 'statusLogs.user']);
         $branches = [];
         if ($lead->bank_id) {
             $bank = Bank::find($lead->bank_id);
@@ -124,67 +146,101 @@ class LeadController extends Controller
 
     public function update(Request $request, Lead $lead)
     {
-        // This remains unchanged for detailed editing
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
             // ... all other detailed validation rules
         ]);
+
         $lead->update($request->all());
-        return redirect()->route('leads.index')->with('success', 'Lead updated successfully.');
-    }
 
-    public function updateStatus(Request $request, Lead $lead)
-    {
-        $action = $request->input('action');
-
-        if ($action === 'interested') {
-            $lead->update(['status' => 'Prospect']);
-            return redirect()->back()->with('success', 'Lead status updated to Prospect.');
-        }
-
-        if ($action === 'not_interested') {
-            $request->validate(['remark' => 'required|string']);
-            $lead->update(['status' => 'Not_Active', 'remark' => $request->remark]);
-            return redirect()->back()->with('success', 'Lead status updated to Not Active.');
-        }
-
-        if ($action === 'follow_up') {
-            $request->validate([
-                'follow_up_date' => 'required|date',
-                'follow_up_time' => 'required',
-                'remark' => 'required|string',
-            ]);
-            $lead->update([
-                'status' => 'Prospect', // Stays as prospect
-                'follow_up_date' => $request->follow_up_date,
-                'follow_up_time' => $request->follow_up_time,
-                'remark' => $request->remark,
-            ]);
-            return redirect()->back()->with('success', 'Follow-up has been set.');
-        }
-
-        if ($action === 'qualify') {
+        if ($request->input('qualify_on_save') == 1) {
             $request->validate([
                 'bank_id' => 'required|exists:banks,id',
                 'bank_branch_id' => 'required|exists:bank_branches,id',
             ]);
+
             $lead->update([
                 'status' => 'Lead',
                 'bank_id' => $request->bank_id,
                 'bank_branch_id' => $request->bank_branch_id,
                 'converted_at' => now(),
             ]);
-            return redirect()->back()->with('success', 'Lead has been qualified and assigned to the bank.');
+
+            $lead->statusLogs()->create([
+                'status' => 'Lead',
+                'remark' => 'Lead qualified after data update.',
+                'created_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('leads.index')->with('success', 'Lead details updated and qualified successfully!');
         }
 
-        if ($action === 'reject') {
+        return redirect()->route('leads.index')->with('success', 'Lead updated successfully.');
+    }
+
+    public function updateStatus(Request $request, Lead $lead)
+    {
+        $action = $request->input('action');
+        $data = [];
+        $logData = ['created_by' => Auth::id()];
+
+        if ($action === 'interested') {
+            $data['status'] = 'Prospect';
+            $logData['status'] = 'Prospect';
+            $logData['remark'] = 'Marked as Interested.';
+        } elseif ($action === 'not_interested') {
             $request->validate(['remark' => 'required|string']);
-            $lead->update(['status' => 'Rejected', 'remark' => $request->remark]);
-            return redirect()->back()->with('success', 'Lead has been rejected.');
+            $data['status'] = 'Not_Active';
+            $data['remark'] = $request->remark;
+            $logData['status'] = 'Not_Active';
+            $logData['remark'] = $request->remark;
+        } elseif ($action === 'follow_up') {
+            $request->validate([
+                'follow_up_date' => 'required|date',
+                'follow_up_time' => 'required',
+                'remark' => 'required|string',
+            ]);
+            $data = [
+                'status' => 'Prospect',
+                'follow_up_date' => $request->follow_up_date,
+                'follow_up_time' => $request->follow_up_time,
+                'remark' => $request->remark,
+            ];
+            $logData['status'] = 'Prospect';
+            $logData['remark'] = 'Follow-up set: ' . $request->remark;
+        } elseif ($action === 'qualify') {
+            if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
+                return redirect()->route('leads.edit', $lead->id)
+                    ->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.')
+                    ->withInput($request->only('bank_id', 'bank_branch_id'));
+            }
+            $request->validate([
+                'bank_id' => 'required|exists:banks,id',
+                'bank_branch_id' => 'required|exists:bank_branches,id',
+            ]);
+            $data = [
+                'status' => 'Lead',
+                'bank_id' => $request->bank_id,
+                'bank_branch_id' => $request->bank_branch_id,
+                'converted_at' => now(),
+            ];
+            $logData['status'] = 'Lead';
+            $logData['remark'] = 'Lead qualified and assigned to bank.';
+        } elseif ($action === 'reject') {
+            $request->validate(['remark' => 'required|string']);
+            $data['status'] = 'Rejected';
+            $data['remark'] = $request->remark;
+            $logData['status'] = 'Rejected';
+            $logData['remark'] = $request->remark;
+        } else {
+            return redirect()->back()->with('error', 'Invalid action.');
         }
 
-        return redirect()->back()->with('error', 'Invalid action.');
+        $lead->update($data);
+        $lead->statusLogs()->create($logData);
+
+        return redirect()->back()->with('success', 'Lead status updated successfully.');
     }
 
     public function destroy(Lead $lead)
