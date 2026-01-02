@@ -44,12 +44,11 @@
         .crm-tab-container:nth-child(10) { z-index: 1; }
 
         .crm-tab-content {
-            height: 6rem;
+            height: 5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding-right: 1rem;
             cursor: pointer;
             transition: background-color 0.15s ease-in-out;
             text-decoration: none !important;
