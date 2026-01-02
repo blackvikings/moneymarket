@@ -11,7 +11,7 @@
 
 @section('content')
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Customer Information</h3>
@@ -93,6 +93,34 @@
                     @if($lead->converted_at)
                         <p><strong>Converted At:</strong> {{ $lead->converted_at->format('d-m-Y H:i') }}</p>
                         <p><strong>Aging:</strong> {{ $lead->aging }}</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Status History</h3>
+                </div>
+                <div class="card-body">
+                    @if($lead->statusLogs->count() > 0)
+                        <ul class="list-unstyled">
+                            @foreach($lead->statusLogs->sortByDesc('created_at') as $log)
+                                <li class="mb-2">
+                                    <strong>{{ $log->status == 'New' ? 'New Task' : str_replace('_', ' ', $log->status) }}</strong> : {{ $log->created_at->format('d-m-Y H:i') }}
+                                    <br>
+                                    <small class="text-muted">
+                                        By: {{ $log->user ? $log->user->name : 'System' }}
+                                        @if($log->remark)
+                                            <br>Remark: {{ $log->remark }}
+                                        @endif
+                                    </small>
+                                </li>
+                                <hr>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p class="text-muted">No history available.</p>
                     @endif
                 </div>
             </div>

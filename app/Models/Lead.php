@@ -85,6 +85,11 @@ class Lead extends Model
         return $this->hasMany(RtoChallan::class);
     }
 
+    public function statusLogs()
+    {
+        return $this->hasMany(LeadStatusLog::class);
+    }
+
     // Accessor for Aging
     public function getAgingAttribute()
     {
