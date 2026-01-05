@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
+use App\Models\State;
+use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,6 +32,56 @@ class LeadController extends Controller
         $leads = $query->latest()->paginate(15);
 
         return response()->json($leads);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'father_name' => 'required|string|max:255',
+            'firm_id' => 'required|exists:firms,id',
+            'contact_number' => 'required|string|max:20',
+            'email' => 'required|email|max:255',
+            'residence_type' => 'required|string',
+            'current_address_line' => 'required|string',
+            'current_address_pincode' => 'nullable|string|max:20',
+            'current_address_state' => 'required|exists:states,id',
+            'current_address_city' => 'required|exists:cities,id',
+            'permanent_address_line' => 'required|string',
+            'permanent_address_pincode' => 'nullable|string|max:20',
+            'permanent_address_state' => 'required|exists:states,id',
+            'permanent_address_city' => 'required|exists:cities,id',
+            'assigned_to' => 'nullable|exists:users,id',
+        ]);
+
+        $data = $validated;
+
+        // Convert State and City IDs to names
+        $data['current_address_state'] = State::find($validated['current_address_state'])->name;
+        $data['current_address_city'] = City::find($validated['current_address_city'])->name;
+        $data['permanent_address_state'] = State::find($validated['permanent_address_state'])->name;
+        $data['permanent_address_city'] = City::find($validated['permanent_address_city'])->name;
+
+        $data['created_by'] = Auth::id();
+        $data['status'] = 'New';
+
+        if (!isset($data['assigned_to'])) {
+            $data['assigned_to'] = Auth::id();
+        }
+
+        $lead = Lead::create($data);
+
+        // Log initial status
+        $lead->statusLogs()->create([
+            'status' => 'New',
+            'remark' => 'Lead created via API.',
+            'created_by' => Auth::id(),
+        ]);
+
+        return response()->json(['message' => 'Lead created successfully.', 'lead' => $lead], 201);
     }
 
     /**
@@ -119,5 +171,4 @@ class LeadController extends Controller
 
         return response()->json(['message' => 'Lead status updated successfully.', 'lead' => $lead->fresh()]);
     }
-
 }

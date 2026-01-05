@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Leads API
     Route::get('/leads', [LeadController::class, 'index']);
+    Route::post('/leads', [LeadController::class, 'store']);
     Route::get('/leads/{lead}', [LeadController::class, 'show']);
     Route::post('/leads/{lead}/status', [LeadController::class, 'updateStatus']);
 
@@ -30,6 +31,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // RTO API
     Route::get('/rto', [RtoController::class, 'index']);
+    Route::post('/rto', [RtoController::class, 'store']);
+    Route::post('/rto/create-insurance-lead', [RtoController::class, 'storeInsuranceLead']);
     Route::get('/rto/{lead}', [RtoController::class, 'show']);
     Route::post('/rto/{lead}/stage', [RtoController::class, 'updateStage']);
 });
