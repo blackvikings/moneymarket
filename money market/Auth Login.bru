@@ -1,0 +1,23 @@
+meta {
+  name: Auth Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: http://127.0.0.1:8000/api/login
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "email": "testtes1123@test.com",
+    "password": "Password"
+  }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
