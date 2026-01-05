@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Api\CrmController;
+use App\Http\Controllers\Api\RtoController;
+
+// Public route for login
+Route::post('/login', [AuthController::class, 'login']);
+
+// Authenticated routes for employees
+Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Leads API
+    Route::get('/leads', [LeadController::class, 'index']);
+    Route::get('/leads/{lead}', [LeadController::class, 'show']);
+    Route::post('/leads/{lead}/status', [LeadController::class, 'updateStatus']);
+
+    // CRM (Bank Assign) API
+    Route::get('/crm', [CrmController::class, 'index']);
+    Route::get('/crm/{lead}', [CrmController::class, 'show']);
+    Route::post('/crm/{lead}/stage', [CrmController::class, 'updateStage']);
+
+    // RTO API
+    Route::get('/rto', [RtoController::class, 'index']);
+    Route::get('/rto/{lead}', [RtoController::class, 'show']);
+    Route::post('/rto/{lead}/stage', [RtoController::class, 'updateStage']);
+});
