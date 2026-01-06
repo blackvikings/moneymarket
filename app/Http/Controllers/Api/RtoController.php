@@ -170,4 +170,42 @@ class RtoController extends Controller
 
         return response()->json(['message' => 'No action taken.']);
     }
+
+    public function updateInsuranceDetails(Request $request, Lead $lead)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin') && $lead->assigned_to !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'insurance_id' => 'required|exists:insurances,id',
+            'insurance_start_date' => 'required|date',
+            'insurance_end_date' => 'required|date',
+            'insurance_type_of_insurance' => 'required|array',
+            'insurance_premium_amount' => 'required|numeric',
+            'insurance_idv_amount' => 'required|numeric',
+        ]);
+
+        $lead->update([
+            'insurance_id' => $validated['insurance_id'],
+            'insurance_start_date' => $validated['insurance_start_date'],
+            'insurance_end_date' => $validated['insurance_end_date'],
+            'insurance_type_of_insurance' => implode(', ', $validated['insurance_type_of_insurance']),
+            'insurance_premium_amount' => $validated['insurance_premium_amount'],
+            'insurance_idv_amount' => $validated['insurance_idv_amount'],
+        ]);
+
+        if ($request->has('save_and_next') && $request->save_and_next == 1) {
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
+            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
+                $nextStage = $this->stages[$currentStageIndex + 1];
+                $lead->update(['rto_stage' => $nextStage]);
+                return response()->json(['message' => 'Insurance details updated and moved to ' . $nextStage, 'lead' => $lead]);
+            }
+        }
+
+        return response()->json(['message' => 'Insurance details updated successfully.', 'lead' => $lead]);
+    }
 }

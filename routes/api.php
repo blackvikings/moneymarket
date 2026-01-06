@@ -43,4 +43,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/rto/create-insurance-lead', [RtoController::class, 'storeInsuranceLead']);
     Route::get('/rto/{lead}', [RtoController::class, 'show']);
     Route::post('/rto/{lead}/stage', [RtoController::class, 'updateStage']);
+    Route::post('/rto/{lead}/insurance-details', [RtoController::class, 'updateInsuranceDetails']);
 });
