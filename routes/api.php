@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\CrmController;
 use App\Http\Controllers\Api\RtoController;
+use App\Http\Controllers\Api\DataController;
 
 // Public route for login
 Route::post('/login', [AuthController::class, 'login']);
@@ -18,10 +19,17 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::post('/logout', [AuthController::class, 'logout']);
 
+    // Master Data APIs
+    Route::get('/firms', [DataController::class, 'getFirms']);
+    Route::get('/states', [DataController::class, 'getStates']);
+    Route::get('/cities/{state}', [DataController::class, 'getCities']);
+    Route::get('/location/{pincode}', [DataController::class, 'getLocationByPincode']);
+
     // Leads API
     Route::get('/leads', [LeadController::class, 'index']);
     Route::post('/leads', [LeadController::class, 'store']);
     Route::get('/leads/{lead}', [LeadController::class, 'show']);
+    Route::put('/leads/{lead}', [LeadController::class, 'update']);
     Route::post('/leads/{lead}/status', [LeadController::class, 'updateStatus']);
 
     // CRM (Bank Assign) API
