@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\VehicleManufacture;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\VehicleManufactureExport;
 
 class VehicleManufactureController extends Controller
@@ -93,6 +94,9 @@ class VehicleManufactureController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new VehicleManufactureExport($request))->download();
     }
 }

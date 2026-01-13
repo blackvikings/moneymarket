@@ -6,6 +6,7 @@ use App\Models\Insurance;
 use App\Models\InsuranceType;
 use App\Models\InsuranceSubType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\InsuranceExport;
 
 class InsuranceController extends Controller
@@ -127,6 +128,9 @@ class InsuranceController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new InsuranceExport($request))->download();
     }
 }

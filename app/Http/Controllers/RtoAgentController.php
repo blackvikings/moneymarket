@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\RtoAgent;
 use App\Models\City;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\RtoAgentExport;
 
 class RtoAgentController extends Controller
@@ -104,6 +105,9 @@ class RtoAgentController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new RtoAgentExport($request))->download();
     }
 }

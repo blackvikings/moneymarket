@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\BankExport;
 
 class BankController extends Controller
@@ -103,6 +104,9 @@ class BankController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new BankExport($request))->download();
     }
 }

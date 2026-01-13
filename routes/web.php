@@ -95,6 +95,8 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
 
     // Admin can also manage leads, CRM, RTO
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
+    Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
+    Route::get('leads/download-sample', [LeadController::class, 'downloadSample'])->name('leads.download-sample');
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);
@@ -132,6 +134,8 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
 Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employee.'], function () {
     // Employees typically manage leads
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
+    Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
+    Route::get('leads/download-sample', [LeadController::class, 'downloadSample'])->name('leads.download-sample');
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);

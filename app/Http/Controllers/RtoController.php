@@ -274,6 +274,9 @@ class RtoController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new RtoExport($request))->download('rto-leads.csv');
     }
 }

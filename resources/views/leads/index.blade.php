@@ -5,9 +5,14 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>Leads</h1>
-        @can('create lead')
-            <a href="{{ route(get_route_prefix() . 'leads.create') }}" class="btn btn-success">Add Lead</a>
-        @endcan
+        <div>
+            @can('create lead')
+                @if(auth()->user()->hasRole('admin'))
+                    <button type="button" class="btn btn-info mr-1" data-toggle="modal" data-target="#importModal">Import Leads</button>
+                @endif
+                <a href="{{ route(get_route_prefix() . 'leads.create') }}" class="btn btn-success">Add Lead</a>
+            @endcan
+        </div>
     </div>
 @stop
 
@@ -124,7 +129,9 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
                 <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
-                <a href="{{ route(get_route_prefix() . 'leads.export', request()->all()) }}" class="btn btn-success ml-2">Export</a>
+                @if(auth()->user()->hasRole('admin'))
+                    <a href="{{ route(get_route_prefix() . 'leads.export', request()->all()) }}" class="btn btn-success ml-2">Export</a>
+                @endif
             </form>
         </div>
     </div>
@@ -159,6 +166,15 @@
         <div class="card-body">
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul>
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             @endif
             <table class="table table-bordered table-hover">
                 <thead>
@@ -377,6 +393,38 @@
             {{ $leads->links() }}
         </div>
     </div>
+
+    <!-- Import Modal -->
+    @if(auth()->user()->hasRole('admin'))
+    <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importModalLabel">Import Leads</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route(get_route_prefix() . 'leads.import') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Upload File (CSV, Excel)</label>
+                            <input type="file" name="file" class="form-control-file" required>
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ route(get_route_prefix() . 'leads.download-sample') }}" class="text-primary">Download Sample File</a>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endif
 @stop
 
 @section('js')

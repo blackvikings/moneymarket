@@ -9,6 +9,7 @@ use App\Models\BankBranch;
 use Spatie\Permission\Models\Role;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\EmployeeExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -179,6 +180,9 @@ class EmployeeController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new EmployeeExport($request))->download();
     }
 

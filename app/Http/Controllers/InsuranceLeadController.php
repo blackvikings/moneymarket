@@ -84,6 +84,9 @@ class InsuranceLeadController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new InsuranceLeadExport($request))->download('insurance-leads.csv');
     }
 }

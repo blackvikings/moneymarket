@@ -724,7 +724,13 @@
                     $('#permanent_address_line').val($('#current_address_line').val());
                     $('#permanent_pincode').val($('#current_pincode').val());
                     let currentStateVal = $('#current_state').val();
-                    $('#permanent_state').val(currentStateVal).trigger('change');
+                    let currentCityVal = $('#current_city').val();
+
+                    // Set the permanent state dropdown value
+                    $('#permanent_state').val(currentStateVal);
+
+                    // Trigger change to load cities, but pass the current city value to be selected
+                    populateCities('#permanent_state', '#permanent_city', '#permanent_pincode', currentCityVal);
                 } else {
                     $('#permanent_address_line, #permanent_pincode, #permanent_state, #permanent_city').val('');
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');

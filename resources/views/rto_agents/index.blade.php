@@ -16,7 +16,9 @@
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    <a href="{{ route('admin.rto-agents.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    @if(auth()->user()->hasRole('admin'))
+                        <a href="{{ route('admin.rto-agents.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                    @endif
                 </div>
             </div>
             <br>

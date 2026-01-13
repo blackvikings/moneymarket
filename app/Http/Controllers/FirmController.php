@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Firm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\FirmExport;
 
 class FirmController extends Controller
@@ -81,6 +82,9 @@ class FirmController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new FirmExport($request))->download();
     }
 }

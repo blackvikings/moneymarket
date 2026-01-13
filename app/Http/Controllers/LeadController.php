@@ -12,6 +12,8 @@ use App\Models\LeadStatusLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\LeadExport;
+use App\Imports\LeadImport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -20,7 +22,7 @@ class LeadController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view lead', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create lead', ['only' => ['create', 'store']]);
+        $this->middleware('permission:create lead', ['only' => ['create', 'store', 'import', 'downloadSample']]);
         $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus']]);
         $this->middleware('permission:delete lead', ['only' => ['destroy']]);
     }
@@ -273,6 +275,49 @@ class LeadController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new LeadExport($request))->download();
+    }
+
+    public function import(Request $request)
+    {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        Excel::import(new LeadImport, $request->file('file'));
+
+        return redirect()->back()->with('success', 'Leads imported successfully.');
+    }
+
+    public function downloadSample()
+    {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=leads_sample.csv",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $columns = ['customer_name', 'contact_number', 'father_name', 'email', 'firm_name', 'residence_type', 'current_address_line', 'permanent_address_line'];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+            // Add a sample row
+            fputcsv($file, ['John Doe', '9876543210', 'Jane Doe', 'john@example.com', 'My Firm', 'Rented', '123 Main St', '456 Second St']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
