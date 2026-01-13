@@ -5,9 +5,11 @@
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>CRM - Bank Assigned Leads</h1>
-        <a href="{{ route(get_route_prefix() . 'crm.export', request()->all()) }}" class="btn btn-success">
-            <i class="fas fa-file-excel"></i> Export
-        </a>
+        @if(auth()->user()->hasRole('admin'))
+            <a href="{{ route(get_route_prefix() . 'crm.export', request()->all()) }}" class="btn btn-success">
+                <i class="fas fa-file-excel"></i> Export
+            </a>
+        @endif
     </div>
 @stop
 

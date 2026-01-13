@@ -6,6 +6,7 @@ use App\Models\Lead;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
 use App\Exports\CrmExport;
 
 class CrmController extends Controller
@@ -119,6 +120,9 @@ class CrmController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new CrmExport($request))->download('crm-leads.csv');
     }
 }
