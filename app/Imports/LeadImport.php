@@ -40,7 +40,6 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
             'permanent_address_line' => $row['permanent_address_line'] ?? null,
             'status' => 'New',
             'created_by' => Auth::id(),
-            'assigned_to' => 'Unassigned', // Assign to uploader by default, or handle logic
         ]);
     }
 
