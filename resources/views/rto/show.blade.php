@@ -96,20 +96,5 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Insurance Details</h3>
-                </div>
-                <div class="card-body">
-                    <p><strong>Company:</strong> {{ $lead->insurance ? $lead->insurance->company_name : '-' }}</p>
-                    <p><strong>Start Date:</strong> {{ $lead->insurance_start_date ? $lead->insurance_start_date->format('d-m-Y') : '-' }}</p>
-                    <p><strong>End Date:</strong> {{ $lead->insurance_end_date ? $lead->insurance_end_date->format('d-m-Y') : '-' }}</p>
-                    <p><strong>Type:</strong> {{ $lead->insurance_type_of_insurance }}</p>
-                    <p><strong>Premium:</strong> {{ $lead->insurance_premium_amount }}</p>
-                    <p><strong>IDV:</strong> {{ $lead->insurance_idv_amount }}</p>
-                </div>
-            </div>
-        </div>
     </div>
 @stop

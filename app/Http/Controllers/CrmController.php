@@ -6,6 +6,7 @@ use App\Models\Lead;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
+use App\Exports\CrmExport;
 
 class CrmController extends Controller
 {
@@ -114,5 +115,10 @@ class CrmController extends Controller
         ]);
 
         return redirect()->route(get_route_prefix() . 'crm.show', $lead)->with('success', 'Disbursal details saved successfully.');
+    }
+
+    public function export(Request $request)
+    {
+        return (new CrmExport($request))->download('crm-leads.csv');
     }
 }

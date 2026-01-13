@@ -61,8 +61,8 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Email Id <span class="text-danger">*</span></label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" required>
+                            <label>Email Id</label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
                             @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -200,7 +200,7 @@
                     customer_name: { required: true },
                     father_name: { required: true },
                     contact_number: { required: true, number: true, minlength: 10, maxlength: 10 },
-                    email: { required: true, email: true },
+                    email: { required: false, email: true },
                     firm_id: { required: true },
                     residence_type: { required: true },
                     current_address_line: { required: true },
@@ -221,7 +221,6 @@
                         maxlength: "Mobile number must be 10 digits"
                     },
                     email: {
-                        required: "Please enter an email address",
                         email: "Please enter a valid email address"
                     },
                     firm_id: "Please select a firm",

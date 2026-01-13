@@ -118,8 +118,8 @@
 
     <div class="row mb-3">
         <div class="col-md-12 text-right">
+            <a href="{{ route(get_route_prefix() . 'rto.export', request()->all()) }}" class="btn btn-success btn-sm mr-1">Export</a>
             <a href="{{ route(get_route_prefix() . 'rto.create') }}" class="btn btn-success btn-sm mr-1">Add New RTO Lead</a>
-            <a href="{{ route(get_route_prefix() . 'rto.create-insurance-lead') }}" class="btn btn-info btn-sm">Add New Insurance Lead</a>
         </div>
     </div>
 
@@ -154,6 +154,9 @@
             @if(session('success'))
                 <div class="alert alert-success">{{ session('success') }}</div>
             @endif
+            @if(session('warning'))
+                <div class="alert alert-warning">{{ session('warning') }}</div>
+            @endif
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -172,43 +175,60 @@
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
                             <td>
-                                <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                    Action
-                                </button>
+                                @if($lead->rto_stage !== 'Loan Return')
+                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
+                                        Action
+                                    </button>
 
-                                <!-- Modal -->
-                                <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-labelledby="actionModalLabel{{ $lead->id }}" aria-hidden="true">
-                                    <div class="modal-dialog modal-lg" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="actionModalLabel{{ $lead->id }}">Action for {{ $lead->customer_name }} ({{ $lead->rto_stage }})</h5>
-                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                    <span aria-hidden="true">&times;</span>
-                                                </button>
-                                            </div>
-                                            <div class="modal-body">
-                                                @if($lead->rto_stage == 'New')
-                                                    <form action="{{ route(get_route_prefix() . 'rto.update-stage', $lead->id) }}" method="POST">
-                                                        @csrf
-                                                        <input type="hidden" name="current_stage" value="{{ $lead->rto_stage }}">
-                                                        <p>Move to next stage?</p>
-                                                        <button type="submit" name="action" value="Yes" class="btn btn-success">Yes, Move to Checking</button>
-                                                    </form>
-                                                @elseif($lead->rto_stage == 'Checking')
-                                                    @include('rto.partials.checking_form', ['lead' => $lead, 'banks' => \App\Models\Bank::where('is_active', true)->get()])
-                                                @elseif($lead->rto_stage == 'Loan Return')
-                                                    @include('rto.partials.loan_return_form', ['lead' => $lead])
-                                                @elseif($lead->rto_stage == 'Vehicle Detail')
-                                                    @include('rto.partials.vehicle_detail_form', ['lead' => $lead, 'rtoAgents' => \App\Models\RtoAgent::where('is_active', true)->get()])
-                                                @elseif($lead->rto_stage == 'Insurance')
-                                                    @include('rto.partials.insurance_form', ['lead' => $lead, 'insurances' => \App\Models\Insurance::where('is_active', true)->get()])
-                                                @else
-                                                    <p class="text-success">This lead has completed the RTO process.</p>
-                                                @endif
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-labelledby="actionModalLabel{{ $lead->id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="actionModalLabel{{ $lead->id }}">Action for {{ $lead->customer_name }} ({{ $lead->rto_stage }})</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    @if($lead->rto_stage == 'New')
+                                                        <form action="{{ route(get_route_prefix() . 'rto.update-stage', $lead->id) }}" method="POST">
+                                                            @csrf
+                                                            <input type="hidden" name="current_stage" value="{{ $lead->rto_stage }}">
+                                                            <p>Move to next stage?</p>
+                                                            <button type="submit" name="action" value="Yes" class="btn btn-success">Yes, Move to Checking</button>
+                                                        </form>
+                                                    @elseif($lead->rto_stage == 'Checking')
+                                                        @include('rto.partials.checking_form', ['lead' => $lead, 'banks' => \App\Models\Bank::where('is_active', true)->get()])
+                                                    @elseif($lead->rto_stage == 'Vehicle Detail')
+                                                        @include('rto.partials.vehicle_detail_form', ['lead' => $lead, 'rtoAgents' => \App\Models\RtoAgent::where('is_active', true)->get()])
+                                                    @elseif($lead->rto_stage == 'RTO Done')
+                                                        @include('rto.partials.rto_done_form', ['lead' => $lead])
+                                                    @else
+                                                        <p class="text-success">This lead has completed the RTO process.</p>
+                                                    @endif
+
+                                                    @if($lead->rto_stage !== 'Loan Return' && $lead->rto_stage !== 'RTO Done')
+                                                        <hr>
+                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="collapse" data-target="#rejectCollapse{{ $lead->id }}">Reject Loan</button>
+                                                        <div id="rejectCollapse{{ $lead->id }}" class="collapse mt-2">
+                                                            <form action="{{ route(get_route_prefix() . 'rto.reject-lead', $lead->id) }}" method="POST">
+                                                                @csrf
+                                                                <div class="form-group">
+                                                                    <label>Reason for Rejection</label>
+                                                                    <textarea name="rejection_reason" class="form-control" rows="2" required></textarea>
+                                                                </div>
+                                                                <button type="submit" class="btn btn-danger btn-sm">Confirm Reject</button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                @else
+                                    <a href="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}" class="btn btn-info btn-sm">View Details</a>
+                                @endif
                             </td>
                         </tr>
                     @empty

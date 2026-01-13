@@ -8,16 +8,16 @@ use App\Models\State;
 use App\Models\City;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class RtoController extends Controller
 {
     protected $stages = [
         'New',
         'Checking',
-        'Loan Return',
         'Vehicle Detail',
-        'Insurance',
-        'RTO Done'
+        'RTO Done',
+        'Loan Return'
     ];
 
     public function index(Request $request)
@@ -121,7 +121,8 @@ class RtoController extends Controller
 
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead';
-        $data['rto_stage'] = 'Insurance';
+        $data['rto_stage'] = 'RTO Done';
+        $data['insurance_lead_stage'] = 'New';
         $data['assigned_to'] = Auth::id();
 
         if ($request->hasFile('insurance_address_proof')) {
@@ -171,7 +172,7 @@ class RtoController extends Controller
         return response()->json(['message' => 'No action taken.']);
     }
 
-    public function updateInsuranceDetails(Request $request, Lead $lead)
+    public function updateVehicleDetail(Request $request, Lead $lead)
     {
         $user = Auth::user();
 
@@ -179,33 +180,96 @@ class RtoController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $validated = $request->validate([
-            'insurance_id' => 'required|exists:insurances,id',
-            'insurance_start_date' => 'required|date',
-            'insurance_end_date' => 'required|date',
-            'insurance_type_of_insurance' => 'required|array',
-            'insurance_premium_amount' => 'required|numeric',
-            'insurance_idv_amount' => 'required|numeric',
+        $request->validate([
+            'rto_vehicle_type' => 'required|in:New Vehicle,Old Vehicle',
+            'rto_agent_id' => 'nullable|exists:rto_agents,id',
+            'rto_approved_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $lead->update([
-            'insurance_id' => $validated['insurance_id'],
-            'insurance_start_date' => $validated['insurance_start_date'],
-            'insurance_end_date' => $validated['insurance_end_date'],
-            'insurance_type_of_insurance' => implode(', ', $validated['insurance_type_of_insurance']),
-            'insurance_premium_amount' => $validated['insurance_premium_amount'],
-            'insurance_idv_amount' => $validated['insurance_idv_amount'],
-        ]);
+        $data = [
+            'rto_vehicle_type' => $request->rto_vehicle_type,
+            'old_financer' => $request->old_financer,
+            'rto_loan_closed_status' => $request->has('rto_loan_closed_status'),
+            'rto_hp_termination_status' => $request->has('rto_hp_termination_status'),
+            'rto_agent_id' => $request->rto_agent_id,
+            'rto_challan_verified' => $request->has('rto_challan_verified'),
+            'rto_verification_status' => $request->has('rto_verification_status'),
+            'rto_approval_status' => $request->has('rto_approval_status'),
+        ];
+
+        if ($request->hasFile('rto_approved_doc')) {
+            if ($lead->rto_approved_doc_path) {
+                Storage::disk('public')->delete($lead->rto_approved_doc_path);
+            }
+            $data['rto_approved_doc_path'] = $request->file('rto_approved_doc')->store('rto_approved_docs', 'public');
+        }
+
+        $lead->update($data);
+
+        // Handle Closer Deposits and Challans if needed (omitted for brevity as they are complex arrays)
 
         if ($request->has('save_and_next') && $request->save_and_next == 1) {
+            if ($lead->rto_stage === 'Vehicle Detail') {
+                $lead->update(['rto_stage' => 'RTO Done']);
+                return response()->json(['message' => 'Vehicle details updated. Lead moved to RTO Done.', 'lead' => $lead]);
+            }
+
             $currentStageIndex = array_search($lead->rto_stage, $this->stages);
             if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
                 $nextStage = $this->stages[$currentStageIndex + 1];
                 $lead->update(['rto_stage' => $nextStage]);
-                return response()->json(['message' => 'Insurance details updated and moved to ' . $nextStage, 'lead' => $lead]);
+                return response()->json(['message' => 'Vehicle details updated and moved to ' . $nextStage, 'lead' => $lead]);
             }
         }
 
-        return response()->json(['message' => 'Insurance details updated successfully.', 'lead' => $lead]);
+        return response()->json(['message' => 'Vehicle details updated successfully.', 'lead' => $lead]);
+    }
+
+    public function updateRtoDone(Request $request, Lead $lead)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin') && $lead->assigned_to !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        ]);
+
+        if ($request->hasFile('rto_approved_doc')) {
+            if ($lead->rto_approved_doc_path) {
+                Storage::disk('public')->delete($lead->rto_approved_doc_path);
+            }
+            $path = $request->file('rto_approved_doc')->store('rto_approved_docs', 'public');
+
+            $lead->update([
+                'rto_approved_doc_path' => $path,
+                'insurance_lead_stage' => 'New' // Move to Insurance Module
+            ]);
+        }
+
+        return response()->json(['message' => 'RTO Document uploaded. Lead moved to Insurance Module.', 'lead' => $lead]);
+    }
+
+    public function rejectLead(Request $request, Lead $lead)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin') && $lead->assigned_to !== $user->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        $lead->update([
+            'rto_stage' => 'Loan Return',
+            'loan_return_reason' => $request->rejection_reason,
+            'loan_return_date' => now(),
+        ]);
+
+        return response()->json(['message' => 'Lead rejected and moved to Loan Return.', 'lead' => $lead]);
     }
 }

@@ -124,6 +124,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
                 <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
+                <a href="{{ route(get_route_prefix() . 'leads.export', request()->all()) }}" class="btn btn-success ml-2">Export</a>
             </form>
         </div>
     </div>
@@ -197,7 +198,7 @@
                                 @can('edit lead')
                                     <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
-                                @if($lead->status !== 'Lead' && $lead->status !== 'Rejected' && $lead->status !== 'Not_Active')
+                                @if($lead->status !== 'Rejected' && $lead->status !== 'Not_Active')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
                                     </button>
@@ -221,107 +222,149 @@
                                                 </button>
                                             </div>
                                             <div class="modal-body">
-                                                <form action="{{ route(get_route_prefix() . 'leads.update-status', $lead->id) }}" method="POST" class="action-form">
-                                                    @csrf
-                                                    <input type="hidden" name="action" class="action-input">
-
-                                                    @if($lead->status == 'New')
+                                                @if($lead->status == 'Bank Assign')
+                                                    <form action="{{ route(get_route_prefix() . 'leads.assign-bank', $lead->id) }}" method="POST">
+                                                        @csrf
                                                         <div class="form-group">
-                                                            <label>Select Action:</label><br>
-                                                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                                                <label class="btn btn-outline-success active">
-                                                                    <input type="radio" name="action_radio" value="interested" data-lead-id="{{ $lead->id }}" checked> Interested
-                                                                </label>
-                                                                <label class="btn btn-outline-danger">
-                                                                    <input type="radio" name="action_radio" value="not_interested" data-lead-id="{{ $lead->id }}"> Not Interested
-                                                                </label>
-                                                                <label class="btn btn-outline-info">
-                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}"> Follow Up
-                                                                </label>
-                                                            </div>
+                                                            <label>Assign Bank <span class="text-danger">*</span></label>
+                                                            <select name="bank_id" class="form-control bank-select" required>
+                                                                <option value="">Select Bank</option>
+                                                                @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                                    <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                                @endforeach
+                                                            </select>
                                                         </div>
-
-                                                        <div class="action-fields" id="not_interested-fields-{{ $lead->id }}" style="display: none;">
-                                                            <div class="form-group">
-                                                                <label>Remark <span class="text-danger">*</span></label>
-                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}" style="display: none;">
-                                                            <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="follow_up_date" class="form-control">
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Time <span class="text-danger">*</span></label>
-                                                                <input type="time" name="follow_up_time" class="form-control">
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Remark <span class="text-danger">*</span></label>
-                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
-                                                            </div>
-                                                        </div>
-
-                                                    @elseif($lead->status == 'Prospect')
                                                         <div class="form-group">
-                                                            <label>Select Action:</label><br>
-                                                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                                                <label class="btn btn-outline-info active">
-                                                                    <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
-                                                                </label>
-                                                                <label class="btn btn-outline-success">
-                                                                    <input type="radio" name="action_radio" value="qualify" data-lead-id="{{ $lead->id }}"> Qualify to Lead
-                                                                </label>
-                                                                <label class="btn btn-outline-danger">
-                                                                    <input type="radio" name="action_radio" value="reject" data-lead-id="{{ $lead->id }}"> Reject
-                                                                </label>
-                                                            </div>
+                                                            <label>Assign Branch <span class="text-danger">*</span></label>
+                                                            <select name="bank_branch_id" class="form-control branch-select" required>
+                                                                <option value="">Select Bank First</option>
+                                                            </select>
                                                         </div>
+                                                        <button type="submit" class="btn btn-primary btn-block mt-3">Assign Bank & Move to CRM</button>
+                                                    </form>
+                                                @else
+                                                    <form action="{{ route(get_route_prefix() . 'leads.update-status', $lead->id) }}" method="POST" class="action-form">
+                                                        @csrf
+                                                        <input type="hidden" name="action" class="action-input">
 
-                                                        <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
+                                                        @if($lead->status == 'New')
                                                             <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="follow_up_date" class="form-control">
+                                                                <label>Select Action:</label><br>
+                                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                    <label class="btn btn-outline-success active">
+                                                                        <input type="radio" name="action_radio" value="interested" data-lead-id="{{ $lead->id }}" checked> Interested
+                                                                    </label>
+                                                                    <label class="btn btn-outline-danger">
+                                                                        <input type="radio" name="action_radio" value="not_interested" data-lead-id="{{ $lead->id }}"> Not Interested
+                                                                    </label>
+                                                                    <label class="btn btn-outline-info">
+                                                                        <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}"> Follow Up
+                                                                    </label>
+                                                                </div>
                                                             </div>
-                                                            <div class="form-group">
-                                                                <label>Time <span class="text-danger">*</span></label>
-                                                                <input type="time" name="follow_up_time" class="form-control">
-                                                            </div>
-                                                            <div class="form-group">
-                                                                <label>Remark <span class="text-danger">*</span></label>
-                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
-                                                            </div>
-                                                        </div>
 
-                                                        <div class="action-fields" id="qualify-fields-{{ $lead->id }}" style="display: none;">
-                                                            <div class="form-group">
-                                                                <label>Assign Bank <span class="text-danger">*</span></label>
-                                                                <select name="bank_id" class="form-control bank-select">
-                                                                    <option value="">Select Bank</option>
-                                                                    @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                                                                    @endforeach
-                                                                </select>
+                                                            <div class="action-fields" id="not_interested-fields-{{ $lead->id }}" style="display: none;">
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
                                                             </div>
-                                                            <div class="form-group">
-                                                                <label>Assign Branch <span class="text-danger">*</span></label>
-                                                                <select name="bank_branch_id" class="form-control branch-select">
-                                                                    <option value="">Select Bank First</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
 
-                                                        <div class="action-fields" id="reject-fields-{{ $lead->id }}" style="display: none;">
-                                                            <div class="form-group">
-                                                                <label>Remark <span class="text-danger">*</span></label>
-                                                                <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                            <div class="action-fields" id="follow_up-fields-{{ $lead->id }}" style="display: none;">
+                                                                <div class="form-group">
+                                                                    <label>Date <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="follow_up_date" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Time <span class="text-danger">*</span></label>
+                                                                    <input type="time" name="follow_up_time" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    @endif
 
-                                                    <button type="submit" class="btn btn-primary btn-block mt-3">Submit</button>
-                                                </form>
+                                                        @elseif($lead->status == 'Prospect')
+                                                            <div class="form-group">
+                                                                <label>Select Action:</label><br>
+                                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                    <label class="btn btn-outline-info active">
+                                                                        <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
+                                                                    </label>
+                                                                    <label class="btn btn-outline-success">
+                                                                        <input type="radio" name="action_radio" value="qualify" data-lead-id="{{ $lead->id }}"> Qualify to Lead
+                                                                    </label>
+                                                                    <label class="btn btn-outline-danger">
+                                                                        <input type="radio" name="action_radio" value="reject" data-lead-id="{{ $lead->id }}"> Reject
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
+                                                                <div class="form-group">
+                                                                    <label>Date <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="follow_up_date" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Time <span class="text-danger">*</span></label>
+                                                                    <input type="time" name="follow_up_time" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="action-fields" id="reject-fields-{{ $lead->id }}" style="display: none;">
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                            </div>
+
+                                                        @elseif($lead->status == 'Lead')
+                                                            <div class="form-group">
+                                                                <label>Select Action:</label><br>
+                                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                    <label class="btn btn-outline-info active">
+                                                                        <input type="radio" name="action_radio" value="follow_up" data-lead-id="{{ $lead->id }}" checked> Follow-up
+                                                                    </label>
+                                                                    <label class="btn btn-outline-primary">
+                                                                        <input type="radio" name="action_radio" value="proceed_to_bank_assign" data-lead-id="{{ $lead->id }}"> Proceed to Bank Assign
+                                                                    </label>
+                                                                    <label class="btn btn-outline-danger">
+                                                                        <input type="radio" name="action_radio" value="reject" data-lead-id="{{ $lead->id }}"> Reject
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="action-fields" id="follow_up-fields-{{ $lead->id }}">
+                                                                <div class="form-group">
+                                                                    <label>Date <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="follow_up_date" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Time <span class="text-danger">*</span></label>
+                                                                    <input type="time" name="follow_up_time" class="form-control">
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="action-fields" id="reject-fields-{{ $lead->id }}" style="display: none;">
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                            </div>
+                                                        @endif
+
+                                                        <button type="submit" class="btn btn-primary btn-block mt-3">Submit</button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -350,10 +393,7 @@
                 modal.find('.action-fields input, .action-fields select, .action-fields textarea').prop('required', false);
 
                 // Show the relevant section based on action
-                // Note: 'interested' has no extra fields, so no section to show
                 if (action === 'not_interested' || action === 'follow_up' || action === 'qualify' || action === 'reject') {
-                    // Normalize action name for ID (e.g., follow_up -> follow_up-fields)
-                    // My IDs use underscore: not_interested-fields, follow_up-fields
                     let sectionId = '#' + action + '-fields-' + leadId;
                     let sectionToShow = modal.find(sectionId);
 

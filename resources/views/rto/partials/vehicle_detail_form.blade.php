@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form">
+<form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form" enctype="multipart/form-data">
     @csrf
     <div class="row">
         <div class="col-md-4">
@@ -84,6 +84,19 @@
         <div class="col-md-4"><div class="form-group form-check"><input type="checkbox" name="rto_challan_verified" class="form-check-input" {{ $lead->rto_challan_verified ? 'checked' : '' }}><label class="form-check-label">Challan Verify</label></div></div>
         <div class="col-md-4"><div class="form-group form-check"><input type="checkbox" name="rto_verification_status" class="form-check-input" {{ $lead->rto_verification_status ? 'checked' : '' }}><label class="form-check-label">Verification</label></div></div>
         <div class="col-md-4"><div class="form-group form-check"><input type="checkbox" name="rto_approval_status" class="form-check-input" {{ $lead->rto_approval_status ? 'checked' : '' }}><label class="form-check-label">Approval</label></div></div>
+    </div>
+
+    <hr>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Upload Approved RTO Document</label>
+                <input type="file" name="rto_approved_doc" class="form-control-file">
+                @if($lead->rto_approved_doc_path)
+                    <small><a href="{{ asset('storage/' . $lead->rto_approved_doc_path) }}" target="_blank">View Current Document</a></small>
+                @endif
+            </div>
+        </div>
     </div>
 
     <button type="submit" class="btn btn-primary mt-3">Save Vehicle Details</button>

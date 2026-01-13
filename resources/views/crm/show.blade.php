@@ -130,7 +130,28 @@
     {{-- Lead Details Card --}}
     <div class="card">
         <div class="card-body">
-            @include('crm.partials.lead_details')
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Customer Name:</strong> {{ $lead->customer_name }}</p>
+                    <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
+                    <p><strong>CRM Stage:</strong> <span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Bank:</strong> {{ $lead->bank->name ?? 'N/A' }}</p>
+                    <p><strong>Branch:</strong> {{ $lead->bankBranch->name ?? 'N/A' }}</p>
+                    <p><strong>Start Date:</strong> {{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : '-' }}</p>
+                    @if($lead->crm_disbursal_at && $lead->converted_at)
+                        @php
+                            $startDate = \Carbon\Carbon::parse($lead->converted_at);
+                            $disbursalDate = \Carbon\Carbon::parse($lead->crm_disbursal_at);
+                            $duration = $startDate->diffInDays($disbursalDate);
+                        @endphp
+                        <p><strong>Disbursal Duration:</strong> {{ $duration }} days</p>
+                    @endif
+                </div>
+            </div>
+            <hr>
+            @include('crm.partials.lead_details') {{-- This partial contains more lead details --}}
         </div>
     </div>
 

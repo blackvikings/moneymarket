@@ -13,6 +13,7 @@ use App\Http\Controllers\CityController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\CrmController;
 use App\Http\Controllers\RtoController;
+use App\Http\Controllers\InsuranceLeadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\EmployeeLoginController;
@@ -95,13 +96,16 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
     // Admin can also manage leads, CRM, RTO
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
+    Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);
 
+    Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
     Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
 
+    Route::get('rto/export', [RtoController::class, 'export'])->name('rto.export');
     Route::get('rto', [RtoController::class, 'index'])->name('rto.index');
     Route::get('rto/create', [RtoController::class, 'create'])->name('rto.create');
     Route::post('rto', [RtoController::class, 'store'])->name('rto.store');
@@ -112,7 +116,16 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
     Route::post('rto/{lead}/update-checklist', [RtoController::class, 'updateChecklist'])->name('rto.update-checklist');
     Route::post('rto/{lead}/update-loan-return', [RtoController::class, 'updateLoanReturn'])->name('rto.update-loan-return');
     Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
-    Route::post('rto/{lead}/update-insurance-details', [RtoController::class, 'updateInsuranceDetails'])->name('rto.update-insurance-details');
+    Route::post('rto/{lead}/update-rto-done', [RtoController::class, 'updateRtoDone'])->name('rto.update-rto-done');
+    Route::post('rto/{lead}/reject-lead', [RtoController::class, 'rejectLead'])->name('rto.reject-lead');
+
+    // Insurance Lead Module
+    Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');
+    Route::get('insurance-leads', [InsuranceLeadController::class, 'index'])->name('insurance-leads.index');
+    Route::get('insurance-leads/create', [InsuranceLeadController::class, 'create'])->name('insurance-leads.create');
+    Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');
+    Route::get('insurance-leads/{lead}', [InsuranceLeadController::class, 'show'])->name('insurance-leads.show');
+    Route::post('insurance-leads/{lead}/update-details', [InsuranceLeadController::class, 'updateDetails'])->name('insurance-leads.update-details');
 });
 
 // Employee Routes
@@ -120,17 +133,20 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     // Employees typically manage leads
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
+    Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);
 
     // Depending on permissions, they might access CRM/RTO too, or just parts of it.
     // For now, I'll expose the same modules but under the 'employee' prefix.
     // Access control inside controllers (via permissions) will still apply.
 
+    Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
     Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
 
+    Route::get('rto/export', [RtoController::class, 'export'])->name('rto.export');
     Route::get('rto', [RtoController::class, 'index'])->name('rto.index');
     Route::get('rto/create', [RtoController::class, 'create'])->name('rto.create');
     Route::post('rto', [RtoController::class, 'store'])->name('rto.store');
@@ -141,7 +157,16 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('rto/{lead}/update-checklist', [RtoController::class, 'updateChecklist'])->name('rto.update-checklist');
     Route::post('rto/{lead}/update-loan-return', [RtoController::class, 'updateLoanReturn'])->name('rto.update-loan-return');
     Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
-    Route::post('rto/{lead}/update-insurance-details', [RtoController::class, 'updateInsuranceDetails'])->name('rto.update-insurance-details');
+    Route::post('rto/{lead}/update-rto-done', [RtoController::class, 'updateRtoDone'])->name('rto.update-rto-done');
+    Route::post('rto/{lead}/reject-lead', [RtoController::class, 'rejectLead'])->name('rto.reject-lead');
+
+    // Insurance Lead Module
+    Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');
+    Route::get('insurance-leads', [InsuranceLeadController::class, 'index'])->name('insurance-leads.index');
+    Route::get('insurance-leads/create', [InsuranceLeadController::class, 'create'])->name('insurance-leads.create');
+    Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');
+    Route::get('insurance-leads/{lead}', [InsuranceLeadController::class, 'show'])->name('insurance-leads.show');
+    Route::post('insurance-leads/{lead}/update-details', [InsuranceLeadController::class, 'updateDetails'])->name('insurance-leads.update-details');
 
     // Employees need access to get branches for dropdowns
     Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');

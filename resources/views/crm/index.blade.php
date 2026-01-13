@@ -3,7 +3,12 @@
 @section('title', 'CRM - Bank Assigned Leads')
 
 @section('content_header')
-    <h1>CRM - Bank Assigned Leads</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1>CRM - Bank Assigned Leads</h1>
+        <a href="{{ route(get_route_prefix() . 'crm.export', request()->all()) }}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> Export
+        </a>
+    </div>
 @stop
 
 @section('content')
@@ -159,6 +164,7 @@
                         <th>Bank</th>
                         <th>Branch</th>
                         <th>CRM Stage</th>
+                        <th>Start Date</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -171,6 +177,7 @@
                             <td>{{ $lead->bank ? $lead->bank->name : '-' }}</td>
                             <td>{{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</td>
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
+                            <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : '-' }}</td>
                             <td>
                                 <a href="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
                                 @if($lead->crm_stage !== 'Closed')
@@ -207,7 +214,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">No leads found in this CRM stage.</td>
+                            <td colspan="8" class="text-center">No leads found in this CRM stage.</td>
                         </tr>
                     @endforelse
                 </tbody>

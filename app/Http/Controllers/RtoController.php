@@ -9,16 +9,16 @@ use App\Models\Insurance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\RtoExport;
 
 class RtoController extends Controller
 {
     protected $stages = [
         'New',
         'Checking',
-        'Loan Return',
         'Vehicle Detail',
-        'Insurance',
-        'RTO Done'
+        'RTO Done',
+        'Loan Return'
     ];
 
     public function index(Request $request)
@@ -136,10 +136,10 @@ class RtoController extends Controller
         if ($request->has('save_and_next')) {
             $currentStageIndex = array_search($lead->rto_stage, $this->stages);
 
-            // Special case: If stage is 'New', jump to 'Loan Return' (skipping 'Checking' state as we just completed it)
+            // Special case: If stage is 'New', jump to 'Vehicle Detail' (skipping 'Checking' state as we just completed it)
             if ($lead->rto_stage === 'New') {
-                $lead->update(['rto_stage' => 'Loan Return']);
-                return redirect()->back()->with('success', 'Checklist updated and moved to Loan Return');
+                $lead->update(['rto_stage' => 'Vehicle Detail']);
+                return redirect()->back()->with('success', 'Checklist updated and moved to Vehicle Detail');
             }
 
             if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
@@ -164,14 +164,8 @@ class RtoController extends Controller
             'loan_return_reason' => $request->loan_return_reason,
         ]);
 
-        if ($request->has('save_and_next')) {
-            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
-            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
-                $nextStage = $this->stages[$currentStageIndex + 1];
-                $lead->update(['rto_stage' => $nextStage]);
-                return redirect()->back()->with('success', 'Loan return details updated and moved to ' . $nextStage);
-            }
-        }
+        // Loan Return is now the final stage for rejected leads, so no "Save & Next" logic needed to move forward.
+        // It stays in Loan Return.
 
         return redirect()->back()->with('success', 'Loan return details updated successfully.');
     }
@@ -181,22 +175,32 @@ class RtoController extends Controller
         $request->validate([
             'rto_vehicle_type' => 'required|in:New Vehicle,Old Vehicle',
             'rto_agent_id' => 'nullable|exists:rto_agents,id',
+            'rto_approved_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
-        $lead->update([
+        $data = [
             'rto_vehicle_type' => $request->rto_vehicle_type,
-            'old_financer' => $request->old_financer, // Assuming this field exists from previous migration
+            'old_financer' => $request->old_financer,
             'rto_loan_closed_status' => $request->has('rto_loan_closed_status'),
             'rto_hp_termination_status' => $request->has('rto_hp_termination_status'),
             'rto_agent_id' => $request->rto_agent_id,
             'rto_challan_verified' => $request->has('rto_challan_verified'),
             'rto_verification_status' => $request->has('rto_verification_status'),
             'rto_approval_status' => $request->has('rto_approval_status'),
-        ]);
+        ];
+
+        if ($request->hasFile('rto_approved_doc')) {
+            if ($lead->rto_approved_doc_path) {
+                Storage::disk('public')->delete($lead->rto_approved_doc_path);
+            }
+            $data['rto_approved_doc_path'] = $request->file('rto_approved_doc')->store('rto_approved_docs', 'public');
+        }
+
+        $lead->update($data);
 
         // Handle Closer Deposits
         if ($request->has('closer_deposits')) {
-            $lead->rtoCloserDeposits()->delete(); // Simple way to handle updates: delete all and recreate
+            $lead->rtoCloserDeposits()->delete();
             foreach ($request->closer_deposits as $deposit) {
                 if ($deposit['amount'] && $deposit['date']) {
                     $lead->rtoCloserDeposits()->create($deposit);
@@ -219,73 +223,57 @@ class RtoController extends Controller
         }
 
         if ($request->has('save_and_next')) {
-            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
-            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
-                $nextStage = $this->stages[$currentStageIndex + 1];
-                $lead->update(['rto_stage' => $nextStage]);
-                return redirect()->back()->with('success', 'Vehicle details updated and moved to ' . $nextStage);
+            // Reverted: Just move to RTO Done, do NOT initialize Insurance yet
+            if ($lead->rto_stage === 'Vehicle Detail') {
+                $lead->update(['rto_stage' => 'RTO Done']);
+                return redirect()->back()->with('success', 'Vehicle details updated. Lead moved to RTO Done.');
             }
         }
 
         return redirect()->back()->with('success', 'Vehicle details updated successfully.');
     }
 
-    public function createInsuranceLead()
-    {
-        return view('rto.create_insurance_lead');
-    }
-
-    public function storeInsuranceLead(Request $request)
+    public function updateRtoDone(Request $request, Lead $lead)
     {
         $request->validate([
-            'customer_name' => 'required|string|max:255',
-            'contact_number' => 'required|string|max:50',
-            'insurance_address_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'remark' => 'nullable|string|max:500',
         ]);
 
-        $data = $request->except('insurance_address_proof');
-        $data['created_by'] = Auth::id();
-        $data['status'] = 'Lead';
-        $data['rto_stage'] = 'Insurance'; // Start directly at the Insurance stage
+        $data = [
+            'insurance_lead_stage' => 'New', // Move to Insurance Module
+            'remark' => $request->remark,
+        ];
 
-        if ($request->hasFile('insurance_address_proof')) {
-            $data['insurance_address_proof_path'] = $request->file('insurance_address_proof')->store('insurance_docs', 'public');
+        if ($request->hasFile('rto_approved_doc')) {
+            if ($lead->rto_approved_doc_path) {
+                Storage::disk('public')->delete($lead->rto_approved_doc_path);
+            }
+            $data['rto_approved_doc_path'] = $request->file('rto_approved_doc')->store('rto_approved_docs', 'public');
         }
 
-        $lead = Lead::create($data);
+        $lead->update($data);
 
-        return redirect()->route(get_route_prefix() . 'rto.show', $lead)->with('success', 'New Insurance Lead added successfully.');
+        return redirect()->back()->with('success', 'RTO Document uploaded. Lead moved to Insurance Module.');
     }
 
-    public function updateInsuranceDetails(Request $request, Lead $lead)
+    public function rejectLead(Request $request, Lead $lead)
     {
         $request->validate([
-            'insurance_id' => 'required|exists:insurances,id',
-            'insurance_start_date' => 'required|date',
-            'insurance_end_date' => 'required|date',
-            'insurance_type_of_insurance' => 'required|array',
-            'insurance_premium_amount' => 'required|numeric',
-            'insurance_idv_amount' => 'required|numeric',
+            'rejection_reason' => 'required|string|max:500',
         ]);
 
         $lead->update([
-            'insurance_id' => $request->insurance_id,
-            'insurance_start_date' => $request->insurance_start_date,
-            'insurance_end_date' => $request->insurance_end_date,
-            'insurance_type_of_insurance' => implode(', ', $request->insurance_type_of_insurance),
-            'insurance_premium_amount' => $request->insurance_premium_amount,
-            'insurance_idv_amount' => $request->insurance_idv_amount,
+            'rto_stage' => 'Loan Return',
+            'loan_return_reason' => $request->rejection_reason,
+            'loan_return_date' => now(),
         ]);
 
-        if ($request->has('save_and_next')) {
-            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
-            if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
-                $nextStage = $this->stages[$currentStageIndex + 1];
-                $lead->update(['rto_stage' => $nextStage]);
-                return redirect()->back()->with('success', 'Insurance details updated and moved to ' . $nextStage);
-            }
-        }
+        return redirect()->back()->with('warning', 'Lead rejected and moved to Loan Return.');
+    }
 
-        return redirect()->back()->with('success', 'Insurance details updated successfully.');
+    public function export(Request $request)
+    {
+        return (new RtoExport($request))->download('rto-leads.csv');
     }
 }

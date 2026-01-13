@@ -54,6 +54,11 @@ class MenuServiceProvider extends ServiceProvider
                         'route' => $prefix . 'rto.index',
                         'can' => 'view lead',
                     ],
+                    [
+                        'text' => 'Insurance Leads',
+                        'route' => $prefix . 'insurance-leads.index',
+                        'can' => 'view lead',
+                    ],
                 ],
             ]);
 

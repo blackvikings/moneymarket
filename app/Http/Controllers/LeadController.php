@@ -28,7 +28,7 @@ class LeadController extends Controller
     public function index(Request $request)
     {
         $query = Lead::with(['assignedTo', 'bank']);
-        $statuses = ['New', 'Prospect', 'Lead', 'Rejected', 'Not_Active'];
+        $statuses = ['New', 'Prospect', 'Lead', 'Bank Assign', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
 
         // Base query for filtering
@@ -73,12 +73,6 @@ class LeadController extends Controller
         $leads = $query->latest()->paginate(10)->appends($request->except('page'));
         $users = User::role('Tele Caller')->get();
 
-        $counts = [];
-        $counts['All'] = Lead::count();
-        foreach ($statuses as $status) {
-            $counts[$status] = Lead::where('status', $status)->count();
-        }
-
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
 
@@ -95,7 +89,7 @@ class LeadController extends Controller
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
             'father_name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'email' => 'nullable|email|max:255',
             'firm_id' => 'required|exists:firms,id',
             'residence_type' => 'required|string',
             'current_address_line' => 'required|string',
@@ -215,18 +209,15 @@ class LeadController extends Controller
                     ->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.')
                     ->withInput($request->only('bank_id', 'bank_branch_id'));
             }
-            $request->validate([
-                'bank_id' => 'required|exists:banks,id',
-                'bank_branch_id' => 'required|exists:bank_branches,id',
-            ]);
-            $data = [
-                'status' => 'Lead',
-                'bank_id' => $request->bank_id,
-                'bank_branch_id' => $request->bank_branch_id,
-                'converted_at' => now(),
-            ];
+            // Changed: Qualify now moves to 'Lead' status, NOT 'Bank Assign'
+            $data['status'] = 'Lead';
             $logData['status'] = 'Lead';
-            $logData['remark'] = 'Lead qualified and assigned to bank.';
+            $logData['remark'] = 'Lead qualified.';
+        } elseif ($action === 'proceed_to_bank_assign') {
+            // New Action: Move from 'Lead' to 'Bank Assign'
+            $data['status'] = 'Bank Assign';
+            $logData['status'] = 'Bank Assign';
+            $logData['remark'] = 'Moved to Bank Assignment stage.';
         } elseif ($action === 'reject') {
             $request->validate(['remark' => 'required|string']);
             $data['status'] = 'Rejected';
@@ -241,6 +232,37 @@ class LeadController extends Controller
         $lead->statusLogs()->create($logData);
 
         return redirect()->back()->with('success', 'Lead status updated successfully.');
+    }
+
+    public function assignBank(Request $request, Lead $lead)
+    {
+        $request->validate([
+            'bank_id' => 'required|exists:banks,id',
+            'bank_branch_id' => 'required|exists:bank_branches,id',
+        ]);
+
+        $lead->update([
+            'status' => 'Lead', // Or maybe keep it as 'Bank Assign' or move to a new status like 'CRM'
+            // Actually, usually once bank is assigned, it goes to CRM.
+            // Let's assume it stays as 'Lead' status but enters CRM pipeline.
+            // Wait, if I set it back to 'Lead', it will show up in the 'Lead' tab again.
+            // If the flow is New -> Prospect -> Lead -> Bank Assign -> CRM
+            // Then after Bank Assign, it should probably disappear from this list or go to a 'Completed' status?
+            // Or maybe 'Lead' status implies it's in CRM?
+            // Let's assume for now it stays 'Lead' but with bank details, effectively moving it to CRM module visibility.
+            'bank_id' => $request->bank_id,
+            'bank_branch_id' => $request->bank_branch_id,
+            'converted_at' => now(),
+            'crm_stage' => 'New',
+        ]);
+
+        $lead->statusLogs()->create([
+            'status' => 'Lead',
+            'remark' => 'Bank assigned. Lead moved to CRM.',
+            'created_by' => Auth::id(),
+        ]);
+
+        return redirect()->back()->with('success', 'Bank assigned successfully. Lead moved to CRM.');
     }
 
     public function destroy(Lead $lead)

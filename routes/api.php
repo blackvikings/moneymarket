@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\LeadController;
 use App\Http\Controllers\Api\CrmController;
 use App\Http\Controllers\Api\RtoController;
+use App\Http\Controllers\Api\InsuranceLeadController;
 use App\Http\Controllers\Api\DataController;
 
 // Public route for login
@@ -31,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/leads/{lead}', [LeadController::class, 'show']);
     Route::put('/leads/{lead}', [LeadController::class, 'update']);
     Route::post('/leads/{lead}/status', [LeadController::class, 'updateStatus']);
+    Route::post('/leads/{lead}/assign-bank', [LeadController::class, 'assignBank']);
 
     // CRM (Bank Assign) API
     Route::get('/crm', [CrmController::class, 'index']);
@@ -40,8 +42,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // RTO API
     Route::get('/rto', [RtoController::class, 'index']);
     Route::post('/rto', [RtoController::class, 'store']);
-    Route::post('/rto/create-insurance-lead', [RtoController::class, 'storeInsuranceLead']);
     Route::get('/rto/{lead}', [RtoController::class, 'show']);
     Route::post('/rto/{lead}/stage', [RtoController::class, 'updateStage']);
-    Route::post('/rto/{lead}/insurance-details', [RtoController::class, 'updateInsuranceDetails']);
+    Route::post('/rto/{lead}/rto-done', [RtoController::class, 'updateRtoDone']);
+    Route::post('/rto/{lead}/reject', [RtoController::class, 'rejectLead']);
+
+    // Insurance Lead API
+    Route::get('/insurance-leads', [InsuranceLeadController::class, 'index']);
+    Route::post('/insurance-leads', [InsuranceLeadController::class, 'store']);
+    Route::get('/insurance-leads/{lead}', [InsuranceLeadController::class, 'show']);
+    Route::post('/insurance-leads/{lead}/details', [InsuranceLeadController::class, 'updateDetails']);
 });
