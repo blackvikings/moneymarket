@@ -28,8 +28,8 @@ Route::get('/', function () {
 
 // Admin Authentication Routes
 Route::prefix('admin')->group(function () {
-    Route::get('/', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
-    Route::post('login', [AdminLoginController::class, 'login']);
+    Route::get('/', [AdminLoginController::class, 'showLoginForm']);
+    Route::post('login', [AdminLoginController::class, 'login'])->name('admin.login');
     Route::post('logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 });
 
