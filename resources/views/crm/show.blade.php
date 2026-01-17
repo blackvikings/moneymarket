@@ -176,7 +176,7 @@
 
     <!-- Action Modal -->
     <div class="modal fade" id="actionModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Update Stage: {{ $lead->crm_stage }}</h5>
@@ -184,17 +184,63 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
-                    <p>Do you want to mark this stage as complete and move to the next one?</p>
-                </div>
-                <div class="modal-footer">
-                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" class="d-inline">
+
+                @if($lead->crm_stage == 'Agreement')
+                    <div class="modal-body">
+                        @include('crm.partials.disbursal_form', ['lead' => $lead])
+                    </div>
+                @elseif($lead->crm_stage == 'Disbursal')
+                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
                         @csrf
-                        <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
-                        <button type="submit" name="action" value="Yes" class="btn btn-success">Yes</button>
+                        <div class="modal-body">
+                            <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
+                            <input type="hidden" name="completed_stages[]" value="Closed">
+                            <p>Are you sure you want to close this lead?</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" name="action" value="Yes" class="btn btn-success">Yes, Close Lead</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        </div>
                     </form>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
-                </div>
+                @else
+                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
+                        @csrf
+                        <div class="modal-body">
+                            <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
+
+                            @php
+                                // Removed 'Agreement' from the list as requested
+                                $stagesList = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement'];
+                                $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal', 'Closed'];
+                                $currentIndex = array_search($lead->crm_stage, $allStages);
+                                if ($currentIndex === false) $currentIndex = -1;
+                            @endphp
+
+                            <div class="form-group">
+                                <label>Stage Progress</label>
+                                @foreach($stagesList as $index => $stage)
+                                    @php
+                                        $stageIndex = array_search($stage, $allStages);
+                                        $isChecked = $stageIndex <= $currentIndex;
+                                    @endphp
+                                    <div class="form-check">
+                                        <input class="form-check-input stage-checkbox" type="checkbox"
+                                            name="completed_stages[]"
+                                            value="{{ $stage }}"
+                                            {{ $isChecked ? 'checked disabled' : '' }}>
+                                        <label class="form-check-label">{{ $stage }}</label>
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <p class="text-muted small">Select stages to complete. You can select multiple stages at once.</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" name="action" value="Yes" class="btn btn-success">Update</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                @endif
             </div>
         </div>
     </div>

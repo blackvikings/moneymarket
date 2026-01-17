@@ -1,19 +1,29 @@
 <form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form" enctype="multipart/form-data">
     @csrf
+    @php
+        $rtoVehicleType = $lead->rto_vehicle_type;
+        if (empty($rtoVehicleType)) {
+            if ($lead->vehicle_purchase_type == 'New Purchase') {
+                $rtoVehicleType = 'New Vehicle';
+            } elseif (in_array($lead->vehicle_purchase_type, ['Repurchase', 'Refinance', 'Balance Transfer'])) {
+                $rtoVehicleType = 'Old Vehicle';
+            }
+        }
+    @endphp
     <div class="row">
         <div class="col-md-4">
             <div class="form-group">
                 <label>Vehicle Type</label>
                 <select name="rto_vehicle_type" class="form-control rto-vehicle-type-select" required>
                     <option value="">Select Type</option>
-                    <option value="New Vehicle" {{ $lead->rto_vehicle_type == 'New Vehicle' ? 'selected' : '' }}>New Vehicle</option>
-                    <option value="Old Vehicle" {{ $lead->rto_vehicle_type == 'Old Vehicle' ? 'selected' : '' }}>Old Vehicle</option>
+                    <option value="New Vehicle" {{ $rtoVehicleType == 'New Vehicle' ? 'selected' : '' }}>New Vehicle</option>
+                    <option value="Old Vehicle" {{ $rtoVehicleType == 'Old Vehicle' ? 'selected' : '' }}>Old Vehicle</option>
                 </select>
             </div>
         </div>
     </div>
 
-    <div class="old-vehicle-details-section" style="{{ $lead->rto_vehicle_type == 'Old Vehicle' ? '' : 'display:none;' }}">
+    <div class="old-vehicle-details-section" style="{{ $rtoVehicleType == 'Old Vehicle' ? '' : 'display:none;' }}">
         <hr>
         <h5>Old Vehicle Details</h5>
         <div class="row">

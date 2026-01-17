@@ -86,6 +86,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Lead Type <span class="text-danger">*</span></label>
+                            <select name="lead_type" class="form-control" required>
+                                <option value="">Select Lead Type</option>
+                                <option value="Loan" {{ old('lead_type', $lead->lead_type) == 'Loan' ? 'selected' : '' }}>Loan</option>
+                                <option value="RTO" {{ old('lead_type', $lead->lead_type) == 'RTO' ? 'selected' : '' }}>RTO</option>
+                                <option value="Insurance" {{ old('lead_type', $lead->lead_type) == 'Insurance' ? 'selected' : '' }}>Insurance</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
                 <hr>
                 {{-- Address Details --}}

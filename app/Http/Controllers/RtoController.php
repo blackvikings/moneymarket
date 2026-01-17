@@ -23,14 +23,25 @@ class RtoController extends Controller
 
     public function index(Request $request)
     {
-        // Show leads that are either in an RTO stage OR have completed the CRM Disbursal stage
+        // Show leads that are either in an RTO stage OR have completed the CRM Disbursal stage OR are RTO type leads
         $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
             $q->whereNotNull('rto_stage')
-              ->orWhere('crm_stage', 'Closed');
+              ->orWhere('crm_stage', 'Closed')
+              ->orWhere('lead_type', 'RTO');
         });
 
         if ($request->has('stage') && $request->stage != '') {
-            $query->where('rto_stage', $request->stage);
+            if ($request->stage == 'New') {
+                // For 'New' stage, include explicit 'New' OR (null rto_stage AND lead_type RTO)
+                $query->where(function($q) {
+                    $q->where('rto_stage', 'New')
+                      ->orWhere(function($sub) {
+                          $sub->whereNull('rto_stage')->where('lead_type', 'RTO');
+                      });
+                });
+            } else {
+                $query->where('rto_stage', $request->stage);
+            }
         }
 
         $leads = $query->latest()->paginate(10);
@@ -40,11 +51,21 @@ class RtoController extends Controller
         $counts = [];
         $counts['All'] = Lead::where(function($q) {
             $q->whereNotNull('rto_stage')
-              ->orWhere('crm_stage', 'Closed');
+              ->orWhere('crm_stage', 'Closed')
+              ->orWhere('lead_type', 'RTO');
         })->count();
 
         foreach ($stages as $stage) {
-            $counts[$stage] = Lead::where('rto_stage', $stage)->count();
+            if ($stage == 'New') {
+                $counts[$stage] = Lead::where(function($q) {
+                    $q->where('rto_stage', 'New')
+                      ->orWhere(function($sub) {
+                          $sub->whereNull('rto_stage')->where('lead_type', 'RTO');
+                      });
+                })->count();
+            } else {
+                $counts[$stage] = Lead::where('rto_stage', $stage)->count();
+            }
         }
 
         return view('rto.index', compact('leads', 'stages', 'counts'));
@@ -72,6 +93,8 @@ class RtoController extends Controller
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead'; // Treat as an active lead
         $data['rto_stage'] = 'New';
+        $data['lead_type'] = 'RTO'; // Ensure lead type is set
+        $data['rto_new_at'] = now(); // Start aging
 
         if ($request->hasFile('rto_address_proof')) {
             $data['rto_address_proof_path'] = $request->file('rto_address_proof')->store('rto_docs', 'public');
@@ -86,7 +109,9 @@ class RtoController extends Controller
     {
         $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture']);
         $stages = $this->stages;
-        $currentStageIndex = array_search($lead->rto_stage, $stages);
+        // Handle null rto_stage as 'New'
+        $currentStage = $lead->rto_stage ?? 'New';
+        $currentStageIndex = array_search($currentStage, $stages);
         $banks = Bank::where('is_active', true)->get();
         $rtoAgents = RtoAgent::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
@@ -101,6 +126,8 @@ class RtoController extends Controller
             'current_stage' => 'required|in:' . implode(',', $this->stages),
         ]);
 
+        // Handle null rto_stage as 'New'
+        $currentStage = $lead->rto_stage ?? 'New';
         $currentStageIndex = array_search($request->current_stage, $this->stages);
 
         if ($request->action === 'Yes') {
@@ -119,16 +146,26 @@ class RtoController extends Controller
         // Handle checklist updates for the "Checking" stage
         $data = [
             'rto_hsrp_status' => $request->has('rto_hsrp_status'),
+            'rto_hsrp_remark' => $request->rto_hsrp_remark,
             'rto_hypothecation_status' => $request->has('rto_hypothecation_status'),
+            'rto_hypothecation_remark' => $request->rto_hypothecation_remark,
             'rto_hypothecation_bank_id' => $request->rto_hypothecation_bank_id,
             'rto_insurance_status' => $request->has('rto_insurance_status'),
+            'rto_insurance_remark' => $request->rto_insurance_remark,
             'rto_fitness_status' => $request->has('rto_fitness_status'),
+            'rto_fitness_remark' => $request->rto_fitness_remark,
             'rto_tax_status' => $request->has('rto_tax_status'),
+            'rto_tax_remark' => $request->rto_tax_remark,
             'rto_puc_status' => $request->has('rto_puc_status'),
+            'rto_puc_remark' => $request->rto_puc_remark,
             'rto_echallan_status' => $request->has('rto_echallan_status'),
+            'rto_echallan_remark' => $request->rto_echallan_remark,
             'rto_ncr_status' => $request->has('rto_ncr_status'),
+            'rto_ncr_remark' => $request->rto_ncr_remark,
             'rto_challan_status' => $request->has('rto_challan_status'),
+            'rto_challan_remark' => $request->rto_challan_remark,
             'rto_permit_status' => $request->has('rto_permit_status'),
+            'rto_permit_remark' => $request->rto_permit_remark,
         ];
 
         $lead->update($data);
@@ -243,6 +280,7 @@ class RtoController extends Controller
         $data = [
             'insurance_lead_stage' => 'New', // Move to Insurance Module
             'remark' => $request->remark,
+            'rto_done_at' => now(), // Mark RTO as done
         ];
 
         if ($request->hasFile('rto_approved_doc')) {

@@ -96,6 +96,7 @@ class LeadController extends Controller
             'residence_type' => 'required|string',
             'current_address_line' => 'required|string',
             'permanent_address_line' => 'required|string',
+            'lead_type' => 'required|in:Loan,RTO,Insurance',
             'assigned_to' => [Rule::requiredIf(function () {
                 return Auth::user()->hasRole('admin') || Auth::user()->hasRole('Team Lead');
             })],
@@ -148,7 +149,26 @@ class LeadController extends Controller
             // ... all other detailed validation rules
         ]);
 
-        $lead->update($request->all());
+        // Ensure numeric fields are properly handled if they are empty strings
+        $data = $request->all();
+        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income'];
+
+        foreach ($numericFields as $field) {
+            if (isset($data[$field]) && $data[$field] === '') {
+                $data[$field] = null;
+            }
+        }
+
+        // Calculate total_loan_amount if not provided but components are
+        if (isset($data['old_loan_close_amount']) && isset($data['required_in_hand_amount'])) {
+             $data['total_loan_amount'] = (float)$data['old_loan_close_amount'] + (float)$data['required_in_hand_amount'];
+        }
+
+        if ($lead->status == 'Prospect') {
+            $data['status'] = 'Lead';
+        }
+
+        $lead->update($data);
 
         if ($request->input('qualify_on_save') == 1) {
             $request->validate([
@@ -217,9 +237,29 @@ class LeadController extends Controller
             $logData['remark'] = 'Lead qualified.';
         } elseif ($action === 'proceed_to_bank_assign') {
             // New Action: Move from 'Lead' to 'Bank Assign'
-            $data['status'] = 'Bank Assign';
-            $logData['status'] = 'Bank Assign';
-            $logData['remark'] = 'Moved to Bank Assignment stage.';
+            // Logic based on lead_type
+            if ($lead->lead_type === 'Loan') {
+                $data['status'] = 'Bank Assign';
+                $logData['status'] = 'Bank Assign';
+                $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
+            } elseif ($lead->lead_type === 'RTO') {
+                $data['status'] = 'Lead'; // Or keep it as Lead, but set RTO stage
+                $data['rto_stage'] = 'New'; // Reverted to New
+                $data['rto_new_at'] = now(); // Set start time for RTO
+                $logData['status'] = 'Lead';
+                $logData['remark'] = 'Moved to RTO Module.';
+            } elseif ($lead->lead_type === 'Insurance') {
+                $data['status'] = 'Lead'; // Or keep it as Lead, but set Insurance stage
+                $data['insurance_lead_stage'] = 'New';
+                $logData['status'] = 'Lead';
+                $logData['remark'] = 'Moved to Insurance Module.';
+            } else {
+                // Fallback for old leads or undefined types - default to Bank Assign
+                $data['status'] = 'Bank Assign';
+                $logData['status'] = 'Bank Assign';
+                $logData['remark'] = 'Moved to Bank Assignment stage.';
+            }
+
         } elseif ($action === 'reject') {
             $request->validate(['remark' => 'required|string']);
             $data['status'] = 'Rejected';

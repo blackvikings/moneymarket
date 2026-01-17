@@ -56,6 +56,7 @@ class LeadController extends Controller
             'permanent_address_pincode' => 'nullable|string|max:20',
             'permanent_address_state' => 'required|exists:states,id',
             'permanent_address_city' => 'required|exists:cities,id',
+            'lead_type' => 'required|in:Loan,RTO,Insurance',
             'assigned_to' => 'nullable|exists:users,id',
         ]);
 
@@ -124,6 +125,7 @@ class LeadController extends Controller
             'contact_number' => 'required|string|max:20',
             'email' => 'required|email|max:255',
             'residence_type' => 'required|string',
+            'lead_type' => 'required|in:Loan,RTO,Insurance',
             // Address
             'current_address_line' => 'required|string',
             'current_address_pincode' => 'nullable|string|max:20',
@@ -236,7 +238,7 @@ class LeadController extends Controller
         }
 
         $validated = $request->validate([
-            'action' => 'required|in:interested,not_interested,follow_up,qualify,reject',
+            'action' => 'required|in:interested,not_interested,follow_up,qualify,reject,proceed_to_bank_assign',
             'remark' => 'required_if:action,not_interested|required_if:action,follow_up|required_if:action,reject|string|nullable',
             'follow_up_date' => 'required_if:action,follow_up|date|nullable',
             'follow_up_time' => 'required_if:action,follow_up|nullable',
@@ -280,6 +282,27 @@ class LeadController extends Controller
                 ];
                 $logData['status'] = 'Lead';
                 $logData['remark'] = 'Lead qualified and assigned to bank.';
+                break;
+            case 'proceed_to_bank_assign':
+                if ($lead->lead_type === 'Loan') {
+                    $data['status'] = 'Bank Assign';
+                    $logData['status'] = 'Bank Assign';
+                    $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
+                } elseif ($lead->lead_type === 'RTO') {
+                    $data['status'] = 'Lead';
+                    $data['rto_stage'] = 'New';
+                    $logData['status'] = 'Lead';
+                    $logData['remark'] = 'Moved to RTO Module.';
+                } elseif ($lead->lead_type === 'Insurance') {
+                    $data['status'] = 'Lead';
+                    $data['insurance_lead_stage'] = 'New';
+                    $logData['status'] = 'Lead';
+                    $logData['remark'] = 'Moved to Insurance Module.';
+                } else {
+                    $data['status'] = 'Bank Assign';
+                    $logData['status'] = 'Bank Assign';
+                    $logData['remark'] = 'Moved to Bank Assignment stage.';
+                }
                 break;
             case 'reject':
                 $data['status'] = 'Rejected';

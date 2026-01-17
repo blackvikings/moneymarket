@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class Lead extends Model
 {
@@ -28,6 +29,9 @@ class Lead extends Model
         'crm_approved_at' => 'datetime',
         'crm_agreement_at' => 'datetime',
         'crm_disbursal_at' => 'datetime',
+        // RTO Timestamps
+        'rto_new_at' => 'datetime',
+        'rto_done_at' => 'datetime',
     ];
 
     public function assignedTo()
@@ -90,6 +94,27 @@ class Lead extends Model
         return $this->hasMany(LeadStatusLog::class);
     }
 
+    // Address Relationships
+    public function currentCity()
+    {
+        return $this->belongsTo(City::class, 'current_address_city');
+    }
+
+    public function currentState()
+    {
+        return $this->belongsTo(State::class, 'current_address_state');
+    }
+
+    public function permanentCity()
+    {
+        return $this->belongsTo(City::class, 'permanent_address_city');
+    }
+
+    public function permanentState()
+    {
+        return $this->belongsTo(State::class, 'permanent_address_state');
+    }
+
     // Accessor for Aging
     public function getAgingAttribute()
     {
@@ -97,5 +122,16 @@ class Lead extends Model
             return $this->created_at->diffForHumans($this->converted_at, true);
         }
         return $this->created_at->diffForHumans(null, true);
+    }
+
+    // Accessor for RTO Aging
+    public function getRtoAgingAttribute()
+    {
+        if ($this->rto_new_at) {
+            $end = $this->rto_done_at ?? now();
+            $days = (int) $this->rto_new_at->diffInDays($end);
+            return $days . ' ' . Str::plural('day', $days);
+        }
+        return '-';
     }
 }

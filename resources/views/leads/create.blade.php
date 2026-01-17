@@ -78,6 +78,20 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Lead Type <span class="text-danger">*</span></label>
+                            <select name="lead_type" class="form-control @error('lead_type') is-invalid @enderror" required>
+                                <option value="">Select Lead Type</option>
+                                <option value="Loan" {{ old('lead_type') == 'Loan' ? 'selected' : '' }}>Loan</option>
+                                <option value="RTO" {{ old('lead_type') == 'RTO' ? 'selected' : '' }}>RTO</option>
+                                <option value="Insurance" {{ old('lead_type') == 'Insurance' ? 'selected' : '' }}>Insurance</option>
+                            </select>
+                            @error('lead_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
 
                 <hr>
                 {{-- Address Details --}}
@@ -205,6 +219,7 @@
                     residence_type: { required: true },
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
+                    lead_type: { required: true },
                     assigned_to: {
                         required: function(element) {
                             return $('#assigned_to').length > 0;
@@ -227,6 +242,7 @@
                     residence_type: "Please select a residence type",
                     current_address_line: "Please enter the current address",
                     permanent_address_line: "Please enter the permanent address",
+                    lead_type: "Please select a lead type",
                     assigned_to: "Please select a user to assign the lead to"
                 }
             });

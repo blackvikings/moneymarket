@@ -16,6 +16,7 @@
                 <div class="card-body">
                     <p><strong>Name:</strong> {{ $lead->customer_name }}</p>
                     <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
+                    <p><strong>RTO Aging:</strong> {{ $lead->rto_aging }}</p>
                     @if($lead->rto_address_proof_path)
                         <p><a href="{{ asset('storage/' . $lead->rto_address_proof_path) }}" target="_blank">View Address Proof</a></p>
                     @endif

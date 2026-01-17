@@ -63,28 +63,79 @@ class CrmController extends Controller
         $request->validate([
             'action' => 'required|in:Yes,No',
             'current_stage' => 'required|in:' . implode(',', $this->stages),
+            'completed_stages' => 'nullable|array',
         ]);
 
         $currentStageIndex = array_search($request->current_stage, $this->stages);
 
-        if ($request->action === 'Yes') {
-            // Move to the next stage
-            if ($currentStageIndex < count($this->stages) - 1) {
-                $nextStage = $this->stages[$currentStageIndex + 1];
-                $lead->crm_stage = $nextStage;
+        if ($request->action === 'Yes' && $request->has('completed_stages')) {
+            $completedStages = $request->completed_stages;
+            $lastCompletedStage = null;
+            $lastCompletedIndex = -1;
 
-                // Set timestamp for the completed stage
-                $timestampField = 'crm_' . strtolower(str_replace(' ', '_', $request->current_stage)) . '_at';
-                if (Schema::hasColumn('leads', $timestampField)) {
-                    $lead->$timestampField = now();
+            // Find the furthest stage selected
+            foreach ($completedStages as $stage) {
+                $index = array_search($stage, $this->stages);
+                if ($index !== false && $index > $lastCompletedIndex) {
+                    $lastCompletedIndex = $index;
+                    $lastCompletedStage = $stage;
+                }
+            }
+
+            // If a valid future stage is selected
+            if ($lastCompletedIndex > $currentStageIndex) {
+                // Update timestamps for all intermediate stages up to the selected one
+                for ($i = $currentStageIndex + 1; $i <= $lastCompletedIndex; $i++) {
+                    $stageName = $this->stages[$i];
+                    $timestampField = 'crm_' . strtolower(str_replace(' ', '_', $stageName)) . '_at';
+                    if (Schema::hasColumn('leads', $timestampField)) {
+                        $lead->$timestampField = now();
+                    }
                 }
 
-                $lead->save();
-                return redirect()->back()->with('success', 'Stage updated to ' . $nextStage);
+                // Move to the NEXT stage after the last completed one
+                if (isset($this->stages[$lastCompletedIndex + 1])) {
+                    $nextStage = $this->stages[$lastCompletedIndex + 1];
+                    $lead->crm_stage = $nextStage;
+                    $lead->save();
+                    return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
+                } else {
+                    // If we are at the end (e.g. Closed), stay there or handle accordingly
+                    // For example, if user selected 'Closed' in Disbursal stage, lastCompletedIndex points to 'Closed'.
+                    // $this->stages[$lastCompletedIndex] is 'Closed'.
+                    // We should set stage to 'Closed'.
+
+                    // Wait, if I select 'Closed', I want to be in 'Closed' stage.
+                    // But my logic says "Move to the NEXT stage".
+                    // If I check 'New', I move to 'Login'.
+                    // If I check 'Closed', I move to... nothing?
+
+                    // Let's refine:
+                    // If the user checks a stage, it means that stage is DONE.
+                    // So if they check 'New', they are done with New, so they are now in 'Login'.
+                    // If they check 'Closed', they are done with Closed? No, Closed is the final state.
+
+                    // Special case for 'Closed': If 'Closed' is checked, stay in 'Closed'.
+                    if ($this->stages[$lastCompletedIndex] === 'Closed') {
+                        $lead->crm_stage = 'Closed';
+                        $lead->save();
+                        return redirect()->back()->with('success', 'Lead Closed successfully.');
+                    }
+
+                    // Otherwise, move to next
+                     $nextStage = $this->stages[$lastCompletedIndex + 1]; // This might still be out of bounds if not careful
+                     // But we handled Closed above.
+
+                     // Re-check bounds just in case
+                     if (isset($this->stages[$lastCompletedIndex + 1])) {
+                        $lead->crm_stage = $nextStage;
+                        $lead->save();
+                        return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
+                     }
+                }
             }
         }
 
-        // If 'No' or it's the last stage, do nothing but maybe log it
         return redirect()->back()->with('info', 'No action taken.');
     }
 
@@ -112,7 +163,7 @@ class CrmController extends Controller
             'amt_rec_lead' => $request->amt_rec_lead,
             'amt_rec_old_financer' => $request->amt_rec_old_financer,
             'crm_disbursal_at' => now(),
-            'crm_stage' => 'Closed', // Move to final stage
+            'crm_stage' => 'Disbursal', // Move to Disbursal stage first
         ]);
 
         return redirect()->route(get_route_prefix() . 'crm.show', $lead)->with('success', 'Disbursal details saved successfully.');

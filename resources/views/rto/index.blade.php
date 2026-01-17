@@ -166,6 +166,7 @@
                         <th>Customer Name</th>
                         <th>Contact</th>
                         <th>RTO Stage</th>
+                        <th>Aging</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -176,6 +177,7 @@
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
+                            <td>{{ $lead->rto_aging }}</td>
                             <td>
                                 @if($lead->rto_stage !== 'Loan Return')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
@@ -235,7 +237,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No leads found.</td>
+                            <td colspan="6" class="text-center">No leads found.</td>
                         </tr>
                     @endforelse
                 </tbody>

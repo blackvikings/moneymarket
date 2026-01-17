@@ -1,80 +1,57 @@
-<form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST">
+<form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" class="disbursal-form">
     @csrf
-    <div class="row">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Disbursal Date</label>
-                <input type="date" name="disbursal_date" class="form-control" value="{{ old('disbursal_date', $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '') }}" required>
-            </div>
+    <div class="card card-outline card-primary">
+        <div class="card-header">
+            <h3 class="card-title">Disbursal Information</h3>
         </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Finance Amount</label>
-                <input type="number" step="0.01" name="finance_amount" class="form-control" value="{{ old('finance_amount', $lead->finance_amount) }}" required>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Disbursal Amount</label>
-                <input type="number" step="0.01" name="disbursal_amount" id="disbursal_amount" class="form-control" value="{{ old('disbursal_amount', $lead->disbursal_amount) }}" required>
-            </div>
-        </div>
-    </div>
-    <hr>
-    <h5>Amount Received At</h5>
-    <div class="row">
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>At (Firm Name)</label>
-                <input type="number" step="0.01" name="amt_rec_firm" id="amt_rec_firm" class="form-control" value="{{ old('amt_rec_firm', $lead->amt_rec_firm ?? 0) }}" required>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>At Lead</label>
-                <input type="number" step="0.01" name="amt_rec_lead" id="amt_rec_lead" class="form-control" value="{{ old('amt_rec_lead', $lead->amt_rec_lead ?? 0) }}" required>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>At Old Financer</label>
-                <input type="number" step="0.01" name="amt_rec_old_financer" id="amt_rec_old_financer" class="form-control" value="{{ old('amt_rec_old_financer', $lead->amt_rec_old_financer ?? 0) }}" required>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="form-group">
-                <label>Total Amount</label>
-                <input type="text" id="total_received" class="form-control" disabled>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Disbursal Date <span class="text-danger">*</span></label>
+                        <div class="input-group date" id="disbursal_date_picker_{{ $lead->id }}" data-target-input="nearest">
+                            <input type="date" name="disbursal_date" class="form-control datetimepicker-input" data-target="#disbursal_date_picker_{{ $lead->id }}" value="{{ old('disbursal_date', $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '') }}" required/>
+                            <div class="input-group-append" data-target="#disbursal_date_picker_{{ $lead->id }}" data-toggle="datetimepicker">
+                                <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Finance Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">₹</span>
+                            </div>
+                            <input type="number" step="0.01" name="finance_amount" class="form-control" placeholder="0.00" value="{{ old('finance_amount', $lead->finance_amount) }}" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label>Disbursal Amount <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">₹</span>
+                            </div>
+                            <input type="number" step="0.01" name="disbursal_amount" id="disbursal_amount_{{ $lead->id }}" class="form-control disbursal-amount-input" placeholder="0.00" value="{{ old('disbursal_amount', $lead->disbursal_amount) }}" required>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary mt-3">Save Disbursal & Close Lead</button>
+
+    <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Disbursal & Close Lead</button>
+    </div>
 </form>
 
-@section('js')
-    @parent
-    <script>
-        $(document).ready(function() {
-            function calculateTotalReceived() {
-                let firm = parseFloat($('#amt_rec_firm').val()) || 0;
-                let lead = parseFloat($('#amt_rec_lead').val()) || 0;
-                let oldFinancer = parseFloat($('#amt_rec_old_financer').val()) || 0;
-                let total = firm + lead + oldFinancer;
-                $('#total_received').val(total.toFixed(2));
-
-                // Optional: Visual validation
-                let disbursalAmount = parseFloat($('#disbursal_amount').val()) || 0;
-                if (total.toFixed(2) !== disbursalAmount.toFixed(2)) {
-                    $('#total_received').css('border-color', 'red');
-                } else {
-                    $('#total_received').css('border-color', '');
-                }
-            }
-
-            $('#amt_rec_firm, #amt_rec_lead, #amt_rec_old_financer, #disbursal_amount').on('input', calculateTotalReceived);
-
-            // Run calculation on page load to populate total if old values exist
-            calculateTotalReceived();
-        });
-    </script>
-@stop
+<script>
+    // Ensure script runs after DOM is loaded and even if loaded via AJAX
+    (function() {
+        // Removed auto-calculation logic as the total field is removed
+    })();
+</script>
