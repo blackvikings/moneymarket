@@ -27,8 +27,8 @@
                             <p><strong>Residence Type:</strong> {{ $lead->residence_type }}</p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Current Address:</strong> {{ $lead->current_address_line }}, {{ $lead->current_address_city }}, {{ $lead->current_address_state }} - {{ $lead->current_address_pincode }}</p>
-                            <p><strong>Permanent Address:</strong> {{ $lead->permanent_address_line }}, {{ $lead->permanent_address_city }}, {{ $lead->permanent_address_state }} - {{ $lead->permanent_address_pincode }}</p>
+                            <p><strong>Current Address:</strong> {{ $lead->current_address_line }}, {{ $lead->currentCity->name ?? $lead->current_address_city }}, {{ $lead->currentState->name ?? $lead->current_address_state }} - {{ $lead->current_address_pincode }}</p>
+                            <p><strong>Permanent Address:</strong> {{ $lead->permanent_address_line }}, {{ $lead->permanentCity->name ?? $lead->permanent_address_city }}, {{ $lead->permanentState->name ?? $lead->permanent_address_state }} - {{ $lead->permanent_address_pincode }}</p>
                         </div>
                     </div>
 
