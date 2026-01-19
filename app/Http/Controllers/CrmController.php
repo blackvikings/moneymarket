@@ -30,7 +30,18 @@ class CrmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::with(['bank', 'bankBranch'])->where('status', 'Lead')->where('bank_id', '!=', null); // Eager load relationships
+        // Show leads that are in 'Bank Assign' status OR 'Lead' status with a bank assigned
+        // The previous logic was: where('status', 'Lead')->where('bank_id', '!=', null)
+        // But the LeadController now sets status to 'Bank Assign' for Loan leads.
+        // So we need to include 'Bank Assign' status as well.
+
+        $query = Lead::with(['bank', 'bankBranch'])
+            ->where(function($q) {
+                $q->where('status', 'Bank Assign')
+                  ->orWhere(function($sub) {
+                      $sub->where('status', 'Lead')->whereNotNull('bank_id');
+                  });
+            });
 
         if ($request->has('stage') && $request->stage != '') {
             $query->where('crm_stage', $request->stage);
@@ -40,10 +51,17 @@ class CrmController extends Controller
         $stages = $this->stages;
 
         // Calculate counts for each stage
+        $baseCountQuery = Lead::where(function($q) {
+            $q->where('status', 'Bank Assign')
+              ->orWhere(function($sub) {
+                  $sub->where('status', 'Lead')->whereNotNull('bank_id');
+              });
+        });
+
         $counts = [];
-        $counts['All'] = Lead::where('status', 'Lead')->where('bank_id', '!=', null)->count();
+        $counts['All'] = $baseCountQuery->count();
         foreach ($stages as $stage) {
-            $counts[$stage] = Lead::where('status', 'Lead')->where('bank_id', '!=', null)->where('crm_stage', $stage)->count();
+            $counts[$stage] = (clone $baseCountQuery)->where('crm_stage', $stage)->count();
         }
 
         return view('crm.index', compact('leads', 'stages', 'counts'));
@@ -100,21 +118,6 @@ class CrmController extends Controller
                     $lead->save();
                     return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
                 } else {
-                    // If we are at the end (e.g. Closed), stay there or handle accordingly
-                    // For example, if user selected 'Closed' in Disbursal stage, lastCompletedIndex points to 'Closed'.
-                    // $this->stages[$lastCompletedIndex] is 'Closed'.
-                    // We should set stage to 'Closed'.
-
-                    // Wait, if I select 'Closed', I want to be in 'Closed' stage.
-                    // But my logic says "Move to the NEXT stage".
-                    // If I check 'New', I move to 'Login'.
-                    // If I check 'Closed', I move to... nothing?
-
-                    // Let's refine:
-                    // If the user checks a stage, it means that stage is DONE.
-                    // So if they check 'New', they are done with New, so they are now in 'Login'.
-                    // If they check 'Closed', they are done with Closed? No, Closed is the final state.
-
                     // Special case for 'Closed': If 'Closed' is checked, stay in 'Closed'.
                     if ($this->stages[$lastCompletedIndex] === 'Closed') {
                         $lead->crm_stage = 'Closed';
