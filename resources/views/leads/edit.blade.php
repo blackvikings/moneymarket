@@ -536,7 +536,7 @@
             $('#editLeadForm').validate({
                 rules: {
                     father_name: { required: true },
-                    email: { required: true, email: true },
+                    email: { required: false, email: true },
                     firm_id: { required: true },
                     residence_type: { required: true },
                     current_address_line: { required: true },
@@ -606,7 +606,6 @@
                 messages: {
                     father_name: "Please enter the father's name",
                     email: {
-                        required: "Please enter an email address",
                         email: "Please enter a valid email address"
                     },
                     firm_id: "Please select a firm",
