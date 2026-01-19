@@ -73,7 +73,8 @@ class LeadController extends Controller
              $query->where('assigned_to', Auth::id());
         }
 
-        $leads = $query->latest()->paginate(10)->appends($request->except('page'));
+        // Explicitly order by ID descending to ensure latest leads are first
+        $leads = $query->orderBy('id', 'desc')->paginate(10)->appends($request->except('page'));
         $users = User::role('Tele Caller')->get();
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
@@ -229,6 +230,7 @@ class LeadController extends Controller
             $logData['remark'] = 'Follow-up set: ' . $request->remark;
         } elseif ($action === 'qualify') {
             if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
+                // Pass data via query parameters to ensure it persists to the edit page
                 return redirect()->route(get_route_prefix() . 'leads.edit', [
                     'lead' => $lead->id,
                     'qualify' => 1,
@@ -247,6 +249,8 @@ class LeadController extends Controller
                 $data['status'] = 'Bank Assign';
                 $logData['status'] = 'Bank Assign';
                 $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
+                $data['bank_id'] = $request->bank_id;
+                $data['bank_branch_id'] = $request->bank_branch_id;
             } elseif ($lead->lead_type === 'RTO') {
                 $data['status'] = 'Lead'; // Or keep it as Lead, but set RTO stage
                 $data['rto_stage'] = 'New'; // Reverted to New

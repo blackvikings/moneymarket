@@ -37,6 +37,7 @@ class InsuranceLeadController extends Controller
         $data['status'] = 'Lead';
         $data['rto_stage'] = 'RTO Done'; // Mark RTO as done
         $data['insurance_lead_stage'] = 'New'; // Start in Insurance Module
+        $data['lead_type'] = 'Insurance';
 
         if ($request->hasFile('insurance_address_proof')) {
             $data['insurance_address_proof_path'] = $request->file('insurance_address_proof')->store('insurance_docs', 'public');
