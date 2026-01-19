@@ -30,17 +30,21 @@ class CrmController extends Controller
 
     public function index(Request $request)
     {
-        // Show leads that are in 'Bank Assign' status OR 'Lead' status with a bank assigned
-        // The previous logic was: where('status', 'Lead')->where('bank_id', '!=', null)
-        // But the LeadController now sets status to 'Bank Assign' for Loan leads.
-        // So we need to include 'Bank Assign' status as well.
+        // Show leads that are relevant to CRM:
+        // 1. Explicitly 'Loan' type leads that are active (not Rejected/Not_Active)
+        // 2. Leads with 'Bank Assign' status (legacy or flow specific)
+        // 3. Leads with 'Lead' status and a bank assigned (legacy)
 
         $query = Lead::with(['bank', 'bankBranch'])
             ->where(function($q) {
-                $q->where('status', 'Bank Assign')
-                  ->orWhere(function($sub) {
-                      $sub->where('status', 'Lead')->whereNotNull('bank_id');
-                  });
+                $q->where(function($sub) {
+                    $sub->where('lead_type', 'Loan')
+                        ->whereNotIn('status', ['Rejected', 'Not_Active']);
+                })
+                ->orWhere('status', 'Bank Assign')
+                ->orWhere(function($sub) {
+                    $sub->where('status', 'Lead')->whereNotNull('bank_id');
+                });
             });
 
         if ($request->has('stage') && $request->stage != '') {
@@ -50,12 +54,16 @@ class CrmController extends Controller
         $leads = $query->latest()->paginate(10);
         $stages = $this->stages;
 
-        // Calculate counts for each stage
+        // Calculate counts for each stage using the same base logic
         $baseCountQuery = Lead::where(function($q) {
-            $q->where('status', 'Bank Assign')
-              ->orWhere(function($sub) {
-                  $sub->where('status', 'Lead')->whereNotNull('bank_id');
-              });
+            $q->where(function($sub) {
+                $sub->where('lead_type', 'Loan')
+                    ->whereNotIn('status', ['Rejected', 'Not_Active']);
+            })
+            ->orWhere('status', 'Bank Assign')
+            ->orWhere(function($sub) {
+                $sub->where('status', 'Lead')->whereNotNull('bank_id');
+            });
         });
 
         $counts = [];
@@ -148,28 +156,17 @@ class CrmController extends Controller
             'disbursal_date' => 'required|date',
             'finance_amount' => 'required|numeric',
             'disbursal_amount' => 'required|numeric',
-            'amt_rec_firm' => 'required|numeric',
-            'amt_rec_lead' => 'required|numeric',
-            'amt_rec_old_financer' => 'required|numeric',
         ]);
-
-        $totalReceived = $request->amt_rec_firm + $request->amt_rec_lead + $request->amt_rec_old_financer;
-        if ($totalReceived != $request->disbursal_amount) {
-            return redirect()->back()->withErrors(['disbursal_amount' => 'Total received amount must equal the disbursal amount.']);
-        }
 
         $lead->update([
             'disbursal_date' => $request->disbursal_date,
             'finance_amount' => $request->finance_amount,
             'disbursal_amount' => $request->disbursal_amount,
-            'amt_rec_firm' => $request->amt_rec_firm,
-            'amt_rec_lead' => $request->amt_rec_lead,
-            'amt_rec_old_financer' => $request->amt_rec_old_financer,
             'crm_disbursal_at' => now(),
             'crm_stage' => 'Disbursal', // Move to Disbursal stage first
         ]);
 
-        return redirect()->route(get_route_prefix() . 'crm.show', $lead)->with('success', 'Disbursal details saved successfully.');
+        return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', 'Disbursal details saved successfully.');
     }
 
     public function export(Request $request)

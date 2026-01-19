@@ -23,21 +23,19 @@ class RtoController extends Controller
 
     public function index(Request $request)
     {
-        // Show leads that are either in an RTO stage OR have completed the CRM Disbursal stage OR are RTO type leads
+        // Show leads that are explicitly RTO type OR have completed the CRM Disbursal stage (Closed)
+        // We removed whereNotNull('rto_stage') because it defaults to 'New', causing all leads to show up.
         $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
-            $q->whereNotNull('rto_stage')
-              ->orWhere('crm_stage', 'Closed')
-              ->orWhere('lead_type', 'RTO');
+            $q->where('lead_type', 'RTO')
+              ->orWhere('crm_stage', 'Closed');
         });
 
         if ($request->has('stage') && $request->stage != '') {
             if ($request->stage == 'New') {
-                // For 'New' stage, include explicit 'New' OR (null rto_stage AND lead_type RTO)
+                // For 'New' stage, include explicit 'New' OR null rto_stage
                 $query->where(function($q) {
                     $q->where('rto_stage', 'New')
-                      ->orWhere(function($sub) {
-                          $sub->whereNull('rto_stage')->where('lead_type', 'RTO');
-                      });
+                      ->orWhereNull('rto_stage');
                 });
             } else {
                 $query->where('rto_stage', $request->stage);
@@ -48,23 +46,23 @@ class RtoController extends Controller
         $stages = $this->stages;
 
         // Calculate counts for each stage
+        // Base query for counts must match the main query's base conditions
+        $baseCountQuery = Lead::where(function($q) {
+            $q->where('lead_type', 'RTO')
+              ->orWhere('crm_stage', 'Closed');
+        });
+
         $counts = [];
-        $counts['All'] = Lead::where(function($q) {
-            $q->whereNotNull('rto_stage')
-              ->orWhere('crm_stage', 'Closed')
-              ->orWhere('lead_type', 'RTO');
-        })->count();
+        $counts['All'] = $baseCountQuery->count();
 
         foreach ($stages as $stage) {
             if ($stage == 'New') {
-                $counts[$stage] = Lead::where(function($q) {
+                $counts[$stage] = (clone $baseCountQuery)->where(function($q) {
                     $q->where('rto_stage', 'New')
-                      ->orWhere(function($sub) {
-                          $sub->whereNull('rto_stage')->where('lead_type', 'RTO');
-                      });
+                      ->orWhereNull('rto_stage');
                 })->count();
             } else {
-                $counts[$stage] = Lead::where('rto_stage', $stage)->count();
+                $counts[$stage] = (clone $baseCountQuery)->where('rto_stage', $stage)->count();
             }
         }
 

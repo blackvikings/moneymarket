@@ -224,7 +224,7 @@
 
                                                         @php
                                                             // Removed 'Agreement' from the list as requested
-                                                            $stagesList = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement'];
+                                                            $stagesList = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved'];
                                                             $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal', 'Closed'];
                                                             $currentIndex = array_search($lead->crm_stage, $allStages);
                                                             if ($currentIndex === false) $currentIndex = -1;
