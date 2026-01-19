@@ -71,7 +71,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Email Id <span class="text-danger">*</span></label>
+                            <label>Email Id</label>
                             <input type="email" name="email" class="form-control" value="{{ old('email', $lead->email) }}" required>
                         </div>
                     </div>
