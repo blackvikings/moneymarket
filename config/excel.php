@@ -326,7 +326,8 @@ return [
         | and the create file (file).
         |
         */
-        'local_path'          => storage_path('framework/cache/laravel-excel'),
+//        'local_path'          => storage_path('framework/cache/laravel-excel'),
+        'local_path' => sys_get_temp_dir(),
 
         /*
         |--------------------------------------------------------------------------
@@ -375,6 +376,6 @@ return [
         | processed it.
         |
         */
-        'force_resync_remote' => null,
+        'force_resync_remote' => false,
     ],
 ];
