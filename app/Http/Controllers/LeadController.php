@@ -16,6 +16,7 @@ use App\Imports\LeadImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Log;
 
 class LeadController extends Controller
 {
@@ -164,6 +165,7 @@ class LeadController extends Controller
              $data['total_loan_amount'] = (float)$data['old_loan_close_amount'] + (float)$data['required_in_hand_amount'];
         }
 
+        // Automatically promote Prospect to Lead on update if requested
         if ($lead->status == 'Prospect') {
             $data['status'] = 'Lead';
         }
@@ -227,9 +229,12 @@ class LeadController extends Controller
             $logData['remark'] = 'Follow-up set: ' . $request->remark;
         } elseif ($action === 'qualify') {
             if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
-                return redirect()->route(get_route_prefix() . 'leads.edit', $lead->id)
-                    ->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.')
-                    ->withInput($request->only('bank_id', 'bank_branch_id'));
+                return redirect()->route(get_route_prefix() . 'leads.edit', [
+                    'lead' => $lead->id,
+                    'qualify' => 1,
+                    'bank_id' => $request->bank_id,
+                    'bank_branch_id' => $request->bank_branch_id
+                ])->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.');
             }
             // Changed: Qualify now moves to 'Lead' status, NOT 'Bank Assign'
             $data['status'] = 'Lead';
@@ -327,12 +332,30 @@ class LeadController extends Controller
             abort(403, 'Unauthorized action.');
         }
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv',
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:20480',
         ]);
 
-        Excel::import(new LeadImport, $request->file('file'));
+        try {
+            // Store file temporarily to avoid /tmp issues on some servers
+            $path = $request->file('file')->store('temp_imports');
 
-        return redirect()->back()->with('success', 'Leads imported successfully.');
+            // Import using the stored path
+            Excel::import(new LeadImport, $path);
+
+            // Delete the temp file
+            Storage::delete($path);
+
+            return redirect()->back()->with('success', 'Leads imported successfully.');
+        } catch (\Exception $e) {
+            // Attempt to delete if it exists
+            if (isset($path)) {
+                Storage::delete($path);
+            }
+            // Log the error for debugging
+            Log::error('Import Error: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Import failed. Please ensure the file is a valid Excel or CSV file. Error: ' . $e->getMessage());
+        }
     }
 
     public function downloadSample()
