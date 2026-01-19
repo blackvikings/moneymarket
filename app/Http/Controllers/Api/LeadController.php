@@ -30,7 +30,8 @@ class LeadController extends Controller
             $query->where('assigned_to', $user->id);
         }
 
-        $leads = $query->latest()->paginate(15);
+        // Explicitly order by ID descending to ensure latest leads are first
+        $leads = $query->orderBy('id', 'desc')->paginate(15);
 
         return response()->json($leads);
     }
@@ -219,6 +220,11 @@ class LeadController extends Controller
             $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
         }
 
+        // Automatically promote Prospect to Lead on update if requested
+        if ($lead->status == 'Prospect') {
+            $data['status'] = 'Lead';
+        }
+
         $lead->update($data);
 
         return response()->json(['message' => 'Lead updated successfully.', 'lead' => $lead->fresh()]);
@@ -285,12 +291,24 @@ class LeadController extends Controller
                 break;
             case 'proceed_to_bank_assign':
                 if ($lead->lead_type === 'Loan') {
-                    $data['status'] = 'Bank Assign';
-                    $logData['status'] = 'Bank Assign';
-                    $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
+                    // If bank details are provided (from the modal), assign them and move to CRM
+                    if ($request->has('bank_id') && $request->has('bank_branch_id')) {
+                        $data['status'] = 'Lead'; // Move to Lead status (CRM active)
+                        $data['bank_id'] = $request->bank_id;
+                        $data['bank_branch_id'] = $request->bank_branch_id;
+                        $data['converted_at'] = now();
+                        $data['crm_stage'] = 'New';
+                        $logData['status'] = 'Lead';
+                        $logData['remark'] = 'Bank assigned and moved to CRM (New).';
+                    } else {
+                        $data['status'] = 'Bank Assign';
+                        $logData['status'] = 'Bank Assign';
+                        $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
+                    }
                 } elseif ($lead->lead_type === 'RTO') {
                     $data['status'] = 'Lead';
                     $data['rto_stage'] = 'New';
+                    $data['rto_new_at'] = now();
                     $logData['status'] = 'Lead';
                     $logData['remark'] = 'Moved to RTO Module.';
                 } elseif ($lead->lead_type === 'Insurance') {

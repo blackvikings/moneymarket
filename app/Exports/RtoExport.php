@@ -20,12 +20,19 @@ class RtoExport
     {
         $query = Lead::with(['vehicleName', 'manufacture', 'assignedTo'])
             ->where(function($q) {
-                $q->whereNotNull('rto_stage')
+                $q->where('lead_type', 'RTO')
                   ->orWhere('crm_stage', 'Closed');
             });
 
         if ($this->request->has('stage') && $this->request->stage != '') {
-            $query->where('rto_stage', $this->request->stage);
+            if ($this->request->stage == 'New') {
+                $query->where(function($q) {
+                    $q->where('rto_stage', 'New')
+                      ->orWhereNull('rto_stage');
+                });
+            } else {
+                $query->where('rto_stage', $this->request->stage);
+            }
         }
 
         $leads = $query->latest()->get();
@@ -42,11 +49,13 @@ class RtoExport
             'ID',
             'Customer Name',
             'Contact Number',
+            'Lead Type',
             'RTO Stage',
             'Assigned To',
             'Vehicle Name',
             'Manufacturer',
             'RC Number',
+            'Aging',
         ];
 
         $callback = function() use ($leads, $columns) {
@@ -58,11 +67,13 @@ class RtoExport
                     $lead->id,
                     $lead->customer_name,
                     $lead->contact_number,
-                    $lead->rto_stage,
+                    $lead->lead_type,
+                    $lead->rto_stage ?? 'New',
                     $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned',
                     $lead->vehicleName ? $lead->vehicleName->name : '-',
                     $lead->manufacture ? $lead->manufacture->name : '-',
                     $lead->rc_number,
+                    $lead->rto_aging,
                 ];
                 fputcsv($file, $row);
             }

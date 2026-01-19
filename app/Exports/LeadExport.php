@@ -18,7 +18,7 @@ class LeadExport
 
     public function download()
     {
-        $query = Lead::with(['assignedTo', 'bank', 'bankBranch', 'createdBy', 'firm', 'manufacture']);
+        $query = Lead::with(['assignedTo', 'bank', 'bankBranch', 'createdBy', 'firm', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
 
         if ($this->request->has('status') && $this->request->status != '') {
             $query->where('status', $this->request->status);
@@ -46,7 +46,7 @@ class LeadExport
             'ID', 'Customer Name', 'Father Name', 'Firm', 'Contact Number', 'Email',
             'Residence Type', 'Current Address', 'Permanent Address',
             'Job Profile', 'Income Proof', 'Approx Income',
-            'Loan Type', 'Vehicle Type', 'Purchase Type', 'Total Loan Amount',
+            'Lead Type', 'Loan Type', 'Vehicle Type', 'Purchase Type', 'Total Loan Amount',
             'Status', 'Assigned To', 'Created By', 'Bank', 'Branch', 'Follow Up Date', 'Remark', 'Created At', 'Aging'
         ];
 
@@ -55,8 +55,13 @@ class LeadExport
             fputcsv($file, $columns);
 
             foreach ($leads as $lead) {
-                $currentAddress = "{$lead->current_address_line}, {$lead->current_address_city}, {$lead->current_address_state} - {$lead->current_address_pincode}";
-                $permanentAddress = "{$lead->permanent_address_line}, {$lead->permanent_address_city}, {$lead->permanent_address_state} - {$lead->permanent_address_pincode}";
+                $currentCityName = $lead->currentCity ? $lead->currentCity->name : $lead->current_address_city;
+                $currentStateName = $lead->currentState ? $lead->currentState->name : $lead->current_address_state;
+                $permanentCityName = $lead->permanentCity ? $lead->permanentCity->name : $lead->permanent_address_city;
+                $permanentStateName = $lead->permanentState ? $lead->permanentState->name : $lead->permanent_address_state;
+
+                $currentAddress = "{$lead->current_address_line}, {$currentCityName}, {$currentStateName} - {$lead->current_address_pincode}";
+                $permanentAddress = "{$lead->permanent_address_line}, {$permanentCityName}, {$permanentStateName} - {$lead->permanent_address_pincode}";
 
                 $row = [
                     $lead->id,
@@ -71,6 +76,7 @@ class LeadExport
                     $lead->job_profile_type,
                     $lead->income_proof_available ? 'Yes' : 'No',
                     $lead->approx_income,
+                    $lead->lead_type,
                     $lead->loan_type,
                     $lead->vehicle_loan_type,
                     $lead->vehicle_purchase_type,

@@ -19,8 +19,16 @@ class CrmExport
     public function download($filename = 'crm-leads.csv')
     {
         $query = Lead::with(['bank', 'bankBranch', 'assignedTo'])
-            ->where('status', 'Lead')
-            ->whereNotNull('bank_id');
+            ->where(function($q) {
+                $q->where(function($sub) {
+                    $sub->where('lead_type', 'Loan')
+                        ->whereNotIn('status', ['Rejected', 'Not_Active']);
+                })
+                ->orWhere('status', 'Bank Assign')
+                ->orWhere(function($sub) {
+                    $sub->where('status', 'Lead')->whereNotNull('bank_id');
+                });
+            });
 
         if ($this->request->has('stage') && $this->request->stage != '') {
             $query->where('crm_stage', $this->request->stage);
@@ -40,6 +48,7 @@ class CrmExport
             'ID',
             'Customer Name',
             'Contact Number',
+            'Lead Type',
             'Bank',
             'Branch',
             'CRM Stage',
@@ -59,6 +68,7 @@ class CrmExport
                     $lead->id,
                     $lead->customer_name,
                     $lead->contact_number,
+                    $lead->lead_type,
                     $lead->bank ? $lead->bank->name : '-',
                     $lead->bankBranch ? $lead->bankBranch->name : '-',
                     $lead->crm_stage,
