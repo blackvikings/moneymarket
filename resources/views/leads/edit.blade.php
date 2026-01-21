@@ -98,6 +98,17 @@
                             </select>
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            <input type="file" name="profile_picture" class="form-control-file">
+                            @if($lead->profile_picture_path)
+                                <div class="mt-2">
+                                    <img src="{{ asset('storage/' . $lead->profile_picture_path) }}" alt="Profile Picture" class="img-thumbnail" style="max-height: 100px;">
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
 
                 <hr>
@@ -132,6 +143,13 @@
                                     </select>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> </label>
+                            <input type="file" name="current_address_proof" class="form-control-file">
+                            @if($lead->current_address_proof_path)
+                                <small><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank">View Current Proof</a></small>
+                            @endif
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -168,6 +186,13 @@
                                     </select>
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> </label>
+                            <input type="file" name="permanent_address_proof" class="form-control-file">
+                            @if($lead->permanent_address_proof_path)
+                                <small><a href="{{ asset('storage/' . $lead->permanent_address_proof_path) }}" target="_blank">View Permanent Proof</a></small>
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -341,7 +366,9 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Vehicle Name</label>
-                                    <input type="text" name="vehicle_variant" class="form-control" placeholder="Variant/Model" value="{{ old('vehicle_variant', $lead->vehicle_variant) }}">
+                                    <select name="vehicle_name_id" id="vehicle_name_id" class="form-control">
+                                        <option value="">Select Vehicle</option>
+                                    </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -366,7 +393,7 @@
                             <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rc_number" class="form-control" value="{{ old('rc_number', $lead->rc_number) }}"></div></div>
                             <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control" value="{{ old('engine_number', $lead->engine_number) }}"></div></div>
                             <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control" value="{{ old('chassis_number', $lead->chassis_number) }}"></div></div>
-                            <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
+                            <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="number" name="mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
                             <div class="col-md-3"><div class="form-group"><label>Mfg Name</label><input type="text" name="mfg_name" class="form-control" value="{{ old('mfg_name', $lead->mfg_name) }}"></div></div>
                             <div class="col-md-3"><div class="form-group"><label>Model Name</label><input type="text" name="model_name" class="form-control" value="{{ old('model_name', $lead->model_name) }}"></div></div>
                             <div class="col-md-3"><div class="form-group"><label>Variant</label><input type="text" name="variant" class="form-control" value="{{ old('variant', $lead->variant) }}"></div></div>
@@ -601,6 +628,9 @@
                         required: function(element) {
                             return $('#assigned_to').length > 0;
                         }
+                    },
+                    mfg_year: {
+                        digits: true
                     }
                 },
                 messages: {
@@ -628,7 +658,10 @@
                     co_relation: "Please enter the co-applicant's relation",
                     guarantor_name: "Please enter the guarantor's name",
                     guarantor_relation: "Please enter the guarantor's relation",
-                    assigned_to: "Please select a user to assign the lead to"
+                    assigned_to: "Please select a user to assign the lead to",
+                    mfg_year: {
+                        digits: "Please enter only digits"
+                    }
                 }
             });
 
@@ -748,6 +781,42 @@
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');
                 }
             });
+
+            // --- Vehicle Logic ---
+            function populateVehicleNames(manufactureId, selectedVehicleId = null) {
+                let vehicleSelect = $('#vehicle_name_id');
+                vehicleSelect.empty().append('<option value="">Loading...</option>');
+
+                if (manufactureId) {
+                    $.ajax({
+                        url: '{{ url("get-vehicle-names") }}/' + manufactureId,
+                        type: 'GET',
+                        success: function(data) {
+                            vehicleSelect.empty().append('<option value="">Select Vehicle</option>');
+                            $.each(data, function(key, vehicle) {
+                                let option = $('<option></option>').attr('value', vehicle.id).text(vehicle.name);
+                                if (vehicle.id == selectedVehicleId) {
+                                    option.prop('selected', true);
+                                }
+                                vehicleSelect.append(option);
+                            });
+                        }
+                    });
+                } else {
+                    vehicleSelect.empty().append('<option value="">Select Manufacturer First</option>');
+                }
+            }
+
+            $('select[name="manufacture_id"]').change(function() {
+                populateVehicleNames($(this).val());
+            });
+
+            // Initial population
+            let initialManufactureId = $('select[name="manufacture_id"]').val();
+            let initialVehicleId = '{{ old('vehicle_name_id', $lead->vehicle_name_id) }}';
+            if (initialManufactureId) {
+                populateVehicleNames(initialManufactureId, initialVehicleId);
+            }
 
             // --- Other Form Logic ---
             $('#job_profile_type').change(function() {

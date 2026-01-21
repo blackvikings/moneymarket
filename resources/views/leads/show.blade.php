@@ -25,10 +25,19 @@
                             <p><strong>Email:</strong> {{ $lead->email }}</p>
                             <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
                             <p><strong>Residence Type:</strong> {{ $lead->residence_type }}</p>
+                            @if($lead->profile_picture_path)
+                                <p><strong>Profile Picture:</strong> <br> <img src="{{ asset('storage/' . $lead->profile_picture_path) }}" alt="Profile Picture" class="img-thumbnail" style="max-height: 100px;"></p>
+                            @endif
                         </div>
                         <div class="col-md-6">
                             <p><strong>Current Address:</strong> {{ $lead->current_address_line }}, {{ $lead->currentCity->name ?? $lead->current_address_city }}, {{ $lead->currentState->name ?? $lead->current_address_state }} - {{ $lead->current_address_pincode }}</p>
+                            @if($lead->current_address_proof_path)
+                                <p><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank" class="btn btn-sm btn-info">View Current Address Proof</a></p>
+                            @endif
                             <p><strong>Permanent Address:</strong> {{ $lead->permanent_address_line }}, {{ $lead->permanentCity->name ?? $lead->permanent_address_city }}, {{ $lead->permanentState->name ?? $lead->permanent_address_state }} - {{ $lead->permanent_address_pincode }}</p>
+                            @if($lead->permanent_address_proof_path)
+                                <p><a href="{{ asset('storage/' . $lead->permanent_address_proof_path) }}" target="_blank" class="btn btn-sm btn-info">View Permanent Address Proof</a></p>
+                            @endif
                         </div>
                     </div>
 
@@ -71,13 +80,36 @@
 
                         @if($lead->vehicle_purchase_type == 'New Purchase')
                             <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
-                            <p><strong>Variant:</strong> {{ $lead->vehicle_variant }}</p>
+                            <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
                             <p><strong>Showroom Price:</strong> {{ $lead->showroom_price }}</p>
                             <p><strong>On Road Price:</strong> {{ $lead->on_road_price }}</p>
                         @else
                             <p><strong>RC Number:</strong> {{ $lead->rc_number }}</p>
-                            <p><strong>Model:</strong> {{ $lead->model_name }}</p>
+                            <p><strong>Engine Number:</strong> {{ $lead->engine_number }}</p>
+                            <p><strong>Chassis Number:</strong> {{ $lead->chassis_number }}</p>
+                            <p><strong>Mfg Year:</strong> {{ $lead->mfg_year }}</p>
+                            <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
+                            <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
+                            <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+                            <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
                         @endif
+                    @endif
+
+                    @if($lead->insurance_available)
+                        <hr>
+                        <h5>Insurance Details</h5>
+                        <p><strong>Vendor:</strong> {{ $lead->insurance ? $lead->insurance->company_name : '-' }}</p>
+                        <p><strong>Start Date:</strong> {{ $lead->insurance_start_date ? $lead->insurance_start_date->format('d-m-Y') : '-' }}</p>
+                        <p><strong>End Date:</strong> {{ $lead->insurance_end_date ? $lead->insurance_end_date->format('d-m-Y') : '-' }}</p>
+                        <p><strong>Amount:</strong> {{ $lead->insurance_amount }}</p>
+                    @endif
+
+                    @if($lead->hypothecation_status)
+                        <hr>
+                        <h5>Hypothecation Details</h5>
+                        <p><strong>Old Financer:</strong> {{ $lead->old_financer }}</p>
+                        <p><strong>Close Amount:</strong> {{ $lead->close_amount }}</p>
+                        <p><strong>EMI Paid Count:</strong> {{ $lead->emi_paid_count }}</p>
                     @endif
 
                     <hr>
@@ -85,6 +117,31 @@
                     <p><strong>Old Loan Close:</strong> {{ $lead->old_loan_close_amount }}</p>
                     <p><strong>Required In Hand:</strong> {{ $lead->required_in_hand_amount }}</p>
                     <p><strong>Total Loan Amount:</strong> {{ $lead->total_loan_amount }}</p>
+
+                    @if($lead->has_co_applicant)
+                        <hr>
+                        <h5>Co-Applicant Details</h5>
+                        <p><strong>Name:</strong> {{ $lead->co_name }}</p>
+                        <p><strong>Relation:</strong> {{ $lead->co_relation }}</p>
+                    @endif
+
+                    @if($lead->has_guarantor)
+                        <hr>
+                        <h5>Guarantor Details</h5>
+                        <p><strong>Name:</strong> {{ $lead->guarantor_name }}</p>
+                        <p><strong>Relation:</strong> {{ $lead->guarantor_relation }}</p>
+                    @endif
+
+                    @if($lead->ref1_name || $lead->ref2_name)
+                        <hr>
+                        <h5>References</h5>
+                        @if($lead->ref1_name)
+                            <p><strong>Reference 1:</strong> {{ $lead->ref1_name }} ({{ $lead->ref1_mobile }})</p>
+                        @endif
+                        @if($lead->ref2_name)
+                            <p><strong>Reference 2:</strong> {{ $lead->ref2_name }} ({{ $lead->ref2_mobile }})</p>
+                        @endif
+                    @endif
 
                     <hr>
                     <p><strong>Assigned To:</strong> {{ $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned' }}</p>
@@ -124,6 +181,44 @@
                     @endif
                 </div>
             </div>
+
+            @if($lead->bank_id)
+                <div class="card mt-3">
+                    <div class="card-header bg-primary">
+                        <h3 class="card-title">Bank Assign Journey</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Bank:</strong> {{ $lead->bank->name }}</p>
+                        <p><strong>Branch:</strong> {{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</p>
+                        <hr>
+                        <ul class="timeline">
+                            @php
+                                $crmStages = [
+                                    'New' => 'crm_new_at',
+                                    'Login' => 'crm_login_at',
+                                    'FI Document' => 'crm_fi_document_at',
+                                    'Vehicle Evaluation' => 'crm_vehicle_evaluation_at',
+                                    'Credit' => 'crm_credit_at',
+                                    'Approved' => 'crm_approved_at',
+                                    'Agreement' => 'crm_agreement_at',
+                                    'Disbursal' => 'crm_disbursal_at'
+                                ];
+                            @endphp
+                            @foreach($crmStages as $stage => $column)
+                                @if($lead->$column)
+                                    <li>
+                                        <i class="fas fa-check bg-green"></i>
+                                        <div class="timeline-item">
+                                            <span class="time"><i class="fas fa-clock"></i> {{ $lead->$column->format('d-m-Y H:i') }}</span>
+                                            <h3 class="timeline-header no-border">{{ $stage }}</h3>
+                                        </div>
+                                    </li>
+                                @endif
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 @stop

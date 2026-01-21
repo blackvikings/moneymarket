@@ -91,6 +91,13 @@
                             @error('lead_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Profile Picture</label>
+                            <input type="file" name="profile_picture" class="form-control-file @error('profile_picture') is-invalid @enderror">
+                            @error('profile_picture') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                 </div>
 
                 <hr>
@@ -129,6 +136,10 @@
                                     @error('current_address_city') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                            <input type="file" name="current_address_proof" class="form-control-file">
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -169,6 +180,10 @@
                                     @error('permanent_address_city') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> </label>
+                            <input type="file" name="permanent_address_proof" class="form-control-file">
                         </div>
                     </div>
                 </div>

@@ -29,7 +29,7 @@ class InsuranceLeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
-            'insurance_address_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'insurance_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $data = $request->except('insurance_address_proof');
@@ -80,7 +80,7 @@ class InsuranceLeadController extends Controller
             'insurance_idv_amount' => $request->insurance_idv_amount,
         ]);
 
-        return redirect()->back()->with('success', 'Insurance details updated successfully.');
+        return redirect()->route(get_route_prefix() . 'insurance-leads.index')->with('success', 'Insurance details updated successfully.');
     }
 
     public function export(Request $request)

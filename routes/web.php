@@ -97,6 +97,11 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
     Route::get('leads/download-sample', [LeadController::class, 'downloadSample'])->name('leads.download-sample');
+
+    // Bulk Assign Routes - Changed URL to avoid conflict
+    Route::get('bulk-assign-leads', function() { return redirect()->route('admin.leads.index'); });
+    Route::post('bulk-assign-leads', [LeadController::class, 'bulkAssign'])->name('leads.bulk-assign');
+
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);
@@ -180,3 +185,4 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
 Route::get('/get-states', [LocationController::class, 'getStates'])->name('get-states');
 Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->name('get-cities');
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
+Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');

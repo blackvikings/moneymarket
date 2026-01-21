@@ -99,4 +99,9 @@ class VehicleManufactureController extends Controller
         }
         return (new VehicleManufactureExport($request))->download();
     }
+
+    public function getVehicleNames(VehicleManufacture $vehicleManufacture)
+    {
+        return response()->json($vehicleManufacture->vehicleNames);
+    }
 }

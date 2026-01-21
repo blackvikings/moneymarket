@@ -124,7 +124,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Address Proof Upload</label>
+                            <label>Address Proof Upload <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
                             <input type="file" name="insurance_address_proof" class="form-control-file">
                         </div>
                     </div>

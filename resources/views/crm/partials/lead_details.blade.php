@@ -16,10 +16,19 @@
                         <p><strong>Email:</strong> {{ $lead->email }}</p>
                         <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
                         <p><strong>Residence Type:</strong> {{ $lead->residence_type }}</p>
+                        @if($lead->profile_picture_path)
+                            <p><strong>Profile Picture:</strong> <br> <img src="{{ asset('storage/' . $lead->profile_picture_path) }}" alt="Profile Picture" class="img-thumbnail" style="max-height: 100px;"></p>
+                        @endif
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Current Address:</strong> {{ $lead->current_address_line }}, {{ $lead->current_address_city }}, {{ $lead->current_address_state }} - {{ $lead->current_address_pincode }}</p>
-                        <p><strong>Permanent Address:</strong> {{ $lead->permanent_address_line }}, {{ $lead->permanent_address_city }}, {{ $lead->permanent_address_state }} - {{ $lead->permanent_address_pincode }}</p>
+                        <p><strong>Current Address:</strong> {{ $lead->current_address_line }}, {{ $lead->currentCity->name ?? $lead->current_address_city }}, {{ $lead->currentState->name ?? $lead->current_address_state }} - {{ $lead->current_address_pincode }}</p>
+                        @if($lead->current_address_proof_path)
+                            <p><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank" class="btn btn-sm btn-info">View Current Address Proof</a></p>
+                        @endif
+                        <p><strong>Permanent Address:</strong> {{ $lead->permanent_address_line }}, {{ $lead->permanentCity->name ?? $lead->permanent_address_city }}, {{ $lead->permanentState->name ?? $lead->permanent_address_state }} - {{ $lead->permanent_address_pincode }}</p>
+                        @if($lead->permanent_address_proof_path)
+                            <p><a href="{{ asset('storage/' . $lead->permanent_address_proof_path) }}" target="_blank" class="btn btn-sm btn-info">View Permanent Address Proof</a></p>
+                        @endif
                     </div>
                 </div>
 
@@ -62,7 +71,7 @@
 
                     @if($lead->vehicle_purchase_type == 'New Purchase')
                         <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
-                        <p><strong>Variant:</strong> {{ $lead->vehicle_variant }}</p>
+                        <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
                         <p><strong>Showroom Price:</strong> {{ $lead->showroom_price }}</p>
                         <p><strong>On Road Price:</strong> {{ $lead->on_road_price }}</p>
                     @else

@@ -179,13 +179,15 @@
                             <td>{{ $lead->bank ? $lead->bank->name : '-' }}</td>
                             <td>{{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</td>
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
-                            <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : '-' }}</td>
+                            <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : $lead->created_at->format('d-m-Y') }}</td>
                             <td>
                                 <a href="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
-                                @if($lead->crm_stage !== 'Closed')
+                                @if($lead->crm_stage !== 'Disbursal')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
                                     </button>
+                                @else
+                                    <span class="text-success small">Moved to RTO</span>
                                 @endif
 
                                 <!-- Action Modal -->
@@ -203,19 +205,6 @@
                                                 <div class="modal-body">
                                                     @include('crm.partials.disbursal_form', ['lead' => $lead])
                                                 </div>
-                                            @elseif($lead->crm_stage == 'Disbursal')
-                                                <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
-                                                    @csrf
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
-                                                        <input type="hidden" name="completed_stages[]" value="Closed">
-                                                        <p>Are you sure you want to close this lead?</p>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" name="action" value="Yes" class="btn btn-success">Yes, Close Lead</button>
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                    </div>
-                                                </form>
                                             @else
                                                 <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
                                                     @csrf
@@ -225,7 +214,7 @@
                                                         @php
                                                             // Removed 'Agreement' from the list as requested
                                                             $stagesList = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved'];
-                                                            $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal', 'Closed'];
+                                                            $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal'];
                                                             $currentIndex = array_search($lead->crm_stage, $allStages);
                                                             if ($currentIndex === false) $currentIndex = -1;
                                                         @endphp

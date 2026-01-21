@@ -19,8 +19,8 @@ class CrmController extends Controller
         'Credit',
         'Approved',
         'Agreement',
-        'Disbursal',
-        'Closed' // Final stage after disbursal
+        'Disbursal'
+        // 'Closed' removed as per request
     ];
 
     public function __construct()
@@ -126,17 +126,6 @@ class CrmController extends Controller
                     $lead->save();
                     return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
                 } else {
-                    // Special case for 'Closed': If 'Closed' is checked, stay in 'Closed'.
-                    if ($this->stages[$lastCompletedIndex] === 'Closed') {
-                        $lead->crm_stage = 'Closed';
-                        $lead->save();
-                        return redirect()->back()->with('success', 'Lead Closed successfully.');
-                    }
-
-                    // Otherwise, move to next
-                     $nextStage = $this->stages[$lastCompletedIndex + 1]; // This might still be out of bounds if not careful
-                     // But we handled Closed above.
-
                      // Re-check bounds just in case
                      if (isset($this->stages[$lastCompletedIndex + 1])) {
                         $lead->crm_stage = $nextStage;
@@ -163,10 +152,13 @@ class CrmController extends Controller
             'finance_amount' => $request->finance_amount,
             'disbursal_amount' => $request->disbursal_amount,
             'crm_disbursal_at' => now(),
-            'crm_stage' => 'Disbursal', // Move to Disbursal stage first
+            'crm_stage' => 'Disbursal', // Move to Disbursal stage
+            // Automatically move to RTO
+            'rto_stage' => 'New',
+            'rto_new_at' => now(),
         ]);
 
-        return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', 'Disbursal details saved successfully.');
+        return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', 'Disbursal details saved. Lead moved to RTO.');
     }
 
     public function export(Request $request)

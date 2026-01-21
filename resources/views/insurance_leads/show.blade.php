@@ -14,7 +14,13 @@
         <div class="alert alert-info">{{ session('info') }}</div>
     @endif
     @if(session('error'))
-        <div class="alert alert-danger">{{ session('error') }}</div>
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <div class="row">
@@ -25,7 +31,14 @@
                 </div>
                 <div class="card-body">
                     <p><strong>Name:</strong> {{ $lead->customer_name }}</p>
+                    <p><strong>Father Name:</strong> {{ $lead->father_name }}</p>
                     <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
+                    <p><strong>Email:</strong> {{ $lead->email }}</p>
+                    <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
+                    <p><strong>Residence Type:</strong> {{ $lead->residence_type }}</p>
+                    @if($lead->profile_picture_path)
+                        <p><strong>Profile Picture:</strong> <br> <img src="{{ asset('storage/' . $lead->profile_picture_path) }}" alt="Profile Picture" class="img-thumbnail" style="max-height: 100px;"></p>
+                    @endif
                     @if($lead->insurance_address_proof_path)
                         <p><a href="{{ asset('storage/' . $lead->insurance_address_proof_path) }}" target="_blank">View Address Proof</a></p>
                     @endif
@@ -38,9 +51,27 @@
                     <h3 class="card-title">Vehicle Details</h3>
                 </div>
                 <div class="card-body">
-                    <p><strong>Model:</strong> {{ $lead->vehicleName->name ?? 'N/A' }}</p>
-                    <p><strong>RC Number:</strong> {{ $lead->rc_number ?? 'N/A' }}</p>
-                    <p><strong>Manufacturer:</strong> {{ $lead->manufacture->name ?? 'N/A' }}</p>
+                    <p><strong>Loan Type:</strong> {{ $lead->loan_type }} {{ $lead->loan_type == 'Other' ? '('.$lead->other_loan_name.')' : '' }}</p>
+                    @if($lead->loan_type == 'Vehicle Loan')
+                        <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type }} {{ $lead->vehicle_loan_type == 'Other' ? '('.$lead->other_vehicle_loan_name.')' : '' }}</p>
+                        <p><strong>Purchase Type:</strong> {{ $lead->vehicle_purchase_type }}</p>
+
+                        @if($lead->vehicle_purchase_type == 'New Purchase')
+                            <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
+                            <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
+                            <p><strong>Showroom Price:</strong> {{ $lead->showroom_price }}</p>
+                            <p><strong>On Road Price:</strong> {{ $lead->on_road_price }}</p>
+                        @else
+                            <p><strong>RC Number:</strong> {{ $lead->rc_number ?? 'N/A' }}</p>
+                            <p><strong>Engine Number:</strong> {{ $lead->engine_number }}</p>
+                            <p><strong>Chassis Number:</strong> {{ $lead->chassis_number }}</p>
+                            <p><strong>Mfg Year:</strong> {{ $lead->mfg_year }}</p>
+                            <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
+                            <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
+                            <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+                            <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
+                        @endif
+                    @endif
                 </div>
             </div>
         </div>

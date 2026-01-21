@@ -179,6 +179,7 @@
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
                             <td>{{ $lead->rto_aging }}</td>
                             <td>
+                                <a href="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
                                 @if($lead->rto_stage !== 'Loan Return')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
@@ -204,8 +205,6 @@
                                                         </form>
                                                     @elseif($lead->rto_stage == 'Checking')
                                                         @include('rto.partials.checking_form', ['lead' => $lead, 'banks' => \App\Models\Bank::where('is_active', true)->get()])
-                                                    @elseif($lead->rto_stage == 'Vehicle Detail')
-                                                        @include('rto.partials.vehicle_detail_form', ['lead' => $lead, 'rtoAgents' => \App\Models\RtoAgent::where('is_active', true)->get()])
                                                     @elseif($lead->rto_stage == 'RTO Done')
                                                         @include('rto.partials.rto_done_form', ['lead' => $lead])
                                                     @else
@@ -230,8 +229,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                @else
-                                    <a href="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}" class="btn btn-info btn-sm">View Details</a>
                                 @endif
                             </td>
                         </tr>
@@ -317,6 +314,28 @@
             // Remove Row
             $(document).on('click', '.remove-row', function() {
                 $(this).closest('.row').remove();
+            });
+
+            // Toggle RTO remark fields based on checkbox state
+            $(document).on('change', '.rto-status-checkbox', function() {
+                var remarkTargetId = $(this).data('remark-target');
+                if ($(this).is(':checked')) {
+                    $(remarkTargetId).show();
+                } else {
+                    $(remarkTargetId).hide();
+                }
+            });
+
+            // Initial state for RTO remark fields when modal opens
+            $('.modal').on('shown.bs.modal', function () {
+                $(this).find('.rto-status-checkbox').each(function() {
+                    var remarkTargetId = $(this).data('remark-target');
+                    if ($(this).is(':checked')) {
+                        $(remarkTargetId).show();
+                    } else {
+                        $(remarkTargetId).hide();
+                    }
+                });
             });
         });
     </script>

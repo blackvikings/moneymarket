@@ -176,9 +176,33 @@
                     </ul>
                 </div>
             @endif
+
+            @if(auth()->user()->hasRole('admin'))
+                <form action="{{ route(get_route_prefix() . 'leads.bulk-assign') }}" method="POST" id="bulkAssignForm">
+                    @csrf
+                    <div class="row mb-3 align-items-end">
+                        <div class="col-md-3">
+                            <label>Assign Selected To:</label>
+                            <select name="assigned_to" class="form-control" required>
+                                <option value="">Select User</option>
+                                @foreach($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to assign selected leads?')">Bulk Assign</button>
+                        </div>
+                    </div>
+                </form>
+            @endif
+
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
+                        @if(auth()->user()->hasRole('admin'))
+                            <th><input type="checkbox" id="selectAll" form="bulkAssignForm"></th>
+                        @endif
                         <th>ID</th>
                         <th>Created At</th>
                         <th>Customer Name</th>
@@ -193,6 +217,13 @@
                 <tbody>
                     @foreach($leads as $lead)
                         <tr>
+                            @if(auth()->user()->hasRole('admin'))
+                                <td>
+                                    @if(!$lead->assigned_to)
+                                        <input type="checkbox" name="lead_ids[]" value="{{ $lead->id }}" class="lead-checkbox" form="bulkAssignForm">
+                                    @endif
+                                </td>
+                            @endif
                             <td>{{ $lead->id }}</td>
                             <td>{{ $lead->created_at->format('d-m-Y') }}</td>
                             <td>{{ $lead->customer_name }}</td>
@@ -428,7 +459,8 @@
 
                 // Hide all conditional sections first
                 modal.find('.action-fields').hide();
-                modal.find('.action-fields input, .action-fields select, .action-fields textarea').prop('required', false);
+                // Disable inputs in hidden sections so they are not submitted
+                modal.find('.action-fields input, .action-fields select, .action-fields textarea').prop('required', false).prop('disabled', true);
 
                 // Show the relevant section based on action
                 if (action === 'not_interested' || action === 'follow_up' || action === 'qualify' || action === 'reject') {
@@ -437,7 +469,8 @@
 
                     if (sectionToShow.length > 0) {
                         sectionToShow.show();
-                        sectionToShow.find('input, select, textarea').prop('required', true);
+                        // Enable inputs in the shown section
+                        sectionToShow.find('input, select, textarea').prop('required', true).prop('disabled', false);
                     }
                 } else if (action === 'proceed_to_bank_assign') {
                     // Special handling for proceed_to_bank_assign
@@ -446,7 +479,7 @@
 
                     if (sectionToShow.length > 0) {
                         sectionToShow.show();
-                        sectionToShow.find('select').prop('required', true);
+                        sectionToShow.find('select').prop('required', true).prop('disabled', false);
                     }
                 }
             }
@@ -488,6 +521,18 @@
                     });
                 } else {
                     branchSelect.empty().append('<option value="">Select Bank First</option>');
+                }
+            });
+
+            // Select All Checkbox
+            $('#selectAll').click(function() {
+                $('.lead-checkbox').prop('checked', this.checked);
+            });
+
+            // If any checkbox is unchecked, uncheck "Select All"
+            $('.lead-checkbox').click(function() {
+                if (!$(this).prop('checked')) {
+                    $('#selectAll').prop('checked', false);
                 }
             });
         });

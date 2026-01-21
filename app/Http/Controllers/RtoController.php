@@ -16,18 +16,18 @@ class RtoController extends Controller
     protected $stages = [
         'New',
         'Checking',
-        'Vehicle Detail',
+        // 'Vehicle Detail', // Removed as per request
         'RTO Done',
         'Loan Return'
     ];
 
     public function index(Request $request)
     {
-        // Show leads that are explicitly RTO type OR have completed the CRM Disbursal stage (Closed)
-        // We removed whereNotNull('rto_stage') because it defaults to 'New', causing all leads to show up.
+        // Show leads that are explicitly RTO type OR have completed the CRM Disbursal stage
+        // Changed from 'Closed' to 'Disbursal' as 'Closed' stage is removed
         $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
             $q->where('lead_type', 'RTO')
-              ->orWhere('crm_stage', 'Closed');
+              ->orWhere('crm_stage', 'Disbursal');
         });
 
         if ($request->has('stage') && $request->stage != '') {
@@ -49,7 +49,7 @@ class RtoController extends Controller
         // Base query for counts must match the main query's base conditions
         $baseCountQuery = Lead::where(function($q) {
             $q->where('lead_type', 'RTO')
-              ->orWhere('crm_stage', 'Closed');
+              ->orWhere('crm_stage', 'Disbursal');
         });
 
         $counts = [];
@@ -169,14 +169,13 @@ class RtoController extends Controller
         $lead->update($data);
 
         if ($request->has('save_and_next')) {
-            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
-
-            // Special case: If stage is 'New', jump to 'Vehicle Detail' (skipping 'Checking' state as we just completed it)
+            // Special case: If stage is 'New', jump to 'RTO Done' (skipping 'Checking' and 'Vehicle Detail')
             if ($lead->rto_stage === 'New') {
-                $lead->update(['rto_stage' => 'Vehicle Detail']);
-                return redirect()->back()->with('success', 'Checklist updated and moved to Vehicle Detail');
+                $lead->update(['rto_stage' => 'RTO Done']);
+                return redirect()->back()->with('success', 'Checklist updated and moved to RTO Done.');
             }
 
+            $currentStageIndex = array_search($lead->rto_stage, $this->stages);
             if ($currentStageIndex !== false && $currentStageIndex < count($this->stages) - 1) {
                 $nextStage = $this->stages[$currentStageIndex + 1];
                 $lead->update(['rto_stage' => $nextStage]);
@@ -259,7 +258,7 @@ class RtoController extends Controller
 
         if ($request->has('save_and_next')) {
             // Reverted: Just move to RTO Done, do NOT initialize Insurance yet
-            if ($lead->rto_stage === 'Vehicle Detail') {
+            if ($lead->rto_stage === 'Vehicle Detail') { // This condition will effectively be false if 'Vehicle Detail' stage is removed
                 $lead->update(['rto_stage' => 'RTO Done']);
                 return redirect()->back()->with('success', 'Vehicle details updated. Lead moved to RTO Done.');
             }

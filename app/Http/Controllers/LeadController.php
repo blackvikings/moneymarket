@@ -24,7 +24,7 @@ class LeadController extends Controller
     {
         $this->middleware('permission:view lead', ['only' => ['index', 'show']]);
         $this->middleware('permission:create lead', ['only' => ['create', 'store', 'import', 'downloadSample']]);
-        $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus']]);
+        $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus', 'bulkAssign']]);
         $this->middleware('permission:delete lead', ['only' => ['destroy']]);
     }
 
@@ -102,11 +102,26 @@ class LeadController extends Controller
             'assigned_to' => [Rule::requiredIf(function () {
                 return Auth::user()->hasRole('admin') || Auth::user()->hasRole('Team Lead');
             })],
+            'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $data = $request->all();
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
+
+        if ($request->hasFile('profile_picture')) {
+            $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        if ($request->hasFile('current_address_proof')) {
+            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
+        }
+
+        if ($request->hasFile('permanent_address_proof')) {
+            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
+        }
 
         $lead = Lead::create($data);
 
@@ -148,6 +163,11 @@ class LeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
+            'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             // ... all other detailed validation rules
         ]);
 
@@ -169,6 +189,41 @@ class LeadController extends Controller
         // Automatically promote Prospect to Lead on update if requested
         if ($lead->status == 'Prospect') {
             $data['status'] = 'Lead';
+        }
+
+        if ($request->hasFile('profile_picture')) {
+            if ($lead->profile_picture_path) {
+                Storage::disk('public')->delete($lead->profile_picture_path);
+            }
+            $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        if ($request->hasFile('current_address_proof')) {
+            if ($lead->current_address_proof_path) {
+                Storage::disk('public')->delete($lead->current_address_proof_path);
+            }
+            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
+        }
+
+        if ($request->hasFile('permanent_address_proof')) {
+            if ($lead->permanent_address_proof_path) {
+                Storage::disk('public')->delete($lead->permanent_address_proof_path);
+            }
+            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
+        }
+
+        if ($request->hasFile('itr_document')) {
+            if ($lead->itr_document_path) {
+                Storage::disk('public')->delete($lead->itr_document_path);
+            }
+            $data['itr_document_path'] = $request->file('itr_document')->store('itr_docs', 'public');
+        }
+
+        if ($request->hasFile('business_proof_document')) {
+            if ($lead->business_proof_document_path) {
+                Storage::disk('public')->delete($lead->business_proof_document_path);
+            }
+            $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
         }
 
         $lead->update($data);
@@ -314,6 +369,36 @@ class LeadController extends Controller
         ]);
 
         return redirect()->back()->with('success', 'Bank assigned successfully. Lead moved to CRM.');
+    }
+
+    public function bulkAssign(Request $request)
+    {
+        if (!Auth::user()->hasRole('admin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'lead_ids' => 'required|array',
+            'lead_ids.*' => 'exists:leads,id',
+            'assigned_to' => 'required|exists:users,id',
+        ]);
+
+        $leadIds = $request->input('lead_ids');
+        $assignedTo = $request->input('assigned_to');
+
+        Lead::whereIn('id', $leadIds)->update(['assigned_to' => $assignedTo]);
+
+        // Log the bulk assignment
+        foreach ($leadIds as $leadId) {
+            LeadStatusLog::create([
+                'lead_id' => $leadId,
+                'status' => 'Assigned', // Or whatever status is appropriate
+                'remark' => 'Bulk assigned to user ID ' . $assignedTo,
+                'created_by' => Auth::id(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Leads assigned successfully.');
     }
 
     public function destroy(Lead $lead)
