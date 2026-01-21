@@ -84,7 +84,9 @@ class LeadController extends Controller
     {
         $users = User::role('Tele Caller')->get();
         $firms = Firm::where('is_active', true)->get();
-        return view('leads.create', compact('users', 'firms'));
+        $manufactures = VehicleManufacture::where('is_active', true)->get();
+        $insurances = Insurance::where('is_active', true)->get();
+        return view('leads.create', compact('users', 'firms', 'manufactures', 'insurances'));
     }
 
     public function store(Request $request)
