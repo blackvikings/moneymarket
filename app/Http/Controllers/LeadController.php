@@ -73,8 +73,8 @@ class LeadController extends Controller
              $query->where('assigned_to', Auth::id());
         }
 
-        // Explicitly order by ID descending to ensure latest leads are first
-        $leads = $query->orderBy('id', 'desc')->paginate(10)->appends($request->except('page'));
+        // Sort by unassigned first (assigned_to IS NULL), then by ID descending
+        $leads = $query->orderByRaw('assigned_to IS NULL DESC, id DESC')->paginate(10)->appends($request->except('page'));
         $users = User::role('Tele Caller')->get();
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
