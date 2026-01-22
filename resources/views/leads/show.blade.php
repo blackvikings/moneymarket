@@ -71,33 +71,59 @@
                         @endif
                     @endif
 
-                    <hr>
-                    <h5>Loan Details</h5>
-                    <p><strong>Type:</strong> {{ $lead->loan_type }} {{ $lead->loan_type == 'Other' ? '('.$lead->other_loan_name.')' : '' }}</p>
-                    @if($lead->loan_type == 'Vehicle Loan')
-                        <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type }} {{ $lead->vehicle_loan_type == 'Other' ? '('.$lead->other_vehicle_loan_name.')' : '' }}</p>
-                        <p><strong>Purchase Type:</strong> {{ $lead->vehicle_purchase_type }}</p>
+                    @if($lead->lead_type == 'Loan')
+                        <hr>
+                        <h5>Loan Details</h5>
+                        <p><strong>Type:</strong> {{ $lead->loan_type }} {{ $lead->loan_type == 'Other' ? '('.$lead->other_loan_name.')' : '' }}</p>
+                        @if($lead->loan_type == 'Vehicle Loan')
+                            <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type }} {{ $lead->vehicle_loan_type == 'Other' ? '('.$lead->other_vehicle_loan_name.')' : '' }}</p>
+                            <p><strong>Purchase Type:</strong> {{ $lead->vehicle_purchase_type }}</p>
 
-                        @if($lead->vehicle_purchase_type == 'New Purchase')
-                            <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
-                            <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
-                            <p><strong>Showroom Price:</strong> {{ $lead->showroom_price }}</p>
-                            <p><strong>On Road Price:</strong> {{ $lead->on_road_price }}</p>
-                        @else
-                            <p><strong>RC Number:</strong> {{ $lead->rc_number }}</p>
-                            <p><strong>Engine Number:</strong> {{ $lead->engine_number }}</p>
-                            <p><strong>Chassis Number:</strong> {{ $lead->chassis_number }}</p>
-                            <p><strong>Mfg Year:</strong> {{ $lead->mfg_year }}</p>
-                            <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
-                            <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
-                            <p><strong>Variant:</strong> {{ $lead->variant }}</p>
-                            <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
+                            @if($lead->vehicle_purchase_type == 'New Purchase')
+                                <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
+                                <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
+                                <p><strong>Showroom Price:</strong> {{ $lead->showroom_price }}</p>
+                                <p><strong>On Road Price:</strong> {{ $lead->on_road_price }}</p>
+                            @else
+                                <p><strong>RC Number:</strong> {{ $lead->rc_number }}</p>
+                                <p><strong>Engine Number:</strong> {{ $lead->engine_number }}</p>
+                                <p><strong>Chassis Number:</strong> {{ $lead->chassis_number }}</p>
+                                <p><strong>Mfg Year:</strong> {{ $lead->mfg_year }}</p>
+                                <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
+                                <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
+                                <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+                                <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
+                            @endif
                         @endif
+                    @endif
+
+                    @if($lead->lead_type == 'RTO')
+                        <hr>
+                        <h5>RTO Details</h5>
+                        <p><strong>RC Number:</strong> {{ $lead->rc_number }}</p>
+                        <p><strong>Engine Number:</strong> {{ $lead->engine_number }}</p>
+                        <p><strong>Chassis Number:</strong> {{ $lead->chassis_number }}</p>
+                        <p><strong>Mfg Year:</strong> {{ $lead->mfg_year }}</p>
+                        <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
+                        <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
+                        <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+                        <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
+                        <p><strong>Insurance Available:</strong> {{ $lead->insurance_available ? 'Yes' : 'No' }}</p>
+                        <p><strong>Hypothecation:</strong> {{ $lead->hypothecation_status ? 'Yes' : 'No' }}</p>
+                    @endif
+
+                    @if($lead->lead_type == 'Insurance')
+                        <hr>
+                        <h5>Insurance Details</h5>
+                        <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
+                        <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+                        <p><strong>Owner Srl No:</strong> {{ $lead->owner_serial_number }}</p>
+                        <p><strong>Hypothecation:</strong> {{ $lead->hypothecation_status ? 'Yes' : 'No' }}</p>
                     @endif
 
                     @if($lead->insurance_available)
                         <hr>
-                        <h5>Insurance Details</h5>
+                        <h5>Insurance Policy Details</h5>
                         <p><strong>Vendor:</strong> {{ $lead->insurance ? $lead->insurance->company_name : '-' }}</p>
                         <p><strong>Start Date:</strong> {{ $lead->insurance_start_date ? $lead->insurance_start_date->format('d-m-Y') : '-' }}</p>
                         <p><strong>End Date:</strong> {{ $lead->insurance_end_date ? $lead->insurance_end_date->format('d-m-Y') : '-' }}</p>

@@ -283,7 +283,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Loan Type Required</label>
+                                <label>Loan Type Required <span class="text-danger">*</span></label>
                                 <select name="loan_type" id="loan_type" class="form-control">
                                     <option value="">Select Type</option>
                                     <option value="Vehicle Loan" {{ old('loan_type') == 'Vehicle Loan' ? 'selected' : '' }}>Vehicle Loan</option>
@@ -308,7 +308,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Vehicle Type</label>
+                                    <label>Vehicle Type <span class="text-danger">*</span></label>
                                     <select name="vehicle_loan_type" id="vehicle_loan_type" class="form-control">
                                         <option value="">Select Vehicle Type</option>
                                         <option value="Car" {{ old('vehicle_loan_type') == 'Car' ? 'selected' : '' }}>Car</option>
@@ -327,7 +327,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Purchase Type</label>
+                                    <label>Purchase Type <span class="text-danger">*</span></label>
                                     <select name="vehicle_purchase_type" id="vehicle_purchase_type" class="form-control">
                                         <option value="">Select Purchase Type</option>
                                         <option value="New Purchase" {{ old('vehicle_purchase_type') == 'New Purchase' ? 'selected' : '' }}>New Purchase</option>
@@ -344,7 +344,7 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Manufacturer</label>
+                                        <label>Manufacturer <span class="text-danger">*</span></label>
                                         <select name="manufacture_id" class="form-control">
                                             <option value="">Select Manufacturer</option>
                                             @foreach($manufactures as $mfg)
@@ -378,7 +378,7 @@
                         <div id="repurchase_div" style="display:none;">
                             <h6>RC Details</h6>
                             <div class="row">
-                                <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rc_number" class="form-control" value="{{ old('rc_number') }}"></div></div>
+                                <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rc_number" class="form-control" value="{{ old('rc_number') }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control" value="{{ old('engine_number') }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control" value="{{ old('chassis_number') }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" class="form-control" value="{{ old('mfg_year') }}"></div></div>
@@ -470,7 +470,7 @@
                 <div id="rto_section" style="display:none;">
                     <h5>RTO Details</h5>
                     <div class="row">
-                        <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rto_rc_number" class="form-control" value="{{ old('rc_number') }}"></div></div>
+                        <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control" value="{{ old('rc_number') }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control" value="{{ old('engine_number') }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control" value="{{ old('chassis_number') }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="rto_mfg_year" class="form-control" value="{{ old('mfg_year') }}"></div></div>
@@ -510,10 +510,17 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
-                                <select name="rto_hypothecation_status" class="form-control">
+                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control">
                                     <option value="0">No</option>
                                     <option value="1">Yes</option>
                                 </select>
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control" value="{{ old('old_financer') }}"></div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control" value="{{ old('close_amount') }}"></div></div>
+                                <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control" value="{{ old('emi_paid_count') }}"></div></div>
                             </div>
                         </div>
                     </div>
@@ -523,7 +530,7 @@
                 <div id="insurance_section" style="display:none;">
                     <h5>Insurance Details</h5>
                     <div class="row">
-                        <div class="col-md-3"><div class="form-group"><label>Model Name</label><input type="text" name="ins_model_name" class="form-control" value="{{ old('model_name') }}"></div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Model Name <span class="text-danger">*</span></label><input type="text" name="ins_model_name" class="form-control" value="{{ old('model_name') }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Variant</label><input type="text" name="ins_variant" class="form-control" value="{{ old('variant') }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="ins_owner_serial_number" class="form-control" value="{{ old('owner_serial_number') }}"></div></div>
                         <div class="col-md-3">
@@ -585,6 +592,51 @@
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
                     lead_type: { required: true },
+                    // Loan Specific
+                    loan_type: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan';
+                        }
+                    },
+                    vehicle_loan_type: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan';
+                        }
+                    },
+                    vehicle_purchase_type: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan';
+                        }
+                    },
+                    manufacture_id: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan' && $("#vehicle_purchase_type").val() === 'New Purchase';
+                        }
+                    },
+                    rc_number: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan' && ['Repurchase', 'Refinance', 'Balance Transfer'].includes($("#vehicle_purchase_type").val());
+                        }
+                    },
+                    old_loan_close_amount: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan';
+                        },
+                        number: true,
+                        min: 0
+                    },
+                    // RTO Specific
+                    rto_rc_number: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'RTO';
+                        }
+                    },
+                    // Insurance Specific
+                    ins_model_name: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Insurance';
+                        }
+                    },
                     assigned_to: {
                         required: function(element) {
                             return $('#assigned_to').length > 0;
@@ -608,6 +660,18 @@
                     current_address_line: "Please enter the current address",
                     permanent_address_line: "Please enter the permanent address",
                     lead_type: "Please select a lead type",
+                    loan_type: "Please select a loan type",
+                    vehicle_loan_type: "Please select a vehicle loan type",
+                    vehicle_purchase_type: "Please select a purchase type",
+                    manufacture_id: "Please select a manufacturer",
+                    rc_number: "Please enter the RC number",
+                    old_loan_close_amount: {
+                        required: "Please enter the old loan close amount",
+                        number: "Please enter a valid number",
+                        min: "Amount cannot be negative"
+                    },
+                    rto_rc_number: "Please enter the RC number",
+                    ins_model_name: "Please enter the model name",
                     assigned_to: "Please select a user to assign the lead to"
                 }
             });
@@ -779,6 +843,10 @@
 
             $('#hypothecation_status').change(function() {
                 $('#hp_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
+
+            $('#rto_hypothecation_status').change(function() {
+                $('#rto_hp_details_div').toggle($(this).val() == '1');
             }).trigger('change');
 
             $('#has_co_applicant').change(function() {

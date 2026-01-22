@@ -110,6 +110,8 @@ class LeadController extends Controller
         ]);
 
         $data = $request->all();
+        $data = $this->mapLeadTypeData($data);
+
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
 
@@ -175,6 +177,8 @@ class LeadController extends Controller
 
         // Ensure numeric fields are properly handled if they are empty strings
         $data = $request->all();
+        $data = $this->mapLeadTypeData($data);
+
         $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income'];
 
         foreach ($numericFields as $field) {
@@ -473,5 +477,36 @@ class LeadController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+
+    private function mapLeadTypeData($data)
+    {
+        if (isset($data['lead_type'])) {
+            if ($data['lead_type'] === 'RTO') {
+                $data['rc_number'] = $data['rto_rc_number'] ?? $data['rc_number'] ?? null;
+                $data['engine_number'] = $data['rto_engine_number'] ?? $data['engine_number'] ?? null;
+                $data['chassis_number'] = $data['rto_chassis_number'] ?? $data['chassis_number'] ?? null;
+                $data['mfg_year'] = $data['rto_mfg_year'] ?? $data['mfg_year'] ?? null;
+                $data['mfg_name'] = $data['rto_mfg_name'] ?? $data['mfg_name'] ?? null;
+                $data['model_name'] = $data['rto_model_name'] ?? $data['model_name'] ?? null;
+                $data['variant'] = $data['rto_variant'] ?? $data['variant'] ?? null;
+                $data['owner_serial_number'] = $data['rto_owner_serial_number'] ?? $data['owner_serial_number'] ?? null;
+                $data['hypothecation_status'] = $data['rto_hypothecation_status'] ?? $data['hypothecation_status'] ?? null;
+
+                // Map Hypothecation Details for RTO
+                if (isset($data['rto_hypothecation_status']) && $data['rto_hypothecation_status'] == 1) {
+                    $data['old_financer'] = $data['rto_old_financer'] ?? $data['old_financer'] ?? null;
+                    $data['close_amount'] = $data['rto_close_amount'] ?? $data['close_amount'] ?? null;
+                    $data['emi_paid_count'] = $data['rto_emi_paid_count'] ?? $data['emi_paid_count'] ?? null;
+                }
+
+            } elseif ($data['lead_type'] === 'Insurance') {
+                $data['model_name'] = $data['ins_model_name'] ?? $data['model_name'] ?? null;
+                $data['variant'] = $data['ins_variant'] ?? $data['variant'] ?? null;
+                $data['owner_serial_number'] = $data['ins_owner_serial_number'] ?? $data['owner_serial_number'] ?? null;
+                $data['hypothecation_status'] = $data['ins_hypothecation_status'] ?? $data['hypothecation_status'] ?? null;
+            }
+        }
+        return $data;
     }
 }

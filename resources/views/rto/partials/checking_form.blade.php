@@ -10,19 +10,22 @@
                 <input type="text" name="rto_hsrp_remark" class="form-control form-control-sm mt-1" placeholder="Remark" value="{{ $lead->rto_hsrp_remark }}">
             </div>
 
+            @php
+                $hpChecked = $lead->rto_hypothecation_status === 1 || ($lead->rto_hypothecation_status === null && $lead->hypothecation_status == 1);
+            @endphp
             <div class="form-group form-check">
-                <input type="checkbox" class="form-check-input rto-status-checkbox" name="rto_hypothecation_status" id="hypothecation_{{ $lead->id }}" data-remark-target="#hypothecation_remark_div_{{ $lead->id }}" {{ $lead->rto_hypothecation_status ? 'checked' : '' }}>
+                <input type="checkbox" class="form-check-input rto-status-checkbox" name="rto_hypothecation_status" id="hypothecation_{{ $lead->id }}" data-remark-target="#hypothecation_remark_div_{{ $lead->id }}" {{ $hpChecked ? 'checked' : '' }}>
                 <label class="form-check-label" for="hypothecation_{{ $lead->id }}">Hypothecation</label>
             </div>
-            <div class="form-group rto-remark-div" id="hypothecation_remark_div_{{ $lead->id }}" style="{{ $lead->rto_hypothecation_status ? '' : 'display:none;' }}">
+            <div class="form-group rto-remark-div" id="hypothecation_remark_div_{{ $lead->id }}" style="{{ $hpChecked ? '' : 'display:none;' }}">
                 <input type="text" name="rto_hypothecation_remark" class="form-control form-control-sm mt-1" placeholder="Remark" value="{{ $lead->rto_hypothecation_remark }}">
             </div>
-            <div class="form-group" id="hypothecation_bank_div_{{ $lead->id }}" style="{{ $lead->rto_hypothecation_status ? '' : 'display:none;' }}">
+            <div class="form-group" id="hypothecation_bank_div_{{ $lead->id }}" style="{{ $hpChecked ? '' : 'display:none;' }}">
                 <label>Select Bank</label>
                 <select name="rto_hypothecation_bank_id" class="form-control">
                     <option value="">Select Bank</option>
                     @foreach($banks as $bank)
-                        <option value="{{ $bank->id }}" {{ $lead->rto_hypothecation_bank_id == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                        <option value="{{ $bank->id }}" {{ ($lead->rto_hypothecation_bank_id == $bank->id || ($lead->rto_hypothecation_bank_id === null && $lead->bank_id == $bank->id)) ? 'selected' : '' }}>{{ $bank->name }}</option>
                     @endforeach
                 </select>
             </div>
