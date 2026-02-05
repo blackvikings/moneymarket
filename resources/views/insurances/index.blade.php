@@ -57,7 +57,14 @@
                         <tr>
                             <td>{{ $insurance->company_name }}</td>
                             <td>{{ $insurance->agent_name }}</td>
-                            <td>{{ $insurance->address }}</td>
+                            <td>
+                                @if($insurance->address_line)
+                                    {{ $insurance->address_line }},<br>
+                                    {{ $insurance->city->name ?? '' }}, {{ $insurance->state->name ?? '' }} - {{ $insurance->pincode }}
+                                @else
+                                    {{ $insurance->address }}
+                                @endif
+                            </td>
                             <td>
                                 @if ($insurance->is_active)
                                     <span class="badge badge-success">Active</span>

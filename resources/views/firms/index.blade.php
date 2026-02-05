@@ -55,7 +55,14 @@
                     @foreach ($firms as $firm)
                         <tr>
                             <td>{{ $firm->name }}</td>
-                            <td>{{ $firm->address }}</td>
+                            <td>
+                                @if($firm->address_line)
+                                    {{ $firm->address_line }},<br>
+                                    {{ $firm->city->name ?? '' }}, {{ $firm->state->name ?? '' }} - {{ $firm->pincode }}
+                                @else
+                                    {{ $firm->address }}
+                                @endif
+                            </td>
                             <td>
                                 @if ($firm->is_active)
                                     <span class="badge badge-success">Active</span>
