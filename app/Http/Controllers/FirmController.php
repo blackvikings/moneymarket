@@ -19,7 +19,7 @@ class FirmController extends Controller
 
     public function index(Request $request)
     {
-        $query = Firm::query();
+        $query = Firm::with(['state', 'city']);
 
         if ($request->has('name') && $request->name != '') {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -43,7 +43,10 @@ class FirmController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:firms,name',
-            'address' => 'required',
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
         ]);
 
         Firm::create($request->all());
@@ -60,7 +63,10 @@ class FirmController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:firms,name,' . $firm->id,
-            'address' => 'required',
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
         ]);
 
         $firm->update($request->all());

@@ -21,7 +21,7 @@ class InsuranceController extends Controller
 
     public function index(Request $request)
     {
-        $query = Insurance::with('types.subTypes');
+        $query = Insurance::with(['types.subTypes', 'state', 'city']);
 
         if ($request->has('company_name') && $request->company_name != '') {
             $query->where('company_name', 'like', '%' . $request->company_name . '%');
@@ -46,7 +46,10 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name',
             'agent_name' => 'required',
-            'address' => 'required',
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
             'types' => 'required|array',
             'types.*.name' => 'required|string',
             'types.*.sub_types' => 'nullable|array',
@@ -56,7 +59,10 @@ class InsuranceController extends Controller
         $insurance = Insurance::create([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
-            'address' => $request->address,
+            'address_line' => $request->address_line,
+            'pincode' => $request->pincode,
+            'state_id' => $request->state_id,
+            'city_id' => $request->city_id,
         ]);
 
         foreach ($request->types as $typeData) {
@@ -84,7 +90,10 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name,' . $insurance->id,
             'agent_name' => 'required',
-            'address' => 'required',
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
             'types' => 'required|array',
             'types.*.name' => 'required|string',
             'types.*.sub_types' => 'nullable|array',
@@ -94,10 +103,13 @@ class InsuranceController extends Controller
         $insurance->update([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
-            'address' => $request->address,
+            'address_line' => $request->address_line,
+            'pincode' => $request->pincode,
+            'state_id' => $request->state_id,
+            'city_id' => $request->city_id,
         ]);
 
-        // Delete existing types and recreate (simplest approach for nested updates)
+        // Delete existing types and recreate
         $insurance->types()->delete();
 
         foreach ($request->types as $typeData) {
