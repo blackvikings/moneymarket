@@ -15,7 +15,21 @@
         input.error, select.error, textarea.error {
             border: 1px solid red;
         }
+        .invalid-feedback {
+            display: block;
+        }
     </style>
+
+    @if ($errors->any())
+        <div class="alert alert-danger">
+            <ul>
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.employees.store') }}" method="POST" enctype="multipart/form-data" id="createEmployeeForm">
@@ -235,13 +249,13 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Account Holder Name</label>
-                            <input type="text" name="account_holder_name" class="form-control" value="{{ old('account_holder_name') }}">
+                            <input type="text" name="account_holder_name" id="account_holder_name" class="form-control" value="{{ old('account_holder_name') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>IFSC Code</label>
-                            <input type="text" name="ifsc_code" class="form-control" value="{{ old('ifsc_code') }}">
+                            <input type="text" name="ifsc_code" id="ifsc_code" class="form-control" value="{{ old('ifsc_code') }}">
                         </div>
                     </div>
                 </div>
@@ -257,6 +271,17 @@
     <script>
         $(document).ready(function() {
             $('#createEmployeeForm').validate({
+                errorElement: 'span',
+                errorPlacement: function (error, element) {
+                    error.addClass('invalid-feedback');
+                    element.closest('.form-group').append(error);
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass('is-invalid');
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass('is-invalid');
+                },
                 rules: {
                     role: { required: true },
                     name: { required: true },
@@ -268,9 +293,6 @@
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
                     address_proof: { required: true },
-                    'education[0][degree]': { required: true },
-                    'education[0][institution]': { required: true },
-                    'education[0][passing_year]': { required: true },
                     bank_id: {
                         required: function(element) {
                             return $("#account_holder_name").val().length > 0 || $("#ifsc_code").val().length > 0;
@@ -312,9 +334,6 @@
                     current_address_line: "Please provide the current address",
                     permanent_address_line: "Please provide the permanent address",
                     address_proof: "Please upload an address proof",
-                    'education[0][degree]': "Degree is required",
-                    'education[0][institution]': "Institution is required",
-                    'education[0][passing_year]': "Passing year is required",
                     bank_id: "Please select a bank",
                     account_holder_name: "Please enter the account holder's name",
                     ifsc_code: "Please enter the IFSC code"
@@ -327,20 +346,39 @@
                     <div class="card education-card mt-2">
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-3"><div class="form-group"><label>Degree</label><input type="text" name="education[${eduIndex}][degree]" class="form-control" required></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Institution</label><input type="text" name="education[${eduIndex}][institution]" class="form-control" required></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Passing Year</label><input type="text" name="education[${eduIndex}][passing_year]" class="form-control" required></div></div>
-                                <div class="col-md-2"><div class="form-group"><label>Percentage</label><input type="text" name="education[${eduIndex}][percentage]" class="form-control"></div></div>
-                                <div class="col-md-1"><label>&nbsp;</label><button type="button" class="btn btn-danger btn-block remove-education">X</button></div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Degree</label>
+                                        <input type="text" name="education[${eduIndex}][degree]" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Institution</label>
+                                        <input type="text" name="education[${eduIndex}][institution]" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Passing Year</label>
+                                        <input type="text" name="education[${eduIndex}][passing_year]" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label>Percentage</label>
+                                        <input type="text" name="education[${eduIndex}][percentage]" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="col-md-1">
+                                    <label>&nbsp;</label>
+                                    <button type="button" class="btn btn-danger btn-block remove-education">X</button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
                 $('#education-container').append(html);
-                // Add validation rules for new fields
-                $(`[name="education[${eduIndex}][degree]"]`).rules('add', { required: true, messages: { required: "Degree is required"} });
-                $(`[name="education[${eduIndex}][institution]"]`).rules('add', { required: true, messages: { required: "Institution is required"} });
-                $(`[name="education[${eduIndex}][passing_year]"]`).rules('add', { required: true, messages: { required: "Passing year is required"} });
                 eduIndex++;
             }
 

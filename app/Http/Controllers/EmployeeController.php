@@ -67,13 +67,13 @@ class EmployeeController extends Controller
             'current_address_line' => 'required|string',
             'permanent_address_line' => 'required|string',
             'address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'education.*.degree' => 'required|string',
-            'education.*.institution' => 'required|string',
-            'education.*.passing_year' => 'required|string',
-            'bank_id' => 'required_with:account_holder_name,ifsc_code|exists:banks,id',
-            'bank_branch_id' => 'required_with:account_holder_name,ifsc_code|exists:bank_branches,id',
-            'account_holder_name' => 'required_with:bank_id,ifsc_code|string',
-            'ifsc_code' => 'required_with:bank_id,account_holder_name|string',
+            'education.*.degree' => 'nullable|string',
+            'education.*.institution' => 'nullable|string',
+            'education.*.passing_year' => 'nullable|string',
+            'bank_id' => 'nullable|exists:banks,id',
+            'bank_branch_id' => 'nullable|exists:bank_branches,id',
+            'account_holder_name' => 'nullable|string',
+            'ifsc_code' => 'nullable|string',
         ]);
 
         $data = $request->except('password', 'address_proof', 'education', 'role');
@@ -89,7 +89,9 @@ class EmployeeController extends Controller
 
         if ($request->has('education')) {
             foreach ($request->education as $edu) {
-                $employee->education()->create($edu);
+                if (!empty($edu['degree']) || !empty($edu['institution']) || !empty($edu['passing_year'])) {
+                    $employee->education()->create($edu);
+                }
             }
         }
 
@@ -131,9 +133,13 @@ class EmployeeController extends Controller
             'dob' => 'nullable|date',
             'firm_id' => 'required|exists:firms,id',
             'address_proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'education.*.degree' => 'required|string',
-            'education.*.institution' => 'required|string',
-            'education.*.passing_year' => 'required|string',
+            'education.*.degree' => 'nullable|string',
+            'education.*.institution' => 'nullable|string',
+            'education.*.passing_year' => 'nullable|string',
+            'bank_id' => 'nullable|exists:banks,id',
+            'bank_branch_id' => 'nullable|exists:bank_branches,id',
+            'account_holder_name' => 'nullable|string',
+            'ifsc_code' => 'nullable|string',
         ]);
 
         $data = $request->except('password', 'address_proof', 'education', 'role');
@@ -152,7 +158,9 @@ class EmployeeController extends Controller
         $employee->education()->delete();
         if ($request->has('education')) {
             foreach ($request->education as $edu) {
-                $employee->education()->create($edu);
+                if (!empty($edu['degree']) || !empty($edu['institution']) || !empty($edu['passing_year'])) {
+                    $employee->education()->create($edu);
+                }
             }
         }
 
