@@ -114,7 +114,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input @error('current_address_pincode') is-invalid @enderror" value="{{ old('current_address_pincode') }}">
+                                    <input type="text" name="current_address_pincode" id="current_pincode" placeholder="Pin Code" class="form-control pincode-input @error('current_address_pincode') is-invalid @enderror" value="{{ old('current_address_pincode') }}">
                                     @error('current_address_pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -158,7 +158,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input @error('permanent_address_pincode') is-invalid @enderror" value="{{ old('permanent_address_pincode') }}">
+                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" placeholder="Pin Code" class="form-control pincode-input @error('permanent_address_pincode') is-invalid @enderror" value="{{ old('permanent_address_pincode') }}">
                                     @error('permanent_address_pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -180,10 +180,6 @@
                                     @error('permanent_address_city') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                        </div>
-                        <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> </label>
-                            <input type="file" name="permanent_address_proof" class="form-control-file">
                         </div>
                     </div>
                 </div>

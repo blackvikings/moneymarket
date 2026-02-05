@@ -123,9 +123,9 @@ class LeadController extends Controller
             $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
 
-        if ($request->hasFile('permanent_address_proof')) {
-            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
-        }
+//        if ($request->hasFile('permanent_address_proof')) {
+//            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
+//        }
 
         $lead = Lead::create($data);
 
