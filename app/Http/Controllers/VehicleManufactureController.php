@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\VehicleManufacture;
+use App\Models\VehicleName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\VehicleManufactureExport;
@@ -36,45 +37,92 @@ class VehicleManufactureController extends Controller
 
     public function create()
     {
-        return view('vehicle_manufactures.create');
+        $manufactures = VehicleManufacture::all();
+        return view('vehicle_manufactures.create', compact('manufactures'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|unique:vehicle_manufactures,name',
-            'vehicle_names' => 'required|array',
-            'vehicle_names.*' => 'required|string',
+            'name' => 'required|string',
+            'vehicle_name' => 'required|string',
+            'variants' => 'nullable|array',
+            'variants.*' => 'nullable|string',
         ]);
 
-        $manufacture = VehicleManufacture::create(['name' => $request->name]);
+        // Find or create manufacture
+        $manufacture = VehicleManufacture::firstOrCreate(['name' => $request->name]);
 
-        foreach ($request->vehicle_names as $vehicleName) {
-            $manufacture->vehicleNames()->create(['name' => $vehicleName]);
+        $variants = $request->input('variants', []);
+
+        if (is_array($variants) && count($variants) > 0) {
+            foreach ($variants as $variant) {
+                if (!empty($variant)) {
+                    $manufacture->vehicleNames()->create([
+                        'name' => $request->vehicle_name,
+                        'variant' => $variant
+                    ]);
+                }
+            }
+        } else {
+            // Create at least one entry for the vehicle name even if no variants are provided
+            $manufacture->vehicleNames()->create([
+                'name' => $request->vehicle_name,
+                'variant' => null
+            ]);
         }
 
-        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture created successfully');
+        return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle and variants saved successfully');
     }
 
     public function edit(VehicleManufacture $vehicleManufacture)
     {
-        return view('vehicle_manufactures.edit', compact('vehicleManufacture'));
+        $vehicleManufacture->load('vehicleNames');
+
+        // Group variants by vehicle name for the view
+        $groupedVehicles = $vehicleManufacture->vehicleNames->groupBy('name')->map(function($items) {
+            return $items->pluck('variant')->filter()->toArray();
+        });
+
+        return view('vehicle_manufactures.edit', compact('vehicleManufacture', 'groupedVehicles'));
     }
 
     public function update(Request $request, VehicleManufacture $vehicleManufacture)
     {
         $request->validate([
-            'name' => 'required|unique:vehicle_manufactures,name,' . $vehicleManufacture->id,
-            'vehicle_names' => 'required|array',
-            'vehicle_names.*' => 'required|string',
+            'name' => 'required|string|unique:vehicle_manufactures,name,' . $vehicleManufacture->id,
+            'vehicles' => 'nullable|array',
+            'vehicles.*.name' => 'required_with:vehicles|string',
+            'vehicles.*.variants' => 'nullable|array',
+            'vehicles.*.variants.*' => 'nullable|string',
         ]);
 
         $vehicleManufacture->update(['name' => $request->name]);
 
         // Sync vehicle names: delete existing and recreate
         $vehicleManufacture->vehicleNames()->delete();
-        foreach ($request->vehicle_names as $vehicleName) {
-            $vehicleManufacture->vehicleNames()->create(['name' => $vehicleName]);
+
+        if ($request->has('vehicles') && is_array($request->vehicles)) {
+            foreach ($request->vehicles as $vehicleData) {
+                if (!empty($vehicleData['name'])) {
+                    $variants = $vehicleData['variants'] ?? [];
+                    if (is_array($variants) && count($variants) > 0) {
+                        foreach ($variants as $variant) {
+                            if (!empty($variant)) {
+                                $vehicleManufacture->vehicleNames()->create([
+                                    'name' => $vehicleData['name'],
+                                    'variant' => $variant
+                                ]);
+                            }
+                        }
+                    } else {
+                        $vehicleManufacture->vehicleNames()->create([
+                            'name' => $vehicleData['name'],
+                            'variant' => null
+                        ]);
+                    }
+                }
+            }
         }
 
         return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle Manufacture updated successfully');

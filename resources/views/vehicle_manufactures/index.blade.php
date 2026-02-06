@@ -46,46 +46,94 @@
                 <thead>
                     <tr>
                         <th>Manufacture Name</th>
-                        <th>Vehicle Names</th>
+                        <th>Vehicle Name</th>
+                        <th>Variants</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($manufactures as $manufacture)
-                        <tr>
-                            <td>{{ $manufacture->name }}</td>
-                            <td>
-                                @foreach ($manufacture->vehicleNames as $vehicleName)
-                                    <span class="badge badge-info">{{ $vehicleName->name }}</span>
-                                @endforeach
-                            </td>
-                            <td>
-                                @if ($manufacture->is_active)
-                                    <span class="badge badge-success">Active</span>
-                                @else
-                                    <span class="badge badge-danger">Blocked</span>
+                        @php
+                            $groupedVehicles = $manufacture->vehicleNames->groupBy('name');
+                        @endphp
+                        @foreach ($groupedVehicles as $vehicleName => $items)
+                            <tr>
+                                @if ($loop->first)
+                                    <td rowspan="{{ $groupedVehicles->count() }}">{{ $manufacture->name }}</td>
                                 @endif
-                            </td>
-                            <td>
-                                @can('edit vehicle manufacture')
-                                    <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
-                                        </button>
-                                    </form>
-                                @endcan
-                                @can('delete vehicle manufacture')
-                                    <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                @endcan
-                            </td>
-                        </tr>
+                                <td>{{ $vehicleName }}</td>
+                                <td>
+                                    @php
+                                        $variants = $items->pluck('variant')->filter()->toArray();
+                                    @endphp
+                                    @foreach($variants as $variant)
+                                        <span class="badge badge-info">{{ $variant }}</span>
+                                    @endforeach
+                                    @if(empty($variants))
+                                        <span class="text-muted">No variants</span>
+                                    @endif
+                                </td>
+                                @if ($loop->first)
+                                    <td rowspan="{{ $groupedVehicles->count() }}">
+                                        @if ($manufacture->is_active)
+                                            <span class="badge badge-success">Active</span>
+                                        @else
+                                            <span class="badge badge-danger">Blocked</span>
+                                        @endif
+                                    </td>
+                                    <td rowspan="{{ $groupedVehicles->count() }}">
+                                        @can('edit vehicle manufacture')
+                                            <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
+                                                    {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
+                                                </button>
+                                            </form>
+                                        @endcan
+                                        @can('delete vehicle manufacture')
+                                            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                            </form>
+                                        @endcan
+                                    </td>
+                                @endif
+                            </tr>
+                        @endforeach
+                        @if($groupedVehicles->isEmpty())
+                            <tr>
+                                <td>{{ $manufacture->name }}</td>
+                                <td colspan="2" class="text-center text-muted italic">No vehicles added</td>
+                                <td>
+                                    @if ($manufacture->is_active)
+                                        <span class="badge badge-success">Active</span>
+                                    @else
+                                        <span class="badge badge-danger">Blocked</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @can('edit vehicle manufacture')
+                                        <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
+                                                {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
+                                            </button>
+                                        </form>
+                                    @endcan
+                                    @can('delete vehicle manufacture')
+                                        <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        </form>
+                                    @endcan
+                                </td>
+                            </tr>
+                        @endif
                     @endforeach
                 </tbody>
             </table>

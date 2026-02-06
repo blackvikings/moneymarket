@@ -50,8 +50,8 @@ class InsuranceController extends Controller
             'pincode' => 'required|string|max:10',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
-            'types' => 'required|array',
-            'types.*.name' => 'required|string',
+            'types' => 'nullable|array',
+            'types.*.name' => 'required_with:types|string',
             'types.*.sub_types' => 'nullable|array',
             'types.*.sub_types.*' => 'nullable|string',
         ]);
@@ -65,12 +65,16 @@ class InsuranceController extends Controller
             'city_id' => $request->city_id,
         ]);
 
-        foreach ($request->types as $typeData) {
-            $type = $insurance->types()->create(['name' => $typeData['name']]);
-            if (isset($typeData['sub_types'])) {
-                foreach ($typeData['sub_types'] as $subTypeName) {
-                    if (!empty($subTypeName)) {
-                        $type->subTypes()->create(['name' => $subTypeName]);
+        if ($request->has('types') && is_array($request->types)) {
+            foreach ($request->types as $typeData) {
+                if (!empty($typeData['name'])) {
+                    $type = $insurance->types()->create(['name' => $typeData['name']]);
+                    if (isset($typeData['sub_types'])) {
+                        foreach ($typeData['sub_types'] as $subTypeName) {
+                            if (!empty($subTypeName)) {
+                                $type->subTypes()->create(['name' => $subTypeName]);
+                            }
+                        }
                     }
                 }
             }
@@ -94,8 +98,8 @@ class InsuranceController extends Controller
             'pincode' => 'required|string|max:10',
             'state_id' => 'required|exists:states,id',
             'city_id' => 'required|exists:cities,id',
-            'types' => 'required|array',
-            'types.*.name' => 'required|string',
+            'types' => 'nullable|array',
+            'types.*.name' => 'required_with:types|string',
             'types.*.sub_types' => 'nullable|array',
             'types.*.sub_types.*' => 'nullable|string',
         ]);
@@ -112,12 +116,16 @@ class InsuranceController extends Controller
         // Delete existing types and recreate
         $insurance->types()->delete();
 
-        foreach ($request->types as $typeData) {
-            $type = $insurance->types()->create(['name' => $typeData['name']]);
-            if (isset($typeData['sub_types'])) {
-                foreach ($typeData['sub_types'] as $subTypeName) {
-                    if (!empty($subTypeName)) {
-                        $type->subTypes()->create(['name' => $subTypeName]);
+        if ($request->has('types') && is_array($request->types)) {
+            foreach ($request->types as $typeData) {
+                if (!empty($typeData['name'])) {
+                    $type = $insurance->types()->create(['name' => $typeData['name']]);
+                    if (isset($typeData['sub_types'])) {
+                        foreach ($typeData['sub_types'] as $subTypeName) {
+                            if (!empty($subTypeName)) {
+                                $type->subTypes()->create(['name' => $subTypeName]);
+                            }
+                        }
                     }
                 }
             }

@@ -45,9 +45,9 @@ class RtoAgentController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'number' => 'required|unique:rto_agents,number',
-            'cities' => 'required|array',
-            'cities.*' => 'required|string',
+            'number' => 'nullable|unique:rto_agents,number',
+            'cities' => 'nullable|array',
+            'cities.*' => 'nullable|string',
         ]);
 
         $agent = RtoAgent::create([
@@ -55,8 +55,12 @@ class RtoAgentController extends Controller
             'number' => $request->number,
         ]);
 
-        foreach ($request->cities as $cityName) {
-            $agent->cities()->create(['city_name' => $cityName]);
+        if ($request->has('cities') && is_array($request->cities)) {
+            foreach ($request->cities as $cityName) {
+                if (!empty($cityName)) {
+                    $agent->cities()->create(['city_name' => $cityName]);
+                }
+            }
         }
 
         return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent created successfully');
@@ -72,9 +76,9 @@ class RtoAgentController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'number' => 'required|unique:rto_agents,number,' . $rtoAgent->id,
-            'cities' => 'required|array',
-            'cities.*' => 'required|string',
+            'number' => 'nullable|unique:rto_agents,number,' . $rtoAgent->id,
+            'cities' => 'nullable|array',
+            'cities.*' => 'nullable|string',
         ]);
 
         $rtoAgent->update([
@@ -84,8 +88,12 @@ class RtoAgentController extends Controller
 
         // Sync cities: delete existing and recreate
         $rtoAgent->cities()->delete();
-        foreach ($request->cities as $cityName) {
-            $rtoAgent->cities()->create(['city_name' => $cityName]);
+        if ($request->has('cities') && is_array($request->cities)) {
+            foreach ($request->cities as $cityName) {
+                if (!empty($cityName)) {
+                    $rtoAgent->cities()->create(['city_name' => $cityName]);
+                }
+            }
         }
 
         return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent updated successfully');

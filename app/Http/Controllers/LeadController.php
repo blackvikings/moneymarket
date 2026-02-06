@@ -101,9 +101,7 @@ class LeadController extends Controller
             'current_address_line' => 'required|string',
             'permanent_address_line' => 'required|string',
             'lead_type' => 'required|in:Loan,RTO,Insurance',
-            'assigned_to' => [Rule::requiredIf(function () {
-                return Auth::user()->hasRole('admin') || Auth::user()->hasRole('Team Lead');
-            })],
+            'assigned_to' => 'nullable|exists:users,id',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
@@ -123,9 +121,11 @@ class LeadController extends Controller
             $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
 
-//        if ($request->hasFile('permanent_address_proof')) {
-//            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
-//        }
+        /*
+        if ($request->hasFile('permanent_address_proof')) {
+            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
+        }
+        */
 
         $lead = Lead::create($data);
 

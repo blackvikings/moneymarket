@@ -24,18 +24,18 @@
             <form action="{{ route('admin.rto-agents.store') }}" method="POST" id="createRtoAgentForm">
                 @csrf
                 <div class="form-group">
-                    <label for="name">Agent Name</label>
+                    <label for="name">Agent Name <span class="text-danger">*</span></label>
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="number">Agent Number</label>
-                    <input type="text" name="number" id="number" class="form-control @error('number') is-invalid @enderror" value="{{ old('number') }}" required>
+                    <input type="text" name="number" id="number" class="form-control @error('number') is-invalid @enderror" value="{{ old('number') }}">
                     @error('number') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="cities">Cities</label>
-                    <select name="cities[]" id="cities" class="form-control @error('cities') is-invalid @enderror" multiple="multiple" required>
+                    <select name="cities[]" id="cities" class="form-control @error('cities') is-invalid @enderror" multiple="multiple">
                         @foreach ($cities as $city)
                             <option value="{{ $city->name }}" {{ in_array($city->name, old('cities', [])) ? 'selected' : '' }}>{{ $city->name }}</option>
                         @endforeach
@@ -61,14 +61,10 @@
             $('#createRtoAgentForm').validate({
                 ignore: [], // To validate hidden select2 fields
                 rules: {
-                    name: { required: true },
-                    number: { required: true },
-                    'cities[]': { required: true }
+                    name: { required: true }
                 },
                 messages: {
-                    name: "Please enter the agent's name",
-                    number: "Please enter the agent's number",
-                    'cities[]': "Please select at least one city"
+                    name: "Please enter the agent's name"
                 },
                 errorPlacement: function (error, element) {
                     if (element.hasClass('select2-hidden-accessible')) {

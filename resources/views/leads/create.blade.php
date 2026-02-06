@@ -114,7 +114,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="current_address_pincode" id="current_pincode" placeholder="Pin Code" class="form-control pincode-input @error('current_address_pincode') is-invalid @enderror" value="{{ old('current_address_pincode') }}">
+                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input @error('current_address_pincode') is-invalid @enderror" value="{{ old('current_address_pincode') }}">
                                     @error('current_address_pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -158,7 +158,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Pin Code</label>
-                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" placeholder="Pin Code" class="form-control pincode-input @error('permanent_address_pincode') is-invalid @enderror" value="{{ old('permanent_address_pincode') }}">
+                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input @error('permanent_address_pincode') is-invalid @enderror" value="{{ old('permanent_address_pincode') }}">
                                     @error('permanent_address_pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -181,6 +181,7 @@
                                 </div>
                             </div>
                         </div>
+                        {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
 
@@ -546,8 +547,8 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Assign To <span class="text-danger">*</span></label>
-                            <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" required>
+                            <label>Assign To</label>
+                            <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror">
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -632,11 +633,6 @@
                         required: function(element) {
                             return $("#lead_type").val() === 'Insurance';
                         }
-                    },
-                    assigned_to: {
-                        required: function(element) {
-                            return $('#assigned_to').length > 0;
-                        }
                     }
                 },
                 messages: {
@@ -667,8 +663,7 @@
                         min: "Amount cannot be negative"
                     },
                     rto_rc_number: "Please enter the RC number",
-                    ins_model_name: "Please enter the model name",
-                    assigned_to: "Please select a user to assign the lead to"
+                    ins_model_name: "Please enter the model name"
                 }
             });
 

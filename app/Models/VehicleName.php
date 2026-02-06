@@ -9,7 +9,7 @@ class VehicleName extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['vehicle_manufacture_id', 'name'];
+    protected $fillable = ['vehicle_manufacture_id', 'name', 'variant'];
 
     public function manufacture()
     {

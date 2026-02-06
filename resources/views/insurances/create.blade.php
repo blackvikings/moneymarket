@@ -115,7 +115,8 @@
             function initSelect2(element) {
                 element.select2({
                     tags: true,
-                    tokenSeparators: [',', ' ']
+                    tokenSeparators: [','], // Removed space to allow spaces in strings
+                    placeholder: "Type sub-types and press enter"
                 });
             }
 
@@ -125,13 +126,13 @@
                         <div class="card-body">
                             <div class="form-group">
                                 <label>Insurance Type</label>
-                                <input type="text" name="types[${typeIndex}][name]" class="form-control" required>
+                                <input type="text" name="types[${typeIndex}][name]" class="form-control">
                             </div>
                             <div class="form-group">
                                 <label>Sub Types</label>
                                 <select name="types[${typeIndex}][sub_types][]" class="form-control sub-types-select" multiple="multiple">
                                 </select>
-                                <small class="form-text text-muted">Type sub-type name and press enter to add.</small>
+                                <small class="form-text text-muted">Type sub-type name and press enter to add. Spaces are allowed.</small>
                             </div>
                             <button type="button" class="btn btn-danger btn-sm remove-type">Remove Type</button>
                         </div>
@@ -139,19 +140,8 @@
                 `;
                 $('#types-container').append(html);
                 initSelect2($('#types-container .type-card:last .sub-types-select'));
-
-                // Add validation for the new row
-                $(`[name="types[${typeIndex}][name]"]`).rules('add', {
-                    required: true,
-                    messages: {
-                        required: "Insurance type name is required"
-                    }
-                });
-
                 typeIndex++;
             }
-
-            addTypeRow(); // Add the first row on page load
 
             $('#add-type').click(addTypeRow);
 

@@ -18,18 +18,21 @@
         .select2-container--default .select2-selection--multiple.error {
             border: 1px solid red;
         }
+        .invalid-feedback {
+            display: block;
+        }
     </style>
     <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.roles.store') }}" method="POST" id="createRoleForm">
                 @csrf
                 <div class="form-group">
-                    <label for="name">Name</label>
+                    <label for="name">Role Name <span class="text-danger">*</span></label>
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
-                    <label for="permissions">Permissions</label>
+                    <label for="permissions">Permissions <span class="text-danger">*</span></label>
                     <select name="permissions[]" id="permissions" class="form-control @error('permissions') is-invalid @enderror" multiple required>
                         @foreach ($permissions as $permission)
                             <option value="{{ $permission->id }}" {{ in_array($permission->id, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
@@ -37,7 +40,7 @@
                     </select>
                     @error('permissions') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Create Role</button>
             </form>
         </div>
     </div>
@@ -47,9 +50,33 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#permissions').select2();
+            $('#permissions').select2({
+                placeholder: "Select Permissions",
+                allowClear: true
+            });
 
             $('#createRoleForm').validate({
+                errorElement: 'span',
+                errorPlacement: function (error, element) {
+                    error.addClass('invalid-feedback');
+                    if (element.hasClass('select2-hidden-accessible')) {
+                        error.insertAfter(element.next('.select2-container'));
+                    } else {
+                        element.closest('.form-group').append(error);
+                    }
+                },
+                highlight: function (element, errorClass, validClass) {
+                    $(element).addClass('is-invalid');
+                    if ($(element).hasClass('select2-hidden-accessible')) {
+                        $(element).next('.select2-container').find('.select2-selection').addClass('is-invalid');
+                    }
+                },
+                unhighlight: function (element, errorClass, validClass) {
+                    $(element).removeClass('is-invalid');
+                    if ($(element).hasClass('select2-hidden-accessible')) {
+                        $(element).next('.select2-container').find('.select2-selection').removeClass('is-invalid');
+                    }
+                },
                 ignore: [], // To validate hidden select2 fields
                 rules: {
                     name: { required: true },
@@ -58,14 +85,12 @@
                 messages: {
                     name: "Please enter a role name",
                     'permissions[]': "Please select at least one permission"
-                },
-                errorPlacement: function (error, element) {
-                    if (element.hasClass('select2-hidden-accessible')) {
-                        error.insertAfter(element.next('.select2-container'));
-                    } else {
-                        error.insertAfter(element);
-                    }
                 }
+            });
+
+            // Trigger validation on select2 change
+            $('#permissions').on('change', function() {
+                $(this).valid();
             });
         });
     </script>
