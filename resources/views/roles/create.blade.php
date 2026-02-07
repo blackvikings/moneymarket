@@ -40,7 +40,7 @@
                     </select>
                     @error('permissions') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
-                <button type="submit" class="btn btn-primary">Create Role</button>
+                <button type="submit" class="btn btn-primary">Save Role</button>
             </form>
         </div>
     </div>

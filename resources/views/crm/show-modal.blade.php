@@ -1,0 +1,158 @@
+<style>
+    .crm-timeline {
+        position: relative;
+        margin: 0 0 30px 0;
+        padding: 0;
+        list-style: none;
+    }
+    .crm-timeline:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 4px;
+        background: #e9ecef;
+        left: 31px;
+        margin: 0;
+        border-radius: 2px;
+    }
+    .crm-timeline > li {
+        position: relative;
+        margin-right: 10px;
+        margin-bottom: 15px;
+    }
+    .crm-timeline > li > .fa,
+    .crm-timeline > li > .fas,
+    .crm-timeline > li > .far {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+        line-height: 30px;
+        position: absolute;
+        color: #fff;
+        background: #adb5bd;
+        border-radius: 50%;
+        text-align: center;
+        left: 18px;
+        top: 0;
+    }
+    .crm-timeline > li > .timeline-item {
+        box-shadow: 0 0 1px rgba(0,0,0,.125), 0 1px 3px rgba(0,0,0,.2);
+        border-radius: .25rem;
+        background: #fff;
+        color: #495057;
+        margin-left: 60px;
+        margin-right: 15px;
+        padding: 0;
+        position: relative;
+    }
+    .crm-timeline > li > .timeline-item > .time {
+        color: #999;
+        float: right;
+        padding: 10px;
+        font-size: 12px;
+    }
+    .crm-timeline > li > .timeline-item > .timeline-header {
+        margin: 0;
+        color: #555;
+        border-bottom: 1px solid rgba(0,0,0,.125);
+        padding: 10px;
+        font-size: 14px;
+        line-height: 1.1;
+    }
+    .bg-blue { background-color: #007bff !important; }
+    .bg-green { background-color: #28a745 !important; }
+</style>
+
+<div class="modal-header">
+    <h5 class="modal-title">CRM Lead Details: {{ $lead->customer_name }}</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<div class="modal-body">
+    <div class="row">
+        <div class="col-md-6">
+            <h6><strong>Customer Information</strong></h6>
+            <p><strong>Name:</strong> {{ $lead->customer_name }}</p>
+            <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
+            <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
+            <p><strong>CRM Stage:</strong> <span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></p>
+        </div>
+        <div class="col-md-6">
+            <h6><strong>Bank Details</strong></h6>
+            <p><strong>Bank:</strong> {{ $lead->bank ? $lead->bank->name : '-' }}</p>
+            <p><strong>Branch:</strong> {{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</p>
+            <p><strong>Assigned Date:</strong> {{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : '-' }}</p>
+        </div>
+    </div>
+
+    <hr>
+    <h6><strong>Journey Timeline</strong></h6>
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="crm-timeline">
+                @php
+                    $crmStages = [
+                        'New' => 'crm_new_at',
+                        'Login' => 'crm_login_at',
+                        'FI Document' => 'crm_fi_document_at',
+                        'Vehicle Evaluation' => 'crm_vehicle_evaluation_at',
+                        'Credit' => 'crm_credit_at',
+                        'Approved' => 'crm_approved_at',
+                        'Agreement' => 'crm_agreement_at',
+                        'Disbursal' => 'crm_disbursal_at'
+                    ];
+                @endphp
+                @foreach($crmStages as $stage => $column)
+                    @if($lead->$column)
+                        <li>
+                            <i class="fas fa-check bg-green"></i>
+                            <div class="timeline-item">
+                                <span class="time"><i class="far fa-clock"></i> {{ $lead->$column->format('d-m-Y H:i') }}</span>
+                                <h3 class="timeline-header"><strong>{{ $stage }}</strong> completed</h3>
+                            </div>
+                        </li>
+                    @endif
+                @endforeach
+
+                {{-- Only show the "In Progress" clock if Disbursal is not yet completed --}}
+                @if(!$lead->crm_disbursal_at)
+                    <li>
+                        <i class="far fa-clock bg-gray"></i>
+                    </li>
+                @endif
+            </ul>
+        </div>
+    </div>
+
+    <hr>
+    <h6><strong>Vehicle Details</strong></h6>
+    <div class="row">
+        <div class="col-md-12">
+            @if($lead->vehicle_purchase_type == 'New Purchase')
+                <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : '-' }}</p>
+                <p><strong>Vehicle Name:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : '-' }}</p>
+                <p><strong>Variant:</strong> {{ $lead->vehicle_variant }}</p>
+            @else
+                <p><strong>RC Number:</strong> {{ $lead->rc_number }}</p>
+                <p><strong>Model:</strong> {{ $lead->model_name }} ({{ $lead->variant }})</p>
+            @endif
+        </div>
+    </div>
+
+    @if($lead->crm_stage == 'Disbursal')
+        <hr>
+        <h6><strong>Disbursal Details</strong></h6>
+        <div class="row">
+            <div class="col-md-12">
+                <p><strong>Disbursal Date:</strong> {{ $lead->disbursal_date ? $lead->disbursal_date->format('d-m-Y') : '-' }}</p>
+                <p><strong>Finance Amount:</strong> {{ number_format($lead->finance_amount, 2) }}</p>
+                <p><strong>Disbursal Amount:</strong> {{ number_format($lead->disbursal_amount, 2) }}</p>
+            </div>
+        </div>
+    @endif
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</div>

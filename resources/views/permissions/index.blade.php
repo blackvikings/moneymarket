@@ -29,13 +29,6 @@
                                 @can('edit permission')
                                     <a href="{{ route('admin.permissions.edit', $permission->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                 @endcan
-                                @can('delete permission')
-                                    <form action="{{ route('admin.permissions.destroy', $permission->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                @endcan
                             </td>
                         </tr>
                     @endforeach

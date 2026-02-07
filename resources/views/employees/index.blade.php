@@ -73,7 +73,7 @@
                             <td>
                                 @if(!$employee->hasRole('admin'))
                                     @can('view employee')
-                                        <a href="{{ route(get_route_prefix(). 'employees.show', $employee->id) }}" class="btn btn-sm btn-info">View</a>
+                                        <button type="button" class="btn btn-sm btn-info view-employee-btn" data-id="{{ $employee->id }}">View</button>
                                     @endcan
                                     @can('edit employee')
                                         <a href="{{ route(get_route_prefix(). 'employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">Edit</a>
@@ -90,13 +90,6 @@
                                             @endif
                                         </form>
                                     @endcan
-                                    @can('delete employee')
-                                        <form action="{{ route(get_route_prefix(). 'employees.destroy', $employee->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this employee?')">Delete</button>
-                                        </form>
-                                    @endcan
                                 @else
                                     <span class="text-muted">N/A</span>
                                 @endif
@@ -108,4 +101,38 @@
             {{ $employees->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-employee-btn').click(function() {
+                let employeeId = $(this).data('id');
+                let url = '{{ route(get_route_prefix() . "employees.show", ":id") }}'.replace(':id', employeeId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load employee details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

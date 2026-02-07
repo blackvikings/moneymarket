@@ -86,7 +86,7 @@
                 <button type="button" class="btn btn-success btn-sm mt-2" id="add-type">Add Insurance Type</button>
 
                 <hr>
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Save Insurance</button>
             </form>
         </div>
     </div>

@@ -7,12 +7,14 @@ use App\Models\Firm;
 use App\Models\Bank;
 use App\Models\BankBranch;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\EmployeeExport;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Carbon\Carbon;
 
 class EmployeeController extends Controller
 {
@@ -47,11 +49,13 @@ class EmployeeController extends Controller
     {
         $firms = Firm::all();
         $banks = Bank::all();
-        $managers = User::whereHas('roles', function ($query) {
-            $query->where('name', 'Team Lead');
-        })->get();
+
+        // Fetch both Admins and Team Leads as potential managers
+        $managers = User::role(['admin', 'Team Lead'])->get();
+
         $roles = Role::where('name', '!=', 'admin')->get();
-        return view('employees.create', compact('firms', 'banks', 'managers', 'roles'));
+        $permissions = Permission::all();
+        return view('employees.create', compact('firms', 'banks', 'managers', 'roles', 'permissions'));
     }
 
     public function store(Request $request)
@@ -74,9 +78,12 @@ class EmployeeController extends Controller
             'bank_branch_id' => 'nullable|exists:bank_branches,id',
             'account_holder_name' => 'nullable|string',
             'ifsc_code' => 'nullable|string',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,name',
+            'reporting_manager_id' => 'nullable|exists:users,id',
         ]);
 
-        $data = $request->except('password', 'address_proof', 'education', 'role');
+        $data = $request->except('password', 'address_proof', 'education', 'role', 'permissions');
         $data['password'] = Hash::make($request->password);
         $data['employee_type'] = $request->role; // Storing role name in employee_type
 
@@ -84,8 +91,22 @@ class EmployeeController extends Controller
             $data['address_proof_path'] = $request->file('address_proof')->store('address_proofs', 'public');
         }
 
+        // Generate Unique Employee ID: MM-YY-MM-DD-Serial
+        $today = Carbon::today();
+        $datePrefix = 'MM' . $today->format('y') . $today->format('m') . $today->format('d');
+
+        // Count employees created today to get the next serial number
+        $countToday = User::where('employee_id', 'like', $datePrefix . '%')->count();
+        $serial = str_pad($countToday + 1, 2, '0', STR_PAD_LEFT);
+
+        $data['employee_id'] = $datePrefix . $serial;
+
         $employee = User::create($data);
         $employee->assignRole($request->role);
+
+        if ($request->has('permissions')) {
+            $employee->syncPermissions($request->permissions);
+        }
 
         if ($request->has('education')) {
             foreach ($request->education as $edu) {
@@ -95,13 +116,13 @@ class EmployeeController extends Controller
             }
         }
 
-        return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully.');
+        return redirect()->route('admin.employees.index')->with('success', 'Employee created successfully. ID: ' . $data['employee_id']);
     }
 
     public function show(User $employee)
     {
         $employee->load('education', 'firm', 'reportingManager', 'bank', 'bankBranch');
-        return view('employees.show', compact('employee'));
+        return view('employees.show-modal', compact('employee'))->render();
     }
 
     public function edit(User $employee)
@@ -111,12 +132,14 @@ class EmployeeController extends Controller
         }
         $firms = Firm::all();
         $banks = Bank::all();
-        $managers = User::whereHas('roles', function ($query) {
-            $query->where('name', 'Team Lead');
-        })->where('id', '!=', $employee->id)->get();
+
+        // Fetch both Admins and Team Leads as potential managers
+        $managers = User::role(['admin', 'Team Lead'])->where('id', '!=', $employee->id)->get();
+
         $roles = Role::where('name', '!=', 'admin')->get();
-        $employee->load('education');
-        return view('employees.edit', compact('employee', 'firms', 'banks', 'managers', 'roles'));
+        $permissions = Permission::all();
+        $employee->load('education', 'permissions');
+        return view('employees.edit', compact('employee', 'firms', 'banks', 'managers', 'roles', 'permissions'));
     }
 
     public function update(Request $request, User $employee)
@@ -140,9 +163,12 @@ class EmployeeController extends Controller
             'bank_branch_id' => 'nullable|exists:bank_branches,id',
             'account_holder_name' => 'nullable|string',
             'ifsc_code' => 'nullable|string',
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'exists:permissions,name',
+            'reporting_manager_id' => 'nullable|exists:users,id',
         ]);
 
-        $data = $request->except('password', 'address_proof', 'education', 'role');
+        $data = $request->except('password', 'address_proof', 'education', 'role', 'permissions');
         $data['employee_type'] = $request->role; // Storing role name in employee_type
 
         if ($request->hasFile('address_proof')) {
@@ -154,6 +180,12 @@ class EmployeeController extends Controller
 
         $employee->update($data);
         $employee->syncRoles([$request->role]);
+
+        if ($request->has('permissions')) {
+            $employee->syncPermissions($request->permissions);
+        } else {
+            $employee->syncPermissions([]);
+        }
 
         $employee->education()->delete();
         if ($request->has('education')) {

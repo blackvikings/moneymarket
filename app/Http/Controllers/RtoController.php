@@ -105,7 +105,7 @@ class RtoController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture']);
+        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
         $stages = $this->stages;
         // Handle null rto_stage as 'New'
         $currentStage = $lead->rto_stage ?? 'New';
@@ -114,7 +114,7 @@ class RtoController extends Controller
         $rtoAgents = RtoAgent::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
 
-        return view('rto.show', compact('lead', 'stages', 'currentStageIndex', 'banks', 'rtoAgents', 'insurances'));
+        return view('rto.show-modal', compact('lead', 'stages', 'currentStageIndex', 'banks', 'rtoAgents', 'insurances'))->render();
     }
 
     public function updateStage(Request $request, Lead $lead)

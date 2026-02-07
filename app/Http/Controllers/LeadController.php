@@ -31,7 +31,7 @@ class LeadController extends Controller
     public function index(Request $request)
     {
         $query = Lead::with(['assignedTo', 'bank']);
-        $statuses = ['New', 'Prospect', 'Lead', 'Bank Assign', 'Rejected', 'Not_Active'];
+        $statuses = ['New', 'Follow up', 'Lead', 'Bank Assign', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
 
         // Base query for filtering
@@ -48,25 +48,31 @@ class LeadController extends Controller
         $counts = [];
         $counts['All'] = $baseQuery->clone()->count();
         foreach ($statuses as $status) {
-            $counts[$status] = $baseQuery->clone()->where('status', $status)->count();
+            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $status;
+            $counts[$status] = $baseQuery->clone()->where('status', $dbStatus)->count();
         }
 
         // Main query for fetching paginated leads
         $query = $baseQuery->clone()->with(['assignedTo', 'bank']);
 
-        if ($currentStatus && in_array($currentStatus, $statuses)) {
-            $query->where('status', $currentStatus);
+        if ($currentStatus) {
+            if (in_array($currentStatus, $statuses)) {
+                $dbStatus = ($currentStatus === 'Follow up') ? 'Prospect' : $currentStatus;
+                $query->where('status', $dbStatus);
+            }
+        }
+
+        // Filter by Assignment Status (Select Tag)
+        if ($request->has('assignment_status') && $request->assignment_status != '') {
+            if ($request->assignment_status === 'Assigned') {
+                $query->whereNotNull('assigned_to');
+            } elseif ($request->assignment_status === 'Unassigned') {
+                $query->whereNull('assigned_to');
+            }
         }
 
         if ($request->has('assigned_to') && $request->assigned_to != '') {
             $query->where('assigned_to', $request->assigned_to);
-        }
-
-        if ($request->has('start_date') && $request->start_date != '') {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-        if ($request->has('end_date') && $request->end_date != '') {
-            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
         if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('Team Lead')) {
@@ -149,7 +155,7 @@ class LeadController extends Controller
                 $branches = $bank->branches;
             }
         }
-        return view('leads.show', compact('lead', 'branches'));
+        return view('leads.show-modal', compact('lead', 'branches'))->render();
     }
 
     public function edit(Lead $lead)
@@ -192,7 +198,7 @@ class LeadController extends Controller
              $data['total_loan_amount'] = (float)$data['old_loan_close_amount'] + (float)$data['required_in_hand_amount'];
         }
 
-        // Automatically promote Prospect to Lead on update if requested
+        // Automatically promote Follow up to Lead on update if requested
         if ($lead->status == 'Prospect') {
             $data['status'] = 'Lead';
         }
@@ -466,13 +472,13 @@ class LeadController extends Controller
             "Expires" => "0"
         ];
 
-        $columns = ['customer_name', 'contact_number', 'father_name', 'email', 'firm_name', 'residence_type', 'current_address_line', 'permanent_address_line'];
+        $columns = ['customer_name', 'contact_number', 'father_name', 'email', 'firm_name', 'residence_type', 'current_address_line', 'permanent_address_line', 'employee_id'];
 
         $callback = function() use ($columns) {
             $file = fopen('php://output', 'w');
             fputcsv($file, $columns);
             // Add a sample row
-            fputcsv($file, ['John Doe', '9876543210', 'Jane Doe', 'john@example.com', 'My Firm', 'Rented', '123 Main St', '456 Second St']);
+            fputcsv($file, ['John Doe', '9876543210', 'Jane Doe', 'john@example.com', 'My Firm', 'Rented', '123 Main St', '456 Second St', 'MM26020601']);
             fclose($file);
         };
 

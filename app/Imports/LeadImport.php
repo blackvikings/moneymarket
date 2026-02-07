@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Lead;
 use App\Models\Firm;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -13,9 +14,7 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
-        // Find firm by name or ID, or use a default if needed.
-        // For simplicity, assuming 'firm_id' is provided or we look up by name.
-        // If firm name is provided in CSV:
+        // Find firm by name or ID
         $firmId = null;
         if (isset($row['firm_name'])) {
             $firm = Firm::where('name', $row['firm_name'])->first();
@@ -26,8 +25,14 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
             $firmId = $row['firm_id'];
         }
 
-        // If no firm found, you might want to skip or assign a default.
-        // For now, let's assume validation handles required fields.
+        // Find user to assign to by employee_id
+        $assignedTo = null;
+        if (isset($row['employee_id'])) {
+            $user = User::where('employee_id', $row['employee_id'])->first();
+            if ($user) {
+                $assignedTo = $user->id;
+            }
+        }
 
         return new Lead([
             'customer_name' => $row['customer_name'],
@@ -38,6 +43,7 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
             'residence_type' => $row['residence_type'] ?? 'Rented',
             'current_address_line' => $row['current_address_line'] ?? null,
             'permanent_address_line' => $row['permanent_address_line'] ?? null,
+            'assigned_to' => $assignedTo,
             'status' => 'New',
             'created_by' => Auth::id(),
         ]);
@@ -48,7 +54,7 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'customer_name' => 'required',
             'contact_number' => 'required',
-            // Add other rules as needed
+            'employee_id' => 'nullable|exists:users,employee_id',
         ];
     }
 }

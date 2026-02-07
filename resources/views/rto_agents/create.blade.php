@@ -43,7 +43,7 @@
                     @error('cities') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     <small class="form-text text-muted">Select cities from the list.</small>
                 </div>
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Save RTO Agent</button>
             </form>
         </div>
     </div>

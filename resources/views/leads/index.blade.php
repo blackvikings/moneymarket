@@ -127,6 +127,14 @@
                     <label for="end_date" class="mr-2">End Date:</label>
                     <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
+                <div class="form-group mr-2">
+                    <label for="assignment_status" class="mr-2">Assignment:</label>
+                    <select name="assignment_status" class="form-control">
+                        <option value="">All</option>
+                        <option value="Assigned" {{ request('assignment_status') == 'Assigned' ? 'selected' : '' }}>Assigned</option>
+                        <option value="Unassigned" {{ request('assignment_status') == 'Unassigned' ? 'selected' : '' }}>Unassigned</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
                 <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
                 @if(auth()->user()->hasRole('admin'))
@@ -152,7 +160,7 @@
                 @foreach($statuses as $status)
                     <div class="leads-tab-container">
                         <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
-                            <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : str_replace('_', ' ', $status) }}</span>
+                            <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : $status }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
                             <span class="upper-line"></span>
                         </a>
@@ -231,7 +239,7 @@
                             <td>{{ $lead->lead_type ?? '-' }}</td>
                             <td>
                                 <span class="badge badge-{{ $lead->status == 'Lead' ? 'success' : ($lead->status == 'Rejected' || $lead->status == 'Not_Active' ? 'danger' : 'info') }}">
-                                    {{ str_replace('_', ' ', $lead->status) }}
+                                    {{ $lead->status == 'Prospect' ? 'Follow up' : str_replace('_', ' ', $lead->status) }}
                                 </span>
                             </td>
                             <td>{{ $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned' }}</td>
@@ -243,7 +251,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route(get_route_prefix() . 'leads.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
+                                <button type="button" class="btn btn-info btn-sm view-lead-btn" data-id="{{ $lead->id }}">View</button>
                                 @can('edit lead')
                                     <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
@@ -252,13 +260,6 @@
                                         Action
                                     </button>
                                 @endif
-                                @can('delete lead')
-                                    <form action="{{ route(get_route_prefix() . 'leads.destroy', $lead->id) }}" method="POST" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                                    </form>
-                                @endcan
 
                                 <!-- Action Modal -->
                                 <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
@@ -414,6 +415,15 @@
         </div>
     </div>
 
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+
     <!-- Import Modal -->
     @if(auth()->user()->hasRole('admin'))
     <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
@@ -450,6 +460,26 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            // --- AJAX View Modal ---
+            $('.view-lead-btn').click(function() {
+                let leadId = $(this).data('id');
+                let url = '{{ route(get_route_prefix() . "leads.show", ":id") }}'.replace(':id', leadId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
+                    }
+                });
+            });
+
             // Function to handle radio change within a specific modal
             function handleRadioChange(modal) {
                 let checkedRadio = modal.find('input[name="action_radio"]:checked');
@@ -492,7 +522,9 @@
 
             // Trigger change when modal is shown to set initial state
             $('.modal').on('shown.bs.modal', function () {
-                handleRadioChange($(this));
+                if($(this).attr('id') !== 'globalViewModal') {
+                    handleRadioChange($(this));
+                }
             });
 
             $('.action-form').submit(function(e) {

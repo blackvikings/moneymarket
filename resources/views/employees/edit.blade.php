@@ -15,6 +15,12 @@
         input.error, select.error, textarea.error {
             border: 1px solid red;
         }
+        .invalid-feedback {
+            display: block;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
     </style>
     <div class="card">
         <div class="card-body">
@@ -194,6 +200,17 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label>Assign Individual Permissions</label>
+                            <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple">
+                                @foreach($permissions as $permission)
+                                    <option value="{{ $permission->name }}" {{ in_array($permission->name, old('permissions', $employee->permissions->pluck('name')->toArray())) ? 'selected' : '' }}>{{ $permission->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">These permissions will be assigned directly to the user in addition to their role's permissions.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             <label>Reporting Manager</label>
                             <select name="reporting_manager_id" class="form-control">
                                 <option value="">Select Manager</option>
@@ -230,18 +247,18 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Account Holder Name</label>
-                            <input type="text" name="account_holder_name" class="form-control" value="{{ old('account_holder_name', $employee->account_holder_name) }}">
+                            <input type="text" name="account_holder_name" id="account_holder_name" class="form-control" value="{{ old('account_holder_name', $employee->account_holder_name) }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>IFSC Code</label>
-                            <input type="text" name="ifsc_code" class="form-control" value="{{ old('ifsc_code', $employee->ifsc_code) }}">
+                            <input type="text" name="ifsc_code" id="ifsc_code" class="form-control" value="{{ old('ifsc_code', $employee->ifsc_code) }}">
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Update Employee</button>
+                <button type="submit" class="btn btn-primary mt-3">Save Employee</button>
             </form>
         </div>
     </div>
@@ -251,6 +268,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "Select Permissions",
+                allowClear: true
+            });
+
             $('#editEmployeeForm').validate({
                 // Rules similar to create, but password not required
                 rules: {
@@ -349,7 +371,7 @@
                     let citySelect = $(this).closest('.row').find('.city-select');
 
                     $.ajax({
-                        url: '{{ route("get-location-by-pincode", ["pincode" => ":pincode"]) }}'.replace(':pincode', pincode),
+                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
                         type: 'GET',
                         success: function(data) {
                             if (data) {

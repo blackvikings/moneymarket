@@ -12,7 +12,7 @@ class VehicleManufactureController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view vehicle manufacture', ['only' => ['index']]);
+        $this->middleware('permission:view vehicle manufacture', ['only' => ['index', 'show']]);
         $this->middleware('permission:create vehicle manufacture', ['only' => ['create','store']]);
         $this->middleware('permission:edit vehicle manufacture', ['only' => ['edit','update']]);
         $this->middleware('permission:delete vehicle manufacture', ['only' => ['destroy']]);
@@ -73,6 +73,12 @@ class VehicleManufactureController extends Controller
         }
 
         return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle and variants saved successfully');
+    }
+
+    public function show(VehicleManufacture $vehicleManufacture)
+    {
+        $vehicleManufacture->load('vehicleNames');
+        return view('vehicle_manufactures.show-modal', compact('vehicleManufacture'))->render();
     }
 
     public function edit(VehicleManufacture $vehicleManufacture)
@@ -150,6 +156,16 @@ class VehicleManufactureController extends Controller
 
     public function getVehicleNames(VehicleManufacture $vehicleManufacture)
     {
-        return response()->json($vehicleManufacture->vehicleNames);
+        // Return unique vehicle names for this manufacturer
+        $names = $vehicleManufacture->vehicleNames()->select('name')->distinct()->get();
+        return response()->json($names);
+    }
+
+    public function getVariantsByName(Request $request)
+    {
+        $vehicleName = $request->vehicleName;
+        // Find variants for this specific vehicle name
+        $variants = VehicleName::where('name', $vehicleName)->whereNotNull('variant')->select('variant')->get();
+        return response()->json($variants);
     }
 }

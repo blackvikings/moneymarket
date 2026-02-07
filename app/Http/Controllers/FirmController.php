@@ -11,7 +11,7 @@ class FirmController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view firm', ['only' => ['index']]);
+        $this->middleware('permission:view firm', ['only' => ['index', 'show']]);
         $this->middleware('permission:create firm', ['only' => ['create','store']]);
         $this->middleware('permission:edit firm', ['only' => ['edit','update']]);
         $this->middleware('permission:delete firm', ['only' => ['destroy']]);
@@ -52,6 +52,12 @@ class FirmController extends Controller
         Firm::create($request->all());
 
         return redirect()->route('admin.firms.index')->with('success', 'Firm created successfully');
+    }
+
+    public function show(Firm $firm)
+    {
+        $firm->load(['state', 'city']);
+        return view('firms.show-modal', compact('firm'))->render();
     }
 
     public function edit(Firm $firm)

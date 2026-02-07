@@ -17,7 +17,7 @@
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $permission->name) }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Permission</button>
             </form>
         </div>
     </div>

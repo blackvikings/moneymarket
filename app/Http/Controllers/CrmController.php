@@ -77,11 +77,11 @@ class CrmController extends Controller
 
     public function show(Lead $lead)
     {
-        $lead->load(['bank', 'bankBranch', 'firm']);
+        $lead->load(['bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'statusLogs.user', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
         $stages = $this->stages;
         $currentStageIndex = array_search($lead->crm_stage, $stages);
 
-        return view('crm.show', compact('lead', 'stages', 'currentStageIndex'));
+        return view('crm.show-modal', compact('lead', 'stages', 'currentStageIndex'))->render();
     }
 
     public function updateStage(Request $request, Lead $lead)

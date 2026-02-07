@@ -181,7 +181,7 @@
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
                             <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : $lead->created_at->format('d-m-Y') }}</td>
                             <td>
-                                <a href="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}" class="btn btn-info btn-sm">View</a>
+                                <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
                                 @if($lead->crm_stage !== 'Disbursal')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
@@ -259,4 +259,38 @@
             {{ $leads->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-crm-btn').click(function() {
+                let leadId = $(this).data('id');
+                let url = '{{ route(get_route_prefix() . "crm.show", ":id") }}'.replace(':id', leadId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

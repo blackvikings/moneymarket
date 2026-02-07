@@ -31,7 +31,7 @@
                         <select name="status" class="form-control">
                             <option value="">All Status</option>
                             <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
-                            <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Inactive</option>
+                            <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Blocked</option>
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -42,13 +42,11 @@
             </form>
         </div>
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
             <table class="table table-bordered">
                 <thead>
                     <tr>
                         <th>Name</th>
+                        <th>Address</th>
                         <th>Branches</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -59,32 +57,38 @@
                         <tr>
                             <td>{{ $bank->name }}</td>
                             <td>
-                                @foreach($bank->branches as $branch)
-                                    <span class="badge badge-secondary">{{ $branch->name }}</span>
+                                @if($bank->address_line)
+                                    {{ $bank->address_line }},<br>
+                                    {{ $bank->city->name ?? '' }}, {{ $bank->state->name ?? '' }} - {{ $bank->pincode }}
+                                @else
+                                    <span class="text-muted">No address</span>
+                                @endif
+                            </td>
+                            <td>
+                                @foreach ($bank->branches as $branch)
+                                    <span class="badge badge-info">{{ $branch->name }}</span>
                                 @endforeach
                             </td>
                             <td>
-                                <span class="badge badge-{{ $bank->is_active ? 'success' : 'danger' }}">
-                                    {{ $bank->is_active ? 'Active' : 'Inactive' }}
-                                </span>
+                                @if ($bank->is_active)
+                                    <span class="badge badge-success">Active</span>
+                                @else
+                                    <span class="badge badge-danger">Blocked</span>
+                                @endif
                             </td>
                             <td>
+                                @can('view bank')
+                                    <button type="button" class="btn btn-sm btn-info view-bank-btn" data-id="{{ $bank->id }}">View</button>
+                                @endcan
                                 @can('edit bank')
                                     <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                @endcan
-                                @can('delete bank')
-                                    <form action="{{ route('admin.banks.destroy', $bank->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+                                        <button type="submit" class="btn btn-sm {{ $bank->is_active ? 'btn-warning' : 'btn-success' }}">
+                                            {{ $bank->is_active ? 'Block' : 'Unblock' }}
+                                        </button>
                                     </form>
                                 @endcan
-                                <form action="{{ route('admin.banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="btn btn-sm btn-{{ $bank->is_active ? 'warning' : 'success' }}">
-                                        {{ $bank->is_active ? 'Deactivate' : 'Activate' }}
-                                    </button>
-                                </form>
                             </td>
                         </tr>
                     @endforeach
@@ -93,4 +97,38 @@
             {{ $banks->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-bank-btn').click(function() {
+                let bankId = $(this).data('id');
+                let url = '{{ route("admin.banks.show", ":id") }}'.replace(':id', bankId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load bank details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

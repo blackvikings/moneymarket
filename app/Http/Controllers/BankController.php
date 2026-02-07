@@ -11,7 +11,7 @@ class BankController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view bank', ['only' => ['index']]);
+        $this->middleware('permission:view bank', ['only' => ['index', 'show']]);
         $this->middleware('permission:create bank', ['only' => ['create','store']]);
         $this->middleware('permission:edit bank', ['only' => ['edit','update']]);
         $this->middleware('permission:delete bank', ['only' => ['destroy']]);
@@ -19,7 +19,7 @@ class BankController extends Controller
 
     public function index(Request $request)
     {
-        $query = Bank::with('branches');
+        $query = Bank::with(['branches', 'state', 'city']);
 
         if ($request->has('name') && $request->name != '') {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -43,11 +43,21 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name',
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
             'branches' => 'nullable|array',
             'branches.*' => 'nullable|string',
         ]);
 
-        $bank = Bank::create(['name' => $request->name]);
+        $bank = Bank::create([
+            'name' => $request->name,
+            'address_line' => $request->address_line,
+            'pincode' => $request->pincode,
+            'state_id' => $request->state_id,
+            'city_id' => $request->city_id,
+        ]);
 
         if ($request->has('branches')) {
             foreach ($request->branches as $branchName) {
@@ -60,9 +70,15 @@ class BankController extends Controller
         return redirect()->route('admin.banks.index')->with('success', 'Bank created successfully');
     }
 
+    public function show(Bank $bank)
+    {
+        $bank->load(['branches', 'state', 'city']);
+        return view('banks.show-modal', compact('bank'))->render();
+    }
+
     public function edit(Bank $bank)
     {
-        $bank->load('branches');
+        $bank->load(['branches', 'state', 'city']);
         return view('banks.edit', compact('bank'));
     }
 
@@ -70,13 +86,23 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name,' . $bank->id,
+            'address_line' => 'required|string',
+            'pincode' => 'required|string|max:10',
+            'state_id' => 'required|exists:states,id',
+            'city_id' => 'required|exists:cities,id',
             'branches' => 'nullable|array',
             'branches.*' => 'nullable|string',
         ]);
 
-        $bank->update(['name' => $request->name]);
+        $bank->update([
+            'name' => $request->name,
+            'address_line' => $request->address_line,
+            'pincode' => $request->pincode,
+            'state_id' => $request->state_id,
+            'city_id' => $request->city_id,
+        ]);
 
-        // Sync branches: delete all and recreate (simplest approach for this requirement)
+        // Sync branches: delete all and recreate
         $bank->branches()->delete();
 
         if ($request->has('branches')) {

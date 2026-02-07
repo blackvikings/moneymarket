@@ -120,7 +120,7 @@
                 <button type="button" class="btn btn-success btn-sm mt-2" id="add-type">Add Insurance Type</button>
 
                 <hr>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save Insurance</button>
             </form>
         </div>
     </div>
@@ -150,7 +150,7 @@
             function initSelect2(element) {
                 element.select2({
                     tags: true,
-                    tokenSeparators: [',', ' ']
+                    tokenSeparators: [','] // Removed space to allow spaces in strings
                 });
             }
 
@@ -180,7 +180,7 @@
                                 <label>Sub Types</label>
                                 <select name="types[${typeIndex}][sub_types][]" class="form-control sub-types-select" multiple="multiple">
                                 </select>
-                                <small class="form-text text-muted">Type sub-type name and press enter to add.</small>
+                                <small class="form-text text-muted">Type sub-type name and press enter to add. Spaces are allowed.</small>
                             </div>
                             <button type="button" class="btn btn-danger btn-sm remove-type">Remove Type</button>
                         </div>

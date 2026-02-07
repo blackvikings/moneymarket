@@ -71,6 +71,9 @@
                                 @endif
                             </td>
                             <td>
+                                @can('view firm')
+                                    <button type="button" class="btn btn-sm btn-info view-firm-btn" data-id="{{ $firm->id }}">View</button>
+                                @endcan
                                 @can('edit firm')
                                     <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                     <form action="{{ route('admin.firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
@@ -78,13 +81,6 @@
                                         <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $firm->is_active ? 'Block' : 'Unblock' }}
                                         </button>
-                                    </form>
-                                @endcan
-                                @can('delete firm')
-                                    <form action="{{ route('admin.firms.destroy', $firm->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                     </form>
                                 @endcan
                             </td>
@@ -95,4 +91,38 @@
             {{ $firms->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-firm-btn').click(function() {
+                let firmId = $(this).data('id');
+                let url = '{{ route("admin.firms.show", ":id") }}'.replace(':id', firmId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load firm details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

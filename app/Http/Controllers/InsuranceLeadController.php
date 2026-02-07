@@ -54,10 +54,10 @@ class InsuranceLeadController extends Controller
             return redirect()->back()->with('error', 'This lead is not in the Insurance module.');
         }
 
-        $lead->load(['insurance', 'vehicleName', 'manufacture']);
+        $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
         $insurances = Insurance::where('is_active', true)->get();
 
-        return view('insurance_leads.show', compact('lead', 'insurances'));
+        return view('insurance_leads.show-modal', compact('lead', 'insurances'))->render();
     }
 
     public function updateDetails(Request $request, Lead $lead)

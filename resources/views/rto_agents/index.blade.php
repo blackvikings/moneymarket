@@ -70,6 +70,9 @@
                                 @endif
                             </td>
                             <td>
+                                @can('view rto agent')
+                                    <button type="button" class="btn btn-sm btn-info view-agent-btn" data-id="{{ $agent->id }}">View</button>
+                                @endcan
                                 @can('edit rto agent')
                                     <a href="{{ route('admin.rto-agents.edit', $agent->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                     <form action="{{ route('admin.rto-agents.toggle-status', $agent->id) }}" method="POST" class="d-inline">
@@ -77,13 +80,6 @@
                                         <button type="submit" class="btn btn-sm {{ $agent->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $agent->is_active ? 'Block' : 'Unblock' }}
                                         </button>
-                                    </form>
-                                @endcan
-                                @can('delete rto agent')
-                                    <form action="{{ route('admin.rto-agents.destroy', $agent->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                     </form>
                                 @endcan
                             </td>
@@ -94,4 +90,38 @@
             {{ $agents->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-agent-btn').click(function() {
+                let agentId = $(this).data('id');
+                let url = '{{ route("admin.rto-agents.show", ":id") }}'.replace(':id', agentId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load agent details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

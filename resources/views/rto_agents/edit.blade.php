@@ -21,7 +21,7 @@
     </style>
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('rto-agents.update', $rtoAgent->id) }}" method="POST" id="editRtoAgentForm">
+            <form action="{{ route('admin.rto-agents.update', $rtoAgent->id) }}" method="POST" id="editRtoAgentForm">
                 @csrf
                 @method('PUT')
                 <div class="form-group">
@@ -31,12 +31,12 @@
                 </div>
                 <div class="form-group">
                     <label for="number">Agent Number</label>
-                    <input type="text" name="number" id="number" class="form-control @error('number') is-invalid @enderror" value="{{ old('number', $rtoAgent->number) }}" required>
+                    <input type="text" name="number" id="number" class="form-control @error('number') is-invalid @enderror" value="{{ old('number', $rtoAgent->number) }}">
                     @error('number') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="form-group">
                     <label for="cities">Cities</label>
-                    <select name="cities[]" id="cities" class="form-control @error('cities') is-invalid @enderror" multiple="multiple" required>
+                    <select name="cities[]" id="cities" class="form-control @error('cities') is-invalid @enderror" multiple="multiple">
                         @foreach ($cities as $city)
                             <option value="{{ $city->name }}" {{ in_array($city->name, old('cities', $rtoAgent->cities->pluck('city_name')->toArray())) ? 'selected' : '' }}>{{ $city->name }}</option>
                         @endforeach
@@ -44,7 +44,7 @@
                     @error('cities') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     <small class="form-text text-muted">Select cities from the list.</small>
                 </div>
-                <button type="submit" class="btn btn-primary">Update</button>
+                <button type="submit" class="btn btn-primary">Save RTO Agent</button>
             </form>
         </div>
     </div>
@@ -62,14 +62,10 @@
             $('#editRtoAgentForm').validate({
                 ignore: [], // To validate hidden select2 fields
                 rules: {
-                    name: { required: true },
-                    number: { required: true },
-                    'cities[]': { required: true }
+                    name: { required: true }
                 },
                 messages: {
-                    name: "Please enter the agent's name",
-                    number: "Please enter the agent's number",
-                    'cities[]': "Please select at least one city"
+                    name: "Please enter the agent's name"
                 },
                 errorPlacement: function (error, element) {
                     if (element.hasClass('select2-hidden-accessible')) {

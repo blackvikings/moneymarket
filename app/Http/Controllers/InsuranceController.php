@@ -13,7 +13,7 @@ class InsuranceController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view insurance', ['only' => ['index']]);
+        $this->middleware('permission:view insurance', ['only' => ['index', 'show']]);
         $this->middleware('permission:create insurance', ['only' => ['create','store']]);
         $this->middleware('permission:edit insurance', ['only' => ['edit','update']]);
         $this->middleware('permission:delete insurance', ['only' => ['destroy']]);
@@ -81,6 +81,12 @@ class InsuranceController extends Controller
         }
 
         return redirect()->route('admin.insurances.index')->with('success', 'Insurance created successfully');
+    }
+
+    public function show(Insurance $insurance)
+    {
+        $insurance->load(['types.subTypes', 'state', 'city']);
+        return view('insurances.show-modal', compact('insurance'))->render();
     }
 
     public function edit(Insurance $insurance)

@@ -181,6 +181,18 @@
             </div>
         </div>
         <div class="col-md-4">
+            @if($lead->follow_up_date)
+                <div class="card card-info">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-calendar-alt"></i> Next Follow-up</h3>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Date:</strong> {{ $lead->follow_up_date->format('d-m-Y') }}</p>
+                        <p><strong>Time:</strong> {{ $lead->follow_up_time ?? 'Not specified' }}</p>
+                    </div>
+                </div>
+            @endif
+
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Status History</h3>
@@ -190,7 +202,7 @@
                         <ul class="list-unstyled">
                             @foreach($lead->statusLogs->sortByDesc('created_at') as $log)
                                 <li class="mb-2">
-                                    <strong>{{ $log->status == 'New' ? 'New Task' : str_replace('_', ' ', $log->status) }}</strong> : {{ $log->created_at->format('d-m-Y H:i') }}
+                                    <strong>{{ $log->status == 'New' ? 'New Task' : ($log->status == 'Prospect' ? 'Follow up' : str_replace('_', ' ', $log->status)) }}</strong> : {{ $log->created_at->format('d-m-Y H:i') }}
                                     <br>
                                     <small class="text-muted">
                                         By: {{ $log->user ? $log->user->name : 'System' }}

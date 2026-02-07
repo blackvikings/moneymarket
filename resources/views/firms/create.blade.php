@@ -64,7 +64,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Create</button>
+                <button type="submit" class="btn btn-primary">Save Firm</button>
             </form>
         </div>
     </div>

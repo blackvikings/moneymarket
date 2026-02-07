@@ -73,6 +73,9 @@
                                 @endif
                             </td>
                             <td>
+                                @can('view insurance')
+                                    <button type="button" class="btn btn-sm btn-info view-insurance-btn" data-id="{{ $insurance->id }}">View</button>
+                                @endcan
                                 @can('edit insurance')
                                     <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                     <form action="{{ route(get_route_prefix(). 'insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
@@ -80,13 +83,6 @@
                                         <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}">
                                             {{ $insurance->is_active ? 'Block' : 'Unblock' }}
                                         </button>
-                                    </form>
-                                @endcan
-                                @can('delete insurance')
-                                    <form action="{{ route(get_route_prefix(). 'insurances.destroy', $insurance->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                     </form>
                                 @endcan
                             </td>
@@ -97,4 +93,38 @@
             {{ $insurances->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-insurance-btn').click(function() {
+                let insuranceId = $(this).data('id');
+                let url = '{{ route(get_route_prefix() . "insurances.show", ":id") }}'.replace(':id', insuranceId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load insurance details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

@@ -12,7 +12,7 @@ class RtoAgentController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('permission:view rto agent', ['only' => ['index']]);
+        $this->middleware('permission:view rto agent', ['only' => ['index', 'show']]);
         $this->middleware('permission:create rto agent', ['only' => ['create','store']]);
         $this->middleware('permission:edit rto agent', ['only' => ['edit','update']]);
         $this->middleware('permission:delete rto agent', ['only' => ['destroy']]);
@@ -64,6 +64,12 @@ class RtoAgentController extends Controller
         }
 
         return redirect()->route('admin.rto-agents.index')->with('success', 'RTO Agent created successfully');
+    }
+
+    public function show(RtoAgent $rtoAgent)
+    {
+        $rtoAgent->load('cities');
+        return view('rto_agents.show-modal', compact('rtoAgent'))->render();
     }
 
     public function edit(RtoAgent $rtoAgent)

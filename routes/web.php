@@ -91,6 +91,7 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
 
     Route::get('vehicle-manufactures/export', [VehicleManufactureController::class, 'export'])->name('vehicle-manufactures.export');
     Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
+    Route::get('vehicle-manufactures/{vehicleManufacture}/variants', [VehicleManufactureController::class, 'getVariants'])->name('vehicle-manufactures.variants');
     Route::resource('vehicle-manufactures', VehicleManufactureController::class);
 
     // Admin can also manage leads, CRM, RTO
@@ -186,3 +187,4 @@ Route::get('/get-states', [LocationController::class, 'getStates'])->name('get-s
 Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->name('get-cities');
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
+Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');

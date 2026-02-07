@@ -71,10 +71,18 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
+                            <label>Aadhar Number</label>
+                            <input type="text" name="aadhar_number" class="form-control" value="{{ old('aadhar_number', $lead->aadhar_number) }}" placeholder="12-digit Aadhar Number">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
                             <label>Email Id</label>
                             <input type="email" name="email" class="form-control" value="{{ old('email', $lead->email) }}" required>
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Residence Type <span class="text-danger">*</span></label>
@@ -85,8 +93,6 @@
                             </select>
                         </div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Lead Type <span class="text-danger">*</span></label>
@@ -199,89 +205,93 @@
 
                 <hr>
                 {{-- Job Profile --}}
-                <h5>Job Profile <span class="text-danger">*</span></h5>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Profile Type</label>
-                            <select name="job_profile_type" id="job_profile_type" class="form-control" required>
-                                <option value="">Select Profile</option>
-                                <option value="Self Employed" {{ old('job_profile_type', $lead->job_profile_type) == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
-                                <option value="Farmer" {{ old('job_profile_type', $lead->job_profile_type) == 'Farmer' ? 'selected' : '' }}>Farmer</option>
-                                <option value="Salaried" {{ old('job_profile_type', $lead->job_profile_type) == 'Salaried' ? 'selected' : '' }}>Salaried</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4" id="nature_of_work_div" style="display:none;">
-                        <div class="form-group">
-                            <label>Nature of Work</label>
-                            <input type="text" name="nature_of_work" class="form-control" value="{{ old('nature_of_work', $lead->nature_of_work) }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4" id="salaried_type_div" style="display:none;">
-                        <div class="form-group">
-                            <label>Salaried Type</label>
-                            <select name="salaried_type" id="salaried_type" class="form-control">
-                                <option value="">Select Type</option>
-                                <option value="Government" {{ old('salaried_type', $lead->salaried_type) == 'Government' ? 'selected' : '' }}>Government</option>
-                                <option value="Corporate" {{ old('salaried_type', $lead->salaried_type) == 'Corporate' ? 'selected' : '' }}>Corporate</option>
-                                <option value="Other" {{ old('salaried_type', $lead->salaried_type) == 'Other' ? 'selected' : '' }}>Other</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-4" id="other_company_name_div" style="display:none;">
-                        <div class="form-group">
-                            <label>Company Name</label>
-                            <input type="text" name="other_company_name" class="form-control" value="{{ old('other_company_name', $lead->other_company_name) }}">
-                        </div>
-                    </div>
-                    <div class="col-md-4" id="designation_div" style="display:none;">
-                        <div class="form-group">
-                            <label>Designation</label>
-                            <input type="text" name="designation" class="form-control" value="{{ old('designation', $lead->designation) }}">
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Income Proof Available?</label>
-                            <select name="income_proof_available" id="income_proof_available" class="form-control">
-                                <option value="0" {{ old('income_proof_available', $lead->income_proof_available) == 0 ? 'selected' : '' }}>No</option>
-                                <option value="1" {{ old('income_proof_available', $lead->income_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
-                            </select>
-                        </div>
-                        <div id="itr_details_div" style="display:none;">
+                <div id="job_profile_section">
+                    <h5>Job Profile <span class="text-danger">*</span></h5>
+                    <div class="row">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Last ITR Amount</label>
-                                <input type="number" step="0.01" name="itr_amount" class="form-control" value="{{ old('itr_amount', $lead->itr_amount) }}">
-                            </div>
-                            <div class="form-group">
-                                <label>ITR Document <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                                <input type="file" name="itr_document" class="form-control-file">
-                                @if($lead->itr_document_path) <small><a href="{{ asset('storage/' . $lead->itr_document_path) }}" target="_blank">View Current</a></small> @endif
+                                <label>Profile Type</label>
+                                <select name="job_profile_type" id="job_profile_type" class="form-control" required>
+                                    <option value="">Select Profile</option>
+                                    <option value="Self Employed" {{ old('job_profile_type', $lead->job_profile_type) == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
+                                    <option value="Farmer" {{ old('job_profile_type', $lead->job_profile_type) == 'Farmer' ? 'selected' : '' }}>Farmer</option>
+                                    <option value="Salaried" {{ old('job_profile_type', $lead->job_profile_type) == 'Salaried' ? 'selected' : '' }}>Salaried</option>
+                                </select>
                             </div>
                         </div>
-                        <div id="approx_income_div">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Approx. Income</label>
-                                <input type="number" step="0.01" name="approx_income" class="form-control" value="{{ old('approx_income', $lead->approx_income) }}">
+                                <label>Company Name <span class="text-danger">*</span></label>
+                                <input type="text" name="other_company_name" class="form-control" value="{{ old('other_company_name', $lead->other_company_name) }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Designation <span class="text-danger">*</span></label>
+                                <input type="text" name="designation" class="form-control" value="{{ old('designation', $lead->designation) }}" required>
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-6" id="business_proof_main_div" style="display:none;">
-                        <div class="form-group">
-                            <label>Business Proof Available?</label>
-                            <select name="business_proof_available" id="business_proof_available" class="form-control">
-                                <option value="0" {{ old('business_proof_available', $lead->business_proof_available) == 0 ? 'selected' : '' }}>No</option>
-                                <option value="1" {{ old('business_proof_available', $lead->business_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
-                            </select>
-                        </div>
-                        <div id="business_proof_doc_div" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-4" id="nature_of_work_div" style="display:none;">
                             <div class="form-group">
-                                <label>Business Proof Document <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                                <input type="file" name="business_proof_document" class="form-control-file">
-                                @if($lead->business_proof_document_path) <small><a href="{{ asset('storage/' . $lead->business_proof_document_path) }}" target="_blank">View Current</a></small> @endif
+                                <label>Nature of Work</label>
+                                <input type="text" name="nature_of_work" class="form-control" value="{{ old('nature_of_work', $lead->nature_of_work) }}">
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="salaried_type_div" style="display:none;">
+                            <div class="form-group">
+                                <label>Salaried Type</label>
+                                <select name="salaried_type" id="salaried_type" class="form-control">
+                                    <option value="">Select Type</option>
+                                    <option value="Government" {{ old('salaried_type', $lead->salaried_type) == 'Government' ? 'selected' : '' }}>Government</option>
+                                    <option value="Corporate" {{ old('salaried_type', $lead->salaried_type) == 'Corporate' ? 'selected' : '' }}>Corporate</option>
+                                    <option value="Other" {{ old('salaried_type', $lead->salaried_type) == 'Other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Income Proof Available?</label>
+                                <select name="income_proof_available" id="income_proof_available" class="form-control">
+                                    <option value="0" {{ old('income_proof_available', $lead->income_proof_available) == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('income_proof_available', $lead->income_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                            </div>
+                            <div id="itr_details_div" style="display:none;">
+                                <div class="form-group">
+                                    <label>Last ITR Amount</label>
+                                    <input type="number" step="0.01" name="itr_amount" class="form-control" value="{{ old('itr_amount', $lead->itr_amount) }}">
+                                </div>
+                                <div class="form-group">
+                                    <label>ITR Document <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                                    <input type="file" name="itr_document" class="form-control-file">
+                                    @if($lead->itr_document_path) <small><a href="{{ asset('storage/' . $lead->itr_document_path) }}" target="_blank">View Current</a></small> @endif
+                                </div>
+                            </div>
+                            <div id="approx_income_div">
+                                <div class="form-group">
+                                    <label>Approx. Income</label>
+                                    <input type="number" step="0.01" name="approx_income" class="form-control" value="{{ old('approx_income', $lead->approx_income) }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6" id="business_proof_main_div" style="display:none;">
+                            <div class="form-group">
+                                <label>Business Proof Available?</label>
+                                <select name="business_proof_available" id="business_proof_available" class="form-control">
+                                    <option value="0" {{ old('business_proof_available', $lead->business_proof_available) == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('business_proof_available', $lead->business_proof_available) == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                            </div>
+                            <div id="business_proof_doc_div" style="display:none;">
+                                <div class="form-group">
+                                    <label>Business Proof Document <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                                    <input type="file" name="business_proof_document" class="form-control-file">
+                                    @if($lead->business_proof_document_path) <small><a href="{{ asset('storage/' . $lead->business_proof_document_path) }}" target="_blank">View Current</a></small> @endif
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -356,7 +366,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Manufacturer <span class="text-danger">*</span></label>
-                                        <select name="manufacture_id" class="form-control">
+                                        <select name="manufacture_id" class="form-control manufacture-select">
                                             <option value="">Select Manufacturer</option>
                                             @foreach($manufactures as $mfg)
                                                 <option value="{{ $mfg->id }}" {{ old('manufacture_id', $lead->manufacture_id) == $mfg->id ? 'selected' : '' }}>{{ $mfg->name }}</option>
@@ -366,9 +376,17 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Vehicle Name</label>
-                                        <select name="vehicle_name_id" id="vehicle_name_id" class="form-control">
-                                            <option value="">Select Vehicle</option>
+                                        <label>Vehicle Name <span class="text-danger">*</span></label>
+                                        <select name="vehicle_name_id" class="form-control vehicle-name-select">
+                                            <option value="">Select Manufacturer First</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Variant</label>
+                                        <select name="vehicle_variant" class="form-control variant-select">
+                                            <option value="">Select Vehicle First</option>
                                         </select>
                                     </div>
                                 </div>
@@ -395,9 +413,33 @@
                                 <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control" value="{{ old('engine_number', $lead->engine_number) }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control" value="{{ old('chassis_number', $lead->chassis_number) }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="number" name="mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Mfg Name</label><input type="text" name="mfg_name" class="form-control" value="{{ old('mfg_name', $lead->mfg_name) }}"></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Model Name</label><input type="text" name="model_name" class="form-control" value="{{ old('model_name', $lead->model_name) }}"></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Variant</label><input type="text" name="variant" class="form-control" value="{{ old('variant', $lead->variant) }}"></div></div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Mfg Name</label>
+                                        <select name="rto_mfg_name" class="form-control manufacture-select">
+                                            <option value="">Select Manufacturer</option>
+                                            @foreach($manufactures as $mfg)
+                                                <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Model Name</label>
+                                        <select name="rto_model_name" class="form-control vehicle-name-select">
+                                            <option value="">Select Manufacturer First</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Variant</label>
+                                        <select name="variant" class="form-control variant-select">
+                                            <option value="">Select Vehicle First</option>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="owner_serial_number" class="form-control" value="{{ old('owner_serial_number', $lead->owner_serial_number) }}"></div></div>
                             </div>
 
@@ -456,24 +498,26 @@
 
                     <hr>
                     {{-- Loan Amount Breakdown --}}
-                    <h5>Amount Required</h5>
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Old Loan Close Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}" required>
+                    <div id="amount_required_section">
+                        <h5>Amount Required</h5>
+                        <div class="row">
+                            <div class="col-md-4" id="old_loan_close_div">
+                                <div class="form-group">
+                                    <label>Old Loan Close Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Required In Hand</label>
-                                <input type="number" step="0.01" name="required_in_hand_amount" id="required_in_hand_amount" class="form-control" value="{{ old('required_in_hand_amount', $lead->required_in_hand_amount) }}">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Required In Hand</label>
+                                    <input type="number" step="0.01" name="required_in_hand_amount" id="required_in_hand_amount" class="form-control" value="{{ old('required_in_hand_amount', $lead->required_in_hand_amount) }}">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Total Amount</label>
-                                <input type="text" id="total_loan_amount" class="form-control" disabled>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Total Amount</label>
+                                    <input type="text" id="total_loan_amount" class="form-control" disabled>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -487,9 +531,33 @@
                         <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control" value="{{ old('engine_number', $lead->engine_number) }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control" value="{{ old('chassis_number', $lead->chassis_number) }}"></div></div>
                         <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="rto_mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Mfg Name</label><input type="text" name="rto_mfg_name" class="form-control" value="{{ old('mfg_name', $lead->mfg_name) }}"></div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Model Name</label><input type="text" name="rto_model_name" class="form-control" value="{{ old('model_name', $lead->model_name) }}"></div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Variant</label><input type="text" name="rto_variant" class="form-control" value="{{ old('variant', $lead->variant) }}"></div></div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Mfg Name</label>
+                                <select name="rto_mfg_name" class="form-control manufacture-select">
+                                    <option value="">Select Manufacturer</option>
+                                    @foreach($manufactures as $mfg)
+                                        <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Model Name</label>
+                                <select name="rto_model_name" class="form-control vehicle-name-select">
+                                    <option value="">Select Manufacturer First</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Variant</label>
+                                <select name="rto_variant" class="form-control variant-select">
+                                    <option value="">Select Vehicle First</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control" value="{{ old('owner_serial_number', $lead->owner_serial_number) }}"></div></div>
                     </div>
                     <div class="row">
@@ -543,9 +611,33 @@
                 <div id="insurance_section" style="display:none;">
                     <h5>Insurance Details</h5>
                     <div class="row">
-                        <div class="col-md-3"><div class="form-group"><label>Model Name <span class="text-danger">*</span></label><input type="text" name="ins_model_name" class="form-control" value="{{ old('model_name', $lead->model_name) }}"></div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Variant</label><input type="text" name="ins_variant" class="form-control" value="{{ old('variant', $lead->variant) }}"></div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="ins_owner_serial_number" class="form-control" value="{{ old('owner_serial_number', $lead->owner_serial_number) }}"></div></div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Manufacturer <span class="text-danger">*</span></label>
+                                <select name="ins_mfg_name" class="form-control manufacture-select">
+                                    <option value="">Select Manufacturer</option>
+                                    @foreach($manufactures as $mfg)
+                                        <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Model Name <span class="text-danger">*</span></label>
+                                <select name="ins_model_name" class="form-control vehicle-name-select">
+                                    <option value="">Select Manufacturer First</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Variant</label>
+                                <select name="ins_variant" class="form-control variant-select">
+                                    <option value="">Select Vehicle First</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
@@ -611,7 +703,7 @@
                     <input type="hidden" name="assigned_to" value="{{ $lead->assigned_to }}">
                 @endif
 
-                <button type="submit" class="btn btn-primary mt-3">{{ old('bank_id') ? 'Update & Qualify' : 'Update Lead' }}</button>
+                <button type="submit" class="btn btn-primary mt-3">{{ old('bank_id') ? 'Save & Qualify' : 'Save Lead' }}</button>
             </form>
         </div>
     </div>
@@ -630,25 +722,19 @@
                     residence_type: { required: true },
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
-                    job_profile_type: { required: true },
-                    nature_of_work: {
+                    job_profile_type: {
                         required: function(element) {
-                            return $("#job_profile_type").val() === 'Self Employed';
-                        }
-                    },
-                    salaried_type: {
-                        required: function(element) {
-                            return $("#job_profile_type").val() === 'Salaried';
-                        }
-                    },
-                    designation: {
-                        required: function(element) {
-                            return $("#job_profile_type").val() === 'Salaried';
+                            return $("#lead_type").val() === 'Loan';
                         }
                     },
                     other_company_name: {
                         required: function(element) {
-                            return $("#salaried_type").val() === 'Other';
+                            return $("#lead_type").val() === 'Loan';
+                        }
+                    },
+                    designation: {
+                        required: function(element) {
+                            return $("#lead_type").val() === 'Loan';
                         }
                     },
                     itr_amount: {
@@ -663,7 +749,7 @@
                     },
                     old_loan_close_amount: {
                         required: function(element) {
-                            return $("#lead_type").val() === 'Loan';
+                            return $("#lead_type").val() === 'Loan' && $("#vehicle_purchase_type").val() !== 'New Purchase';
                         },
                         number: true,
                         min: 0
@@ -745,10 +831,8 @@
                     current_address_line: "Please enter the current address",
                     permanent_address_line: "Please enter the permanent address",
                     job_profile_type: "Please select a job profile",
-                    nature_of_work: "Please enter the nature of work",
-                    salaried_type: "Please select a salaried type",
-                    designation: "Please enter a designation",
                     other_company_name: "Please enter the company name",
+                    designation: "Please enter the designation",
                     itr_amount: "Please enter the ITR amount",
                     approx_income: "Please enter the approximate income",
                     old_loan_close_amount: {
@@ -892,8 +976,8 @@
             });
 
             // --- Vehicle Logic ---
-            function populateVehicleNames(manufactureId, selectedVehicleId = null) {
-                let vehicleSelect = $('#vehicle_name_id');
+            function populateVehicleNames(manufactureId, container, selectedVehicleId = null) {
+                let vehicleSelect = container.find('.vehicle-name-select');
                 vehicleSelect.empty().append('<option value="">Loading...</option>');
 
                 if (manufactureId) {
@@ -903,12 +987,17 @@
                         success: function(data) {
                             vehicleSelect.empty().append('<option value="">Select Vehicle</option>');
                             $.each(data, function(key, vehicle) {
-                                let option = $('<option></option>').attr('value', vehicle.id).text(vehicle.name);
-                                if (vehicle.id == selectedVehicleId) {
+                                let val = vehicleSelect.attr('name') === 'vehicle_name_id' ? vehicle.id : vehicle.name;
+                                let option = $('<option></option>').attr('value', val).text(vehicle.name).data('id', vehicle.id);
+                                if (val == selectedVehicleId) {
                                     option.prop('selected', true);
                                 }
                                 vehicleSelect.append(option);
                             });
+                            // Trigger change to load variants if a vehicle is pre-selected
+                            if(selectedVehicleId) {
+                                vehicleSelect.trigger('change');
+                            }
                         }
                     });
                 } else {
@@ -916,27 +1005,74 @@
                 }
             }
 
-            $('select[name="manufacture_id"]').change(function() {
-                populateVehicleNames($(this).val());
+            function populateVariants(vehicleName, container, selectedVariant = null) {
+                let variantSelect = container.find('.variant-select');
+                variantSelect.empty().append('<option value="">Loading...</option>');
+
+                if (vehicleName) {
+                    $.ajax({
+                        url: '{{ route("get-variants") }}',
+                        type: 'GET',
+                        data: { vehicleName: vehicleName },
+                        success: function(data) {
+                            variantSelect.empty().append('<option value="">Select Variant</option>');
+                            $.each(data, function(key, item) {
+                                let option = $('<option></option>').attr('value', item.variant).text(item.variant);
+                                if (item.variant == selectedVariant) {
+                                    option.prop('selected', true);
+                                }
+                                variantSelect.append(option);
+                            });
+                        }
+                    });
+                } else {
+                    variantSelect.empty().append('<option value="">Select Vehicle First</option>');
+                }
+            }
+
+            $(document).on('change', '.manufacture-select', function() {
+                let mfgId = $(this).find(':selected').data('id') || $(this).val();
+                let container = $(this).closest('.row');
+                populateVehicleNames(mfgId, container);
             });
 
-            // Initial population
-            let initialManufactureId = $('select[name="manufacture_id"]').val();
-            let initialVehicleId = '{{ old('vehicle_name_id', $lead->vehicle_name_id) }}';
-            if (initialManufactureId) {
-                populateVehicleNames(initialManufactureId, initialVehicleId);
-            }
+            $(document).on('change', '.vehicle-name-select', function() {
+                let vehicleName = $(this).val();
+                let container = $(this).closest('.row');
+
+                // For New Purchase, we need the ID for variants if we use the ID-based API,
+                // but since we're using get-variants by name, this is fine.
+                let variantToSelect = container.find('.variant-select').data('selected');
+                populateVariants(vehicleName, container, variantToSelect);
+            });
+
+            // Initial population for Edit mode
+            $('.manufacture-select').each(function() {
+                let mfgId = $(this).find(':selected').data('id') || $(this).val();
+                if(mfgId) {
+                    let container = $(this).closest('.row');
+                    let vehicleSelect = container.find('.vehicle-name-select');
+                    let selectedVehicle = vehicleSelect.attr('name') === 'vehicle_name_id' ? '{{ $lead->vehicle_name_id }}' : (vehicleSelect.attr('name') === 'rto_model_name' ? '{{ $lead->model_name }}' : '{{ $lead->model_name }}');
+
+                    // Store the variant to be selected later
+                    let variantSelect = container.find('.variant-select');
+                    let selectedVariant = variantSelect.attr('name') === 'vehicle_variant' ? '{{ $lead->vehicle_variant }}' : (variantSelect.attr('name') === 'rto_variant' ? '{{ $lead->variant }}' : '{{ $lead->variant }}');
+                    variantSelect.data('selected', selectedVariant);
+
+                    populateVehicleNames(mfgId, container, selectedVehicle);
+                }
+            });
 
             // --- Lead Type Logic ---
             $('#lead_type').change(function() {
                 let val = $(this).val();
-                $('#loan_section, #rto_section, #insurance_section').hide();
+                $('#loan_section, #rto_section, #insurance_section, #job_profile_section').hide();
                 // Disable inputs in hidden sections to prevent submission
-                $('#loan_section input, #loan_section select, #rto_section input, #rto_section select, #insurance_section input, #insurance_section select').prop('disabled', true);
+                $('#loan_section input, #loan_section select, #rto_section input, #rto_section select, #insurance_section input, #insurance_section select, #job_profile_section input, #job_profile_section select').prop('disabled', true);
 
                 if (val === 'Loan') {
-                    $('#loan_section').show();
-                    $('#loan_section input, #loan_section select').prop('disabled', false);
+                    $('#loan_section, #job_profile_section').show();
+                    $('#loan_section input, #loan_section select, #job_profile_section input, #job_profile_section select').prop('disabled', false);
                 } else if (val === 'RTO') {
                     $('#rto_section').show();
                     $('#rto_section input, #rto_section select').prop('disabled', false);
@@ -949,16 +1085,12 @@
             // --- Other Form Logic ---
             $('#job_profile_type').change(function() {
                 let val = $(this).val();
-                $('#nature_of_work_div, #salaried_type_div, #other_company_name_div, #designation_div, #business_proof_main_div').hide();
+                $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div').hide();
                 if (val === 'Self Employed') {
                     $('#nature_of_work_div, #business_proof_main_div').show();
                 } else if (val === 'Salaried') {
-                    $('#salaried_type_div, #designation_div').show();
+                    $('#salaried_type_div').show();
                 }
-            }).trigger('change');
-
-            $('#salaried_type').change(function() {
-                $('#other_company_name_div').toggle($(this).val() === 'Other');
             }).trigger('change');
 
             $('#income_proof_available').change(function() {
@@ -983,18 +1115,29 @@
                 let val = $(this).val();
                 $('#new_purchase_div').toggle(val === 'New Purchase');
                 $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
+
+                // Hide Old Loan Close Amount if New Purchase
+                $('#old_loan_close_div').toggle(val !== 'New Purchase');
+                if(val === 'New Purchase') {
+                    $('#old_loan_close_amount').val(0).prop('disabled', true);
+                } else {
+                    $('#old_loan_close_amount').prop('disabled', false);
+                }
+                calculateTotal();
             }).trigger('change');
 
+            @if($lead->insurance_available) $('#insurance_details_div').show(); @endif
             $('#insurance_available').change(function() {
                 $('#insurance_details_div').toggle($(this).val() == '1');
-            }).trigger('change');
+            });
+
+            @if($lead->hypothecation_status) $('#hp_details_div').show(); @endif
+            $('#hypothecation_status').change(function() {
+                $('#hp_details_div').toggle($(this).val() == '1');
+            });
 
             $('#rto_insurance_available').change(function() {
                 $('#rto_insurance_details_div').toggle($(this).val() == '1');
-            }).trigger('change');
-
-            $('#hypothecation_status').change(function() {
-                $('#hp_details_div').toggle($(this).val() == '1');
             }).trigger('change');
 
             $('#rto_hypothecation_status').change(function() {

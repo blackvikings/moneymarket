@@ -83,6 +83,9 @@
                                         @endif
                                     </td>
                                     <td rowspan="{{ $groupedVehicles->count() }}">
+                                        @can('view vehicle manufacture')
+                                            <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}">View</button>
+                                        @endcan
                                         @can('edit vehicle manufacture')
                                             <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                             <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
@@ -90,13 +93,6 @@
                                                 <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
                                                     {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
                                                 </button>
-                                            </form>
-                                        @endcan
-                                        @can('delete vehicle manufacture')
-                                            <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                             </form>
                                         @endcan
                                     </td>
@@ -115,20 +111,16 @@
                                     @endif
                                 </td>
                                 <td>
+                                    @can('view vehicle manufacture')
+                                        <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}">View</button>
+                                    @endcan
                                     @can('edit vehicle manufacture')
-                                        <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                        <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
+                                        <a href="{{ route(get_route_prefix() . 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <form action="{{ route(get_route_prefix() . 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
                                                 {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
                                             </button>
-                                        </form>
-                                    @endcan
-                                    @can('delete vehicle manufacture')
-                                        <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.destroy', $manufacture->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                         </form>
                                     @endcan
                                 </td>
@@ -140,4 +132,38 @@
             {{ $manufactures->links() }}
         </div>
     </div>
+
+    <!-- Global View Modal -->
+    <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content" id="globalViewModalContent">
+                {{-- Content will be loaded via AJAX --}}
+            </div>
+        </div>
+    </div>
+@stop
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('.view-manufacture-btn').click(function() {
+                let manufactureId = $(this).data('id');
+                let url = '{{ route(get_route_prefix() . "vehicle-manufactures.show", ":id") }}'.replace(':id', manufactureId);
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModal').modal('show');
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load manufacture details.</div>');
+                    }
+                });
+            });
+        });
+    </script>
 @stop

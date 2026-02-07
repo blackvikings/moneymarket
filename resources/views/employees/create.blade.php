@@ -18,6 +18,9 @@
         .invalid-feedback {
             display: block;
         }
+        .select2-container {
+            width: 100% !important;
+        }
     </style>
 
     @if ($errors->any())
@@ -213,6 +216,17 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label>Assign Individual Permissions</label>
+                            <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple">
+                                @foreach($permissions as $permission)
+                                    <option value="{{ $permission->name }}" {{ in_array($permission->name, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">These permissions will be assigned directly to the user in addition to their role's permissions.</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
                             <label>Reporting Manager</label>
                             <select name="reporting_manager_id" class="form-control">
                                 <option value="">Select Manager</option>
@@ -260,7 +274,7 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Create Employee</button>
+                <button type="submit" class="btn btn-primary mt-3">Save Employee</button>
             </form>
         </div>
     </div>
@@ -270,6 +284,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "Select Permissions",
+                allowClear: true
+            });
+
             $('#createEmployeeForm').validate({
                 errorElement: 'span',
                 errorPlacement: function (error, element) {
@@ -442,7 +461,7 @@
 
                 if (stateId) {
                     $.ajax({
-                        url: '{{ route("get-cities", ["state" => ":stateId"]) }}'.replace(':stateId', stateId),
+                        url: '{{ url("get-cities") }}/' + stateId,
                         type: 'GET',
                         success: function(data) {
                             $(cityElement).empty().append('<option value="">Select City</option>');
@@ -484,7 +503,7 @@
                     let citySelect = $(this).closest('.row').find('.city-select');
 
                     $.ajax({
-                        url: '{{ route("get-location-by-pincode", ["pincode" => ":pincode"]) }}'.replace(':pincode', pincode),
+                        url: '{{ url("get-location-by-pincode") }}/' + pincode,
                         type: 'GET',
                         success: function(data) {
                             if (data) {

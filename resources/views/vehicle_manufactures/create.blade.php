@@ -94,7 +94,6 @@
             scrollbar-width: none !important;
         }
     </style>
-
     <div class="card">
         <div class="card-body">
             <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.store') }}" method="POST" id="createVehicleManufactureForm">
@@ -131,7 +130,7 @@
                                 @endif
                             </select>
                             @error('variants') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                            <small class="form-text text-muted">Type variant name and press enter to add. Spaces are allowed.</small>
+                            <small class="form-text text-muted">Type variant name and press enter to add multiple. Spaces are allowed.</small>
                         </div>
                     </div>
                 </div>

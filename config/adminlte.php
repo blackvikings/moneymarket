@@ -31,7 +31,7 @@ return [
     */
 
     'use_ico_only' => true,
-    'use_full_favicon' => true,
+    'use_full_favicon' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -64,8 +64,8 @@ return [
     */
 
     'logo' => '<b>Money</b>Market',
-    'logo_img' => 'vendor/adminlte/dist/img/Gemini_Generated_Image_kep2hkep2hkep2hk (1).png',
-    'logo_img_class' => 'brand-image img-circle elevation-3',
+    'logo_img' => 'vendor/adminlte/dist/img/money-market-logo.png',
+    'logo_img_class' => 'brand-image',
     'logo_img_xl' => null,
     'logo_img_xl_class' => 'brand-image-xs',
     'logo_img_alt' => 'admin Logo',
@@ -86,11 +86,11 @@ return [
     'auth_logo' => [
         'enabled' => true,
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/Gemini_Generated_Image_kep2hkep2hkep2hk (1).png',
+            'path' => 'vendor/adminlte/dist/img/money-market-logo.png',
             'alt' => 'Auth Logo',
             'class' => '',
-            'width' => 50,
-            'height' => 50,
+            'width' => 200,
+            'height' => null,
         ],
     ],
 
@@ -113,11 +113,11 @@ return [
         'enabled' => true,
         'mode' => 'fullscreen',
         'img' => [
-            'path' => 'vendor/adminlte/dist/img/Gemini_Generated_Image_kep2hkep2hkep2hk (1).png',
+            'path' => 'vendor/adminlte/dist/img/money-market-logo.png',
             'alt' => 'AdminLTE Preloader Image',
             'effect' => 'animation__shake',
-            'width' => 60,
-            'height' => 60,
+            'width' => 200,
+            'height' => null,
         ],
     ],
 
