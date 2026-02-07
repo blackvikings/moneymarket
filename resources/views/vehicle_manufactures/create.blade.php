@@ -94,6 +94,7 @@
             scrollbar-width: none !important;
         }
     </style>
+
     <div class="card">
         <div class="card-body">
             <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.store') }}" method="POST" id="createVehicleManufactureForm">
