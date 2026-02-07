@@ -11,6 +11,7 @@
             <p><strong>Name:</strong> {{ $lead->customer_name }}</p>
             <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
             <p><strong>Email:</strong> {{ $lead->email ?? '-' }}</p>
+            <p><strong>Aadhar Number:</strong> {{ $lead->aadhar_number }}</p>
         </div>
         <div class="col-md-6">
             <h6><strong>Vehicle Details</strong></h6>

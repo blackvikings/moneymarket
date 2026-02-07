@@ -80,6 +80,7 @@ class UserSeeder extends Seeder
             'export crm',
             'export rto',
             'export insurance lead',
+            'show master option', // New permission
         ];
 
         foreach ($permissions as $permission) {
@@ -94,13 +95,13 @@ class UserSeeder extends Seeder
         $teamLeadRole->syncPermissions([
             'view employee', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm',
             'view lead', 'create lead', 'edit lead', 'bulk assign lead', 'export lead', 'import lead',
-            'export crm', 'export rto', 'export insurance lead'
+            'export crm', 'export rto', 'export insurance lead',
+            'show master option'
         ]);
 
         $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);
         $teleCallerRole->syncPermissions([
-            'view rto agent', 'view insurance',
-            'view lead', 'edit lead'
+            'view lead', 'edit lead',
         ]);
 
 
@@ -111,6 +112,7 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'password' => Hash::make('12345678'),
                 'employee_type' => 'Admin',
+                'is_first_login' => false,
             ]
         );
         $admin->assignRole($adminRole);
@@ -122,6 +124,7 @@ class UserSeeder extends Seeder
                 'name' => 'Tele Caller 1',
                 'password' => Hash::make('password'),
                 'employee_type' => 'Tele Caller',
+                'is_first_login' => true,
             ]
         );
         $teleCaller1->assignRole($teleCallerRole);
@@ -132,6 +135,7 @@ class UserSeeder extends Seeder
                 'name' => 'Tele Caller 2',
                 'password' => Hash::make('password'),
                 'employee_type' => 'Tele Caller',
+                'is_first_login' => true,
             ]
         );
         $teleCaller2->assignRole($teleCallerRole);

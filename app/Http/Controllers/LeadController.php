@@ -111,6 +111,7 @@ class LeadController extends Controller
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'aadhar_number' => 'nullable|string|max:20',
         ]);
 
         $data = $request->all();
@@ -178,6 +179,7 @@ class LeadController extends Controller
             'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'aadhar_number' => 'nullable|string|max:20',
             // ... all other detailed validation rules
         ]);
 
@@ -385,7 +387,7 @@ class LeadController extends Controller
 
     public function bulkAssign(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('bulk assign lead')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -421,7 +423,7 @@ class LeadController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export lead')) {
             abort(403, 'Unauthorized action.');
         }
         return (new LeadExport($request))->download();
@@ -429,7 +431,7 @@ class LeadController extends Controller
 
     public function import(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('import lead')) {
             abort(403, 'Unauthorized action.');
         }
         $request->validate([
@@ -461,7 +463,7 @@ class LeadController extends Controller
 
     public function downloadSample()
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('import lead')) {
             abort(403, 'Unauthorized action.');
         }
         $headers = [

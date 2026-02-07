@@ -16,7 +16,7 @@
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    @if(auth()->user()->hasRole('admin'))
+                    @if(auth()->user()->hasRole('admin') || auth()->user()->can('export bank'))
                         <a href="{{ route('admin.banks.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                     @endif
                 </div>
@@ -42,6 +42,12 @@
             </form>
         </div>
         <div class="card-body">
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger">{{ session('error') }}</div>
+            @endif
             <table class="table table-bordered">
                 <thead>
                     <tr>

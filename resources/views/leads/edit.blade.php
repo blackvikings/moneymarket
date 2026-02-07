@@ -412,7 +412,7 @@
                                 <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rc_number" class="form-control" value="{{ old('rc_number', $lead->rc_number) }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control" value="{{ old('engine_number', $lead->engine_number) }}"></div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control" value="{{ old('chassis_number', $lead->chassis_number) }}"></div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="number" name="mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}"></div></div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Mfg Name</label>

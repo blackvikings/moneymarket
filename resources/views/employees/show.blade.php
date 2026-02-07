@@ -48,6 +48,9 @@
                     <strong>Proof ID Type:</strong> {{ $employee->proof_id_type }}
                 </div>
                 <div class="col-md-6">
+                    <strong>Proof ID Number:</strong> {{ $employee->proof_id_number }}
+                </div>
+                <div class="col-md-6">
                     <strong>Address Proof:</strong>
                     @if($employee->address_proof_path)
                         <a href="{{ asset('storage/' . $employee->address_proof_path) }}" target="_blank">View Proof</a>

@@ -21,6 +21,7 @@ use App\Http\Controllers\Auth\ForgotPasswordController;
 use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 
 Route::get('/', function () {
     return redirect()->route('employee.login');
@@ -64,7 +65,7 @@ Route::post('logout', function () {
 
 
 // Admin Routes
-Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
 
@@ -138,6 +139,20 @@ Route::group(['middleware' => ['auth', 'role:admin'], 'prefix' => 'admin', 'as' 
 
 // Employee Routes
 Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employee.'], function () {
+    // Change Password Routes
+    Route::get('change-password', [ChangePasswordController::class, 'showChangePasswordForm'])->name('change-password');
+    Route::post('change-password', [ChangePasswordController::class, 'changePassword'])->name('update-password');
+
+    // Debug Permissions Route
+    Route::get('debug-permissions', function() {
+        $user = auth()->user();
+        return response()->json([
+            'user' => $user->name,
+            'roles' => $user->getRoleNames(),
+            'permissions' => $user->getAllPermissions()->pluck('name'),
+        ]);
+    });
+
     // Employees typically manage leads
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
@@ -180,6 +195,28 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
 
     // Employees need access to get branches for dropdowns
     Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');
+
+    // Masters Routes for Employees (if they have permission)
+    Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
+    Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
+    Route::resource('banks', BankController::class);
+
+    Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
+    Route::post('firms/{firm}/toggle-status', [FirmController::class, 'toggleStatus'])->name('firms.toggle-status');
+    Route::resource('firms', FirmController::class);
+
+    Route::get('rto-agents/export', [RtoAgentController::class, 'export'])->name('rto-agents.export');
+    Route::post('rto-agents/{rtoAgent}/toggle-status', [RtoAgentController::class, 'toggleStatus'])->name('rto-agents.toggle-status');
+    Route::resource('rto-agents', RtoAgentController::class);
+
+    Route::get('insurances/export', [InsuranceController::class, 'export'])->name('insurances.export');
+    Route::post('insurances/{insurance}/toggle-status', [InsuranceController::class, 'toggleStatus'])->name('insurances.toggle-status');
+    Route::resource('insurances', InsuranceController::class);
+
+    Route::get('vehicle-manufactures/export', [VehicleManufactureController::class, 'export'])->name('vehicle-manufactures.export');
+    Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
+    Route::get('vehicle-manufactures/{vehicleManufacture}/variants', [VehicleManufactureController::class, 'getVariants'])->name('vehicle-manufactures.variants');
+    Route::resource('vehicle-manufactures', VehicleManufactureController::class);
 });
 
 // Location Routes (Shared)

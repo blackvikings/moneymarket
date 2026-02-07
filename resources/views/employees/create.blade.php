@@ -196,7 +196,7 @@
                             @error('address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Proof ID Type</label>
                             <input type="text" name="proof_id_type" class="form-control" placeholder="e.g. Aadhar, PAN" value="{{ old('proof_id_type') }}">
@@ -513,7 +513,7 @@
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                             if(jqXHR.status == 404) {
-                                alert('Invalid Pincode');
+                                // alert('Invalid Pincode'); // Suppress alert for better UX
                             }
                         }
                     });

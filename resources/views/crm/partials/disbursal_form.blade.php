@@ -40,18 +40,49 @@
                     </div>
                 </div>
             </div>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" id="move_to_rto_{{ $lead->id }}" name="move_to_rto" value="1">
+                        <label class="form-check-label" for="move_to_rto_{{ $lead->id }}">Move to RTO</label>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input move-to-insurance-check" id="move_to_insurance_{{ $lead->id }}" name="move_to_insurance" value="1" data-target="#insurance_expiry_container_{{ $lead->id }}">
+                        <label class="form-check-label" for="move_to_insurance_{{ $lead->id }}">Move to Insurance</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
+                <div class="col-md-6 offset-md-6">
+                    <div class="form-group">
+                        <label>Insurance Expiry Date <span class="text-danger">*</span></label>
+                        <input type="date" name="insurance_expiry_date" class="form-control">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <div class="modal-footer justify-content-between">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Disbursal & Close Lead</button>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Save Disbursal</button>
     </div>
 </form>
 
 <script>
     // Ensure script runs after DOM is loaded and even if loaded via AJAX
     (function() {
-        // Removed auto-calculation logic as the total field is removed
+        $('.move-to-insurance-check').change(function() {
+            let target = $(this).data('target');
+            if ($(this).is(':checked')) {
+                $(target).removeClass('d-none');
+                $(target).find('input').prop('required', true);
+            } else {
+                $(target).addClass('d-none');
+                $(target).find('input').prop('required', false);
+            }
+        });
     })();
 </script>

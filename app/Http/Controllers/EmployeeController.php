@@ -81,6 +81,8 @@ class EmployeeController extends Controller
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
             'reporting_manager_id' => 'nullable|exists:users,id',
+            'proof_id_number' => 'nullable|string|max:50',
+            'proof_id_type' => 'nullable|string|max:50',
         ]);
 
         $data = $request->except('password', 'address_proof', 'education', 'role', 'permissions');
@@ -166,6 +168,8 @@ class EmployeeController extends Controller
             'permissions' => 'nullable|array',
             'permissions.*' => 'exists:permissions,name',
             'reporting_manager_id' => 'nullable|exists:users,id',
+            'proof_id_number' => 'nullable|string|max:50',
+            'proof_id_type' => 'nullable|string|max:50',
         ]);
 
         $data = $request->except('password', 'address_proof', 'education', 'role', 'permissions');

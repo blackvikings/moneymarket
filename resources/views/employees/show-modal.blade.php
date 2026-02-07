@@ -22,6 +22,7 @@
             <p><strong>Joined Firm:</strong> {{ $employee->firm ? $employee->firm->name : '-' }}</p>
             <p><strong>Reporting Manager:</strong> {{ $employee->reportingManager ? $employee->reportingManager->name : '-' }}</p>
             <p><strong>Proof ID Type:</strong> {{ $employee->proof_id_type ?? '-' }}</p>
+            <p><strong>Proof ID Number:</strong> {{ $employee->proof_id_number ?? '-' }}</p>
             @if($employee->address_proof_path)
                 <p><a href="{{ asset('storage/' . $employee->address_proof_path) }}" target="_blank" class="btn btn-xs btn-info">View Address Proof</a></p>
             @endif

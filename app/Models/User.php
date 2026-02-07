@@ -23,6 +23,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_first_login',
+        'employee_id',
         'employee_type',
         'contact_number',
         'dob',
@@ -38,6 +40,7 @@ class User extends Authenticatable
         'permanent_address_state',
         'address_proof_path',
         'proof_id_type',
+        'proof_id_number',
         'reporting_manager_id',
         'bank_id',
         'bank_branch_id',
@@ -67,6 +70,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'dob' => 'date',
+            'is_first_login' => 'boolean',
         ];
     }
 

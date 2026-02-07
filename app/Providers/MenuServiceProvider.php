@@ -88,44 +88,67 @@ class MenuServiceProvider extends ServiceProvider
                         ],
                     ],
                 ]);
+            }
 
-                // Add Masters Menu (Admin Only)
-                $event->menu->add([
+            // Add Masters Menu (Admin Only or if user has permission)
+            // We check if the user has ANY of the master view permissions to show the parent menu
+            $user = auth()->user();
+            if ($user->hasRole('admin') || $user->can('show master option')) {
+
+                $mastersMenu = [
                     'text' => 'Masters',
                     'icon' => 'fas fa-fw fa-cogs',
-                    'submenu' => [
-                        [
-                            'text' => 'Banks',
-                            'route' => 'admin.banks.index',
-                            'icon' => 'fas fa-fw fa-university',
-                            'can' => 'view bank',
-                        ],
-                        [
-                            'text' => 'Firms',
-                            'route' => 'admin.firms.index',
-                            'icon' => 'fas fa-fw fa-building',
-                            'can' => 'view firm',
-                        ],
-                        [
-                            'text' => 'RTO Agents',
-                            'route' => 'admin.rto-agents.index',
-                            'icon' => 'fas fa-fw fa-user-secret',
-                            'can' => 'view rto agent',
-                        ],
-                        [
-                            'text' => 'Insurances',
-                            'route' => 'admin.insurances.index',
-                            'icon' => 'fas fa-fw fa-shield-alt',
-                            'can' => 'view insurance',
-                        ],
-                        [
-                            'text' => 'Vehicle Manufactures',
-                            'route' => 'admin.vehicle-manufactures.index',
-                            'icon' => 'fas fa-fw fa-car',
-                            'can' => 'view vehicle manufacture',
-                        ],
-                    ],
-                ]);
+                    'submenu' => [],
+                ];
+
+                if ($user->hasRole('admin') || $user->can('view bank')) {
+                    $mastersMenu['submenu'][] = [
+                        'text' => 'Banks',
+                        'route' => 'admin.banks.index',
+                        'icon' => 'fas fa-fw fa-university',
+                        'can' => 'view bank',
+                    ];
+                }
+
+                if ($user->hasRole('admin') || $user->can('view firm')) {
+                    $mastersMenu['submenu'][] = [
+                        'text' => 'Firms',
+                        'route' => 'admin.firms.index',
+                        'icon' => 'fas fa-fw fa-building',
+                        'can' => 'view firm',
+                    ];
+                }
+
+                if ($user->hasRole('admin') || $user->can('view rto agent')) {
+                    $mastersMenu['submenu'][] = [
+                        'text' => 'RTO Agents',
+                        'route' => 'admin.rto-agents.index',
+                        'icon' => 'fas fa-fw fa-user-secret',
+                        'can' => 'view rto agent',
+                    ];
+                }
+
+                if ($user->hasRole('admin') || $user->can('view insurance')) {
+                    $mastersMenu['submenu'][] = [
+                        'text' => 'Insurances',
+                        'route' => 'admin.insurances.index',
+                        'icon' => 'fas fa-fw fa-shield-alt',
+                        'can' => 'view insurance',
+                    ];
+                }
+
+                if ($user->hasRole('admin') || $user->can('view vehicle manufacture')) {
+                    $mastersMenu['submenu'][] = [
+                        'text' => 'Vehicle Manufactures',
+                        'route' => 'admin.vehicle-manufactures.index',
+                        'icon' => 'fas fa-fw fa-car',
+                        'can' => 'view vehicle manufacture',
+                    ];
+                }
+
+                if (!empty($mastersMenu['submenu'])) {
+                    $event->menu->add($mastersMenu);
+                }
             }
         });
     }

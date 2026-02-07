@@ -30,6 +30,7 @@ class InsuranceLeadController extends Controller
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
             'insurance_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'aadhar_number' => 'nullable|string|max:20',
         ]);
 
         $data = $request->except('insurance_address_proof');

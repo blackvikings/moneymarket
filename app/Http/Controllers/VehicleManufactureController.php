@@ -148,7 +148,7 @@ class VehicleManufactureController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export vehicle manufacture')) {
             abort(403, 'Unauthorized action.');
         }
         return (new VehicleManufactureExport($request))->download();

@@ -50,6 +50,12 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
+                            <label>Aadhar Number</label>
+                            <input type="text" name="aadhar_number" class="form-control" placeholder="12-digit Aadhar Number">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
                             <label>Residence Type <span class="text-danger">*</span></label>
                             <select name="residence_type" class="form-control" required>
                                 <option value="Rented">Rented</option>

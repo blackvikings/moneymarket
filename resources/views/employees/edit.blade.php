@@ -168,7 +168,7 @@
                             @endif
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Proof ID Type</label>
                             <input type="text" name="proof_id_type" class="form-control" placeholder="e.g. Aadhar, PAN" value="{{ old('proof_id_type', $employee->proof_id_type) }}">

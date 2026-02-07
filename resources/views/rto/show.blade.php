@@ -22,6 +22,7 @@
                             <p><strong>Email:</strong> {{ $lead->email }}</p>
                             <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
                             <p><strong>Residence Type:</strong> {{ $lead->residence_type }}</p>
+                            <p><strong>Aadhar Number:</strong> {{ $lead->aadhar_number }}</p>
                             @if($lead->profile_picture_path)
                                 <p><strong>Profile Picture:</strong> <br> <img src="{{ asset('storage/' . $lead->profile_picture_path) }}" alt="Profile Picture" class="img-thumbnail" style="max-height: 100px;"></p>
                             @endif

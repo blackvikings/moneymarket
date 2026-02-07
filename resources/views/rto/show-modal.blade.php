@@ -10,6 +10,7 @@
             <h6><strong>Customer Information</strong></h6>
             <p><strong>Name:</strong> {{ $lead->customer_name }}</p>
             <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
+            <p><strong>Aadhar Number:</strong> {{ $lead->aadhar_number }}</p>
             <p><strong>RTO Stage:</strong> <span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></p>
         </div>
         <div class="col-md-6">
@@ -18,6 +19,7 @@
             <p><strong>Model:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : ($lead->model_name ?? '-') }}</p>
             <p><strong>Variant:</strong> {{ $lead->vehicle_variant ?? ($lead->variant ?? '-') }}</p>
             <p><strong>RC Number:</strong> {{ $lead->rc_number ?? '-' }}</p>
+            <p><strong>Mfg Year:</strong> {{ $lead->mfg_year ?? '-' }}</p>
         </div>
     </div>
 

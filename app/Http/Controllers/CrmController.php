@@ -145,20 +145,38 @@ class CrmController extends Controller
             'disbursal_date' => 'required|date',
             'finance_amount' => 'required|numeric',
             'disbursal_amount' => 'required|numeric',
+            'move_to_rto' => 'nullable|boolean',
+            'move_to_insurance' => 'nullable|boolean',
+            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,1|date',
         ]);
 
-        $lead->update([
+        $data = [
             'disbursal_date' => $request->disbursal_date,
             'finance_amount' => $request->finance_amount,
             'disbursal_amount' => $request->disbursal_amount,
             'crm_disbursal_at' => now(),
             'crm_stage' => 'Disbursal', // Move to Disbursal stage
-            // Automatically move to RTO
-            'rto_stage' => 'New',
-            'rto_new_at' => now(),
-        ]);
+        ];
 
-        return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', 'Disbursal details saved. Lead moved to RTO.');
+        $messages = ['Disbursal details saved.'];
+
+        // Move to RTO if requested
+        if ($request->has('move_to_rto') && $request->move_to_rto) {
+            $data['rto_stage'] = 'New';
+            $data['rto_new_at'] = now();
+            $messages[] = 'Lead moved to RTO.';
+        }
+
+        // Move to Insurance if requested
+        if ($request->has('move_to_insurance') && $request->move_to_insurance) {
+            $data['insurance_lead_stage'] = 'New';
+            $data['insurance_end_date'] = $request->insurance_expiry_date;
+            $messages[] = 'Lead moved to Insurance.';
+        }
+
+        $lead->update($data);
+
+        return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', implode(' ', $messages));
     }
 
     public function export(Request $request)

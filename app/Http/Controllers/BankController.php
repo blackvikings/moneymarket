@@ -124,13 +124,18 @@ class BankController extends Controller
 
     public function toggleStatus(Bank $bank)
     {
+        // Check if user has edit permission before toggling status
+        if (!Auth::user()->can('edit bank')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $bank->update(['is_active' => !$bank->is_active]);
         return redirect()->route('admin.banks.index')->with('success', 'Bank status updated successfully');
     }
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export bank')) {
             abort(403, 'Unauthorized action.');
         }
         return (new BankExport($request))->download();

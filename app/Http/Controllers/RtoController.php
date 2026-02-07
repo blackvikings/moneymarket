@@ -85,6 +85,7 @@ class RtoController extends Controller
             'current_address_line' => 'required|string',
             'permanent_address_line' => 'required|string',
             'rto_address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'aadhar_number' => 'nullable|string|max:20',
         ]);
 
         $data = $request->except('rto_address_proof');
@@ -270,7 +271,7 @@ class RtoController extends Controller
     public function updateRtoDone(Request $request, Lead $lead)
     {
         $request->validate([
-            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'rto_approved_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'remark' => 'nullable|string|max:500',
         ]);
 

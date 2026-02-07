@@ -29,6 +29,11 @@ class EmployeeLoginController extends Controller
             $user = Auth::user();
             if (!$user->hasRole('admin')) {
                 $request->session()->regenerate();
+
+                if ($user->is_first_login) {
+                    return redirect()->route('employee.change-password');
+                }
+
                 return redirect()->intended('/home');
             } else {
                 Auth::logout();

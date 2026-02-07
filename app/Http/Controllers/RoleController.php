@@ -38,6 +38,18 @@ class RoleController extends Controller
 
         $role = Role::create(['name' => $request->name]);
         $permissions = Permission::whereIn('id', $request->permissions)->get();
+
+        // Automatically add 'show master option' if any master view permission is selected
+        $masterPermissions = ['view bank', 'view firm', 'view rto agent', 'view insurance', 'view vehicle manufacture'];
+        $hasMasterPermission = $permissions->pluck('name')->intersect($masterPermissions)->isNotEmpty();
+
+        if ($hasMasterPermission) {
+            $showMasterOption = Permission::where('name', 'show master option')->first();
+            if ($showMasterOption && !$permissions->contains($showMasterOption)) {
+                $permissions->push($showMasterOption);
+            }
+        }
+
         $role->syncPermissions($permissions);
 
         return redirect()->route('admin.roles.index')->with('success', 'Role created successfully');
@@ -66,6 +78,18 @@ class RoleController extends Controller
 
         $role->update(['name' => $request->name]);
         $permissions = Permission::whereIn('id', $request->permissions)->get();
+
+        // Automatically add 'show master option' if any master view permission is selected
+        $masterPermissions = ['view bank', 'view firm', 'view rto agent', 'view insurance', 'view vehicle manufacture'];
+        $hasMasterPermission = $permissions->pluck('name')->intersect($masterPermissions)->isNotEmpty();
+
+        if ($hasMasterPermission) {
+            $showMasterOption = Permission::where('name', 'show master option')->first();
+            if ($showMasterOption && !$permissions->contains($showMasterOption)) {
+                $permissions->push($showMasterOption);
+            }
+        }
+
         $role->syncPermissions($permissions);
 
         return redirect()->route('admin.roles.index')->with('success', 'Role updated successfully');

@@ -119,7 +119,7 @@ class RtoAgentController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export rto agent')) {
             abort(403, 'Unauthorized action.');
         }
         return (new RtoAgentExport($request))->download();
