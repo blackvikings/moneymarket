@@ -37,13 +37,6 @@
                                 @can('edit user')
                                     <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary">Edit</a>
                                 @endcan
-                                @can('delete user')
-                                    <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                @endcan
                             </td>
                         </tr>
                     @endforeach

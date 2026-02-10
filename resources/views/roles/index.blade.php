@@ -43,15 +43,6 @@
                                 <i class="fas fa-edit text-primary"></i> Edit
                             </a>
                         @endcan
-{{--                        @can('delete role')--}}
-{{--                            <form action="{{ route('admin.roles.destroy', $role->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?');">--}}
-{{--                                @csrf--}}
-{{--                                @method('DELETE')--}}
-{{--                                <button type="submit" class="btn btn-sm btn-default" title="Delete Role">--}}
-{{--                                    <i class="fas fa-trash text-danger"></i> Delete--}}
-{{--                                </button>--}}
-{{--                            </form>--}}
-{{--                        @endcan--}}
                     </div>
                 </div>
             </div>

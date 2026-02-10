@@ -69,13 +69,6 @@
                                         </button>
                                     </form>
                                 @endcan
-                                @can('delete city')
-                                    <form action="{{ route('cities.destroy', $city->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                @endcan
                             </td>
                         </tr>
                     @endforeach

@@ -110,7 +110,7 @@ class LeadController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
-            'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
             'aadhar_number' => 'nullable|string|max:20',
         ]);
 
@@ -128,11 +128,7 @@ class LeadController extends Controller
             $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
 
-        /*
-        if ($request->hasFile('permanent_address_proof')) {
-            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
-        }
-        */
+        // Removed permanent address proof handling
 
         $lead = Lead::create($data);
 
@@ -176,7 +172,7 @@ class LeadController extends Controller
             'contact_number' => 'required|string|max:20',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
-            'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
@@ -219,12 +215,7 @@ class LeadController extends Controller
             $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
 
-        if ($request->hasFile('permanent_address_proof')) {
-            if ($lead->permanent_address_proof_path) {
-                Storage::disk('public')->delete($lead->permanent_address_proof_path);
-            }
-            $data['permanent_address_proof_path'] = $request->file('permanent_address_proof')->store('address_proofs', 'public');
-        }
+        // Removed permanent address proof handling
 
         if ($request->hasFile('itr_document')) {
             if ($lead->itr_document_path) {

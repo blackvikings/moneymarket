@@ -72,7 +72,7 @@
                 <button type="button" class="btn btn-success btn-sm" id="add-branch">Add Branch</button>
 
                 <br><br>
-                <button type="submit" class="btn btn-primary">Save Bank</button>
+                <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </div>
     </div>

@@ -153,7 +153,9 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        //
+        if ($user->is_first_login) {
+            return redirect()->route('password.change');
+        }
     }
 
     /**

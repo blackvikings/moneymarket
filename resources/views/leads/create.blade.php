@@ -657,7 +657,7 @@
                     <input type="hidden" name="assigned_to" value="{{ auth()->id() }}">
                 @endif
 
-                <button type="submit" class="btn btn-primary mt-3">Save Lead</button>
+                <button type="submit" class="btn btn-primary mt-3">Save</button>
             </form>
         </div>
     </div>

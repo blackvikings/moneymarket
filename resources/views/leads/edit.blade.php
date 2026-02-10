@@ -193,13 +193,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="permanent_address_proof" class="form-control-file">
-                            @if($lead->permanent_address_proof_path)
-                                <small><a href="{{ asset('storage/' . $lead->permanent_address_proof_path) }}" target="_blank">View Permanent Proof</a></small>
-                            @endif
-                        </div>
+                        {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
 

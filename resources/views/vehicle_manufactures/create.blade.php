@@ -136,7 +136,7 @@
                 </div>
 
                 <hr>
-                <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                <button type="submit" class="btn btn-primary">Save</button>
             </form>
         </div>
     </div>
