@@ -49,16 +49,20 @@ class InsuranceLeadController extends Controller
         return redirect()->route(get_route_prefix() . 'insurance-leads.index')->with('success', 'New Insurance Lead added successfully.');
     }
 
-    public function show(Lead $lead)
+    public function show(Request $request, Lead $lead)
     {
         if (!$lead->insurance_lead_stage) {
             return redirect()->back()->with('error', 'This lead is not in the Insurance module.');
         }
 
-        $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
+        $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState', 'firm']);
         $insurances = Insurance::where('is_active', true)->get();
 
-        return view('insurance_leads.show-modal', compact('lead', 'insurances'))->render();
+        if ($request->ajax()) {
+            return view('insurance_leads.show-modal', compact('lead', 'insurances'))->render();
+        }
+
+        return view('insurance_leads.show', compact('lead', 'insurances'));
     }
 
     public function updateDetails(Request $request, Lead $lead)

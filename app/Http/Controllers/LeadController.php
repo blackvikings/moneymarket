@@ -120,6 +120,11 @@ class LeadController extends Controller
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
 
+        // Initialize insurance_lead_stage if lead type is Insurance
+        if ($data['lead_type'] === 'Insurance') {
+            $data['insurance_lead_stage'] = 'New';
+        }
+
         if ($request->hasFile('profile_picture')) {
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
@@ -157,6 +162,8 @@ class LeadController extends Controller
 
     public function edit(Lead $lead)
     {
+        $lead->load('vehicleName'); // Eager load vehicleName relationship
+
         $users = User::role('Tele Caller')->get();
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
@@ -199,6 +206,11 @@ class LeadController extends Controller
         // Automatically promote Follow up to Lead on update if requested
         if ($lead->status == 'Prospect') {
             $data['status'] = 'Lead';
+        }
+
+        // Ensure insurance_lead_stage is set if lead type is Insurance (for updates)
+        if ($data['lead_type'] === 'Insurance' && !$lead->insurance_lead_stage) {
+            $data['insurance_lead_stage'] = 'New';
         }
 
         if ($request->hasFile('profile_picture')) {
@@ -500,6 +512,7 @@ class LeadController extends Controller
                 }
 
             } elseif ($data['lead_type'] === 'Insurance') {
+                $data['mfg_name'] = $data['ins_mfg_name'] ?? $data['mfg_name'] ?? null;
                 $data['model_name'] = $data['ins_model_name'] ?? $data['model_name'] ?? null;
                 $data['variant'] = $data['ins_variant'] ?? $data['variant'] ?? null;
                 $data['owner_serial_number'] = $data['ins_owner_serial_number'] ?? $data['owner_serial_number'] ?? null;

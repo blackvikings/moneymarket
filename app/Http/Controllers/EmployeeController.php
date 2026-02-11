@@ -50,12 +50,16 @@ class EmployeeController extends Controller
         $firms = Firm::all();
         $banks = Bank::all();
 
-        // Fetch both Admins and Team Leads as potential managers
-        $managers = User::role(['admin', 'Team Lead'])->get();
+        // Fetch Admins and Team Leads separately for dynamic filtering
+        $admins = User::role('admin')->get();
+        $teamLeads = User::role('Team Lead')->get();
+
+        // Keep $managers for fallback or initial load if needed, though we'll use JS
+        $managers = $admins->merge($teamLeads);
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
-        return view('employees.create', compact('firms', 'banks', 'managers', 'roles', 'permissions'));
+        return view('employees.create', compact('firms', 'banks', 'managers', 'admins', 'teamLeads', 'roles', 'permissions'));
     }
 
     public function store(Request $request)
@@ -135,13 +139,15 @@ class EmployeeController extends Controller
         $firms = Firm::all();
         $banks = Bank::all();
 
-        // Fetch both Admins and Team Leads as potential managers
-        $managers = User::role(['admin', 'Team Lead'])->where('id', '!=', $employee->id)->get();
+        // Fetch Admins and Team Leads separately
+        $admins = User::role('admin')->where('id', '!=', $employee->id)->get();
+        $teamLeads = User::role('Team Lead')->where('id', '!=', $employee->id)->get();
+        $managers = $admins->merge($teamLeads);
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
         $employee->load('education', 'permissions');
-        return view('employees.edit', compact('employee', 'firms', 'banks', 'managers', 'roles', 'permissions'));
+        return view('employees.edit', compact('employee', 'firms', 'banks', 'managers', 'admins', 'teamLeads', 'roles', 'permissions'));
     }
 
     public function update(Request $request, User $employee)

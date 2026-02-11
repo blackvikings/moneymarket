@@ -33,7 +33,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Employee Type <span class="text-danger">*</span></label>
-                            <select name="role" class="form-control" required>
+                            <select name="role" id="role" class="form-control" required>
                                 <option value="">Select Type</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->name }}" {{ old('role', $employee->roles->first()->name ?? '') == $role->name ? 'selected' : '' }}>{{ $role->name }}</option>
@@ -212,11 +212,9 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Reporting Manager</label>
-                            <select name="reporting_manager_id" class="form-control">
+                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control">
                                 <option value="">Select Manager</option>
-                                @foreach($managers as $manager)
-                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $employee->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
-                                @endforeach
+                                {{-- Options will be populated by JS --}}
                             </select>
                         </div>
                     </div>
@@ -268,6 +266,41 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            // --- Reporting Manager Logic ---
+            const admins = @json($admins);
+            const teamLeads = @json($teamLeads);
+            const oldManagerId = "{{ old('reporting_manager_id', $employee->reporting_manager_id) }}";
+
+            function populateManagers(role) {
+                let managerSelect = $('#reporting_manager_id');
+                managerSelect.empty().append('<option value="">Select Manager</option>');
+
+                let managersToDisplay = [];
+
+                if (role === 'Team Lead') {
+                    managersToDisplay = admins;
+                } else if (role) {
+                    // For Tele Caller or any other role, show Team Leads
+                    managersToDisplay = teamLeads;
+                }
+
+                $.each(managersToDisplay, function(index, manager) {
+                    let selected = (oldManagerId == manager.id) ? 'selected' : '';
+                    managerSelect.append('<option value="' + manager.id + '" ' + selected + '>' + manager.name + '</option>');
+                });
+            }
+
+            $('#role').change(function() {
+                populateManagers($(this).val());
+            });
+
+            // Initial population on page load
+            let initialRole = $('#role').val();
+            if (initialRole) {
+                populateManagers(initialRole);
+            }
+
+            // --- Existing Scripts ---
             $('.select2').select2({
                 placeholder: "Select Permissions",
                 allowClear: true

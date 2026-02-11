@@ -149,7 +149,7 @@
             <div class="leads-tabs-wrapper mb-0">
                 {{-- All Tab --}}
                 <div class="leads-tab-container">
-                    <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except('status'), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
+                    <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except(['status', 'page']), ['status' => ''])) }}" class="leads-tab-content clip-chevron {{ request('status') == '' ? 'active' : '' }}">
                         <span class="leads-tab-title">All</span>
                         <span class="leads-tab-subtitle">{{ $counts['All'] ?? 0 }}</span>
                         <span class="upper-line"></span>
@@ -159,7 +159,7 @@
                 {{-- Statuses Tabs --}}
                 @foreach($statuses as $status)
                     <div class="leads-tab-container">
-                        <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except('status'), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
+                        <a href="{{ route(get_route_prefix() . 'leads.index', array_merge(request()->except(['status', 'page']), ['status' => $status])) }}" class="leads-tab-content clip-chevron {{ request('status') == $status ? 'active' : '' }}">
                             <span class="leads-tab-title">{{ $status == 'New' ? 'New Task' : $status }}</span>
                             <span class="leads-tab-subtitle">{{ $counts[$status] ?? 0 }}</span>
                             <span class="upper-line"></span>

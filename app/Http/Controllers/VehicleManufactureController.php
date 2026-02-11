@@ -156,16 +156,26 @@ class VehicleManufactureController extends Controller
 
     public function getVehicleNames(VehicleManufacture $vehicleManufacture)
     {
-        // Return unique vehicle names for this manufacturer
-        $names = $vehicleManufacture->vehicleNames()->select('name')->distinct()->get();
+        // Return unique vehicle model names (strings) for this manufacturer
+        $names = $vehicleManufacture->vehicleNames()->select('name')->distinct()->pluck('name');
         return response()->json($names);
     }
 
     public function getVariantsByName(Request $request)
     {
+        $request->validate([
+            'manufactureId' => 'required|exists:vehicle_manufactures,id',
+            'vehicleName' => 'required|string',
+        ]);
+
+        $manufactureId = $request->manufactureId;
         $vehicleName = $request->vehicleName;
-        // Find variants for this specific vehicle name
-        $variants = VehicleName::where('name', $vehicleName)->whereNotNull('variant')->select('variant')->get();
+
+        // Find variants for this specific vehicle name and manufacture, including their IDs
+        $variants = VehicleName::where('vehicle_manufacture_id', $manufactureId)
+                               ->where('name', $vehicleName)
+                               ->select('id', 'variant')
+                               ->get();
         return response()->json($variants);
     }
 }

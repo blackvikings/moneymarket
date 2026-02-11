@@ -119,19 +119,13 @@ class CrmController extends Controller
                     }
                 }
 
-                // Move to the NEXT stage after the last completed one
-                if (isset($this->stages[$lastCompletedIndex + 1])) {
-                    $nextStage = $this->stages[$lastCompletedIndex + 1];
+                // Move to the LAST COMPLETED stage (so it appears in that bucket)
+                // Previously it was moving to $lastCompletedIndex + 1, which skipped the stage
+                if (isset($this->stages[$lastCompletedIndex])) {
+                    $nextStage = $this->stages[$lastCompletedIndex];
                     $lead->crm_stage = $nextStage;
                     $lead->save();
                     return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
-                } else {
-                     // Re-check bounds just in case
-                     if (isset($this->stages[$lastCompletedIndex + 1])) {
-                        $lead->crm_stage = $nextStage;
-                        $lead->save();
-                        return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
-                     }
                 }
             }
         }
