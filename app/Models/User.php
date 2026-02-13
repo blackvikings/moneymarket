@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Permission;
 
 class User extends Authenticatable
 {
@@ -97,5 +98,55 @@ class User extends Authenticatable
     public function bankBranch()
     {
         return $this->belongsTo(BankBranch::class);
+    }
+
+    /**
+     * Relationship for denied permissions.
+     */
+    public function deniedPermissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_denied_permissions', 'user_id', 'permission_id');
+    }
+
+    /**
+     * Override the hasPermissionTo method to check for denied permissions.
+     *
+     * @param string|int|\Spatie\Permission\Contracts\Permission $permission
+     * @param string|null $guardName
+     * @return bool
+     */
+    public function hasPermissionTo($permission, $guardName = null): bool
+    {
+        $permissionClass = $this->getPermissionClass();
+
+        // First, resolve the permission object/name/id
+        if (is_string($permission)) {
+            // Call findByName statically on the class string
+            $permissionObj = $permissionClass::findByName(
+                $permission,
+                $guardName ?? $this->getDefaultGuardName()
+            );
+        } elseif (is_int($permission)) {
+            // Call findById statically on the class string
+            $permissionObj = $permissionClass::findById(
+                $permission,
+                $guardName ?? $this->getDefaultGuardName()
+            );
+        } else {
+            $permissionObj = $permission;
+        }
+
+        if (!$permissionObj) {
+            return false;
+        }
+
+        // Check if this permission is explicitly denied for the user
+        // Use permissions.id to avoid ambiguity
+        if ($this->deniedPermissions()->where('permissions.id', $permissionObj->id)->exists()) {
+            return false;
+        }
+
+        // If not denied, proceed with standard Spatie permission check
+        return $this->hasDirectPermission($permissionObj) || $this->hasPermissionViaRole($permissionObj);
     }
 }

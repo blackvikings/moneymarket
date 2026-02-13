@@ -152,7 +152,7 @@ class EmployeeController extends Controller
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
-        $employee->load('education', 'permissions');
+        $employee->load('education', 'permissions', 'deniedPermissions'); // Load denied permissions
         return view('employees.edit', compact('employee', 'firms', 'banks', 'managers', 'admins', 'teamLeads', 'roles', 'permissions'));
     }
 
@@ -197,11 +197,21 @@ class EmployeeController extends Controller
         $employee->update($data);
         $employee->syncRoles([$request->role]);
 
-        if ($request->has('permissions')) {
-            $employee->syncPermissions($request->permissions);
-        } else {
-            $employee->syncPermissions([]);
-        }
+        // Handle Permissions Logic
+        $role = Role::where('name', $request->role)->first();
+        $rolePermissions = $role->permissions->pluck('name')->toArray();
+        $selectedPermissions = $request->permissions ?? [];
+
+        // 1. Direct Permissions: Permissions selected that are NOT in the role
+        $directPermissions = array_diff($selectedPermissions, $rolePermissions);
+        $employee->syncPermissions($directPermissions);
+
+        // 2. Denied Permissions: Permissions in the role that were NOT selected
+        $deniedPermissions = array_diff($rolePermissions, $selectedPermissions);
+
+        // Sync denied permissions using the relationship
+        $deniedPermissionIds = Permission::whereIn('name', $deniedPermissions)->pluck('id')->toArray();
+        $employee->deniedPermissions()->sync($deniedPermissionIds);
 
         $employee->education()->delete();
         if ($request->has('education')) {

@@ -21,6 +21,30 @@
         .select2-container {
             width: 100% !important;
         }
+
+        /* Permission Card Styling matching Role Edit */
+        .permission-card {
+            height: 100%;
+            margin-bottom: 20px;
+            border: 1px solid #e3e6f0;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+        .permission-card .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e3e6f0;
+            padding: 0.75rem 1.25rem;
+        }
+        .permission-card .card-body {
+            padding: 1.25rem;
+        }
+        .permission-item {
+            margin-bottom: 0.5rem;
+        }
+        .role-badge {
+            font-size: 0.7em;
+            vertical-align: text-top;
+            opacity: 0.8;
+        }
     </style>
 
     @if ($errors->any())
@@ -33,12 +57,12 @@
         </div>
     @endif
 
-    <div class="card">
+    <div class="card shadow mb-4">
         <div class="card-body">
             <form action="{{ route('admin.employees.store') }}" method="POST" enctype="multipart/form-data" id="createEmployeeForm">
                 @csrf
 
-                <h5>Personal Details</h5>
+                <h5 class="text-primary font-weight-bold mb-3">Personal Details</h5>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -118,10 +142,10 @@
                 </div>
 
                 <hr>
-                <h5>Address Details</h5>
+                <h5 class="text-primary font-weight-bold mb-3">Address Details</h5>
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Current Address <span class="text-danger">*</span></h6>
+                        <h6 class="font-weight-bold">Current Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
                             <input type="text" name="current_address_line" id="current_address_line" class="form-control" required>
@@ -153,7 +177,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6>Permanent Address <span class="text-danger">*</span></h6>
+                            <h6 class="font-weight-bold">Permanent Address <span class="text-danger">*</span></h6>
                             <div class="form-group mb-0">
                                 <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
                             </div>
@@ -191,38 +215,44 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
+                            <label>Proof ID Type</label>
+                            <select name="proof_id_type" class="form-control">
+                                <option value="">Select ID Type</option>
+                                <option value="Aadhar" {{ old('proof_id_type') == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
+                                <option value="Voter Id" {{ old('proof_id_type') == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
+                                <option value="Driving Licence" {{ old('proof_id_type') == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
+                                <option value="Pancard" {{ old('proof_id_type') == 'Pancard' ? 'selected' : '' }}>Pancard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
                             <label>Address Proof (File) <span class="text-danger">*</span></label>
                             <input type="file" name="address_proof" class="form-control-file @error('address_proof') is-invalid @enderror" required>
                             @error('address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Proof ID Type</label>
-                            <input type="text" name="proof_id_type" class="form-control" placeholder="e.g. Aadhar, PAN" value="{{ old('proof_id_type') }}">
-                        </div>
-                    </div>
                 </div>
 
                 <hr>
-                <h5>Education Details</h5>
+                <h5 class="text-primary font-weight-bold mb-3">Education Details</h5>
                 <div id="education-container">
                     {{-- Education fields will be added here by JS --}}
                 </div>
-                <button type="button" class="btn btn-success btn-sm" id="add-education">Add Education</button>
+                <button type="button" class="btn btn-success btn-sm mt-2" id="add-education"><i class="fas fa-plus"></i> Add Education</button>
 
                 <hr>
-                <h5>Official Details</h5>
+                <h5 class="text-primary font-weight-bold mb-3">Official Details</h5>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
-                            <label>Assign Individual Permissions</label>
-                            <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple">
-                                @foreach($permissions as $permission)
-                                    <option value="{{ $permission->name }}" {{ in_array($permission->name, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="form-text text-muted">These permissions will be assigned directly to the user in addition to their role's permissions.</small>
+                            <label class="font-weight-bold">Permissions</label>
+                            <p class="text-muted small">
+                                <i class="fas fa-info-circle"></i> Permissions inherited from the selected Role are marked with a <span class="badge badge-info">Role</span> badge.
+                            </p>
+                            <div class="row" id="permissions-container">
+                                {{-- Permissions will be populated by JS based on role --}}
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -237,7 +267,7 @@
                 </div>
 
                 <hr>
-                <h5>Account Details</h5>
+                <h5 class="text-primary font-weight-bold mb-3">Account Details</h5>
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
@@ -272,7 +302,9 @@
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Save Employee</button>
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save mr-2"></i> Save Employee</button>
+                </div>
             </form>
         </div>
     </div>
@@ -282,6 +314,67 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
+            // --- Permissions Logic ---
+            const allPermissions = @json($permissions);
+            const roles = @json($roles->load('permissions'));
+
+            function renderPermissions(roleName) {
+                let container = $('#permissions-container');
+                container.empty();
+
+                let role = roles.find(r => r.name === roleName);
+                let rolePermissions = role ? role.permissions.map(p => p.name) : [];
+
+                // Group permissions by module
+                let groupedPermissions = {};
+                allPermissions.forEach(p => {
+                    let module = p.module || 'Other';
+                    if (!groupedPermissions[module]) {
+                        groupedPermissions[module] = [];
+                    }
+                    groupedPermissions[module].push(p);
+                });
+
+                let sortedModules = Object.keys(groupedPermissions).sort();
+
+                sortedModules.forEach(module => {
+                    let perms = groupedPermissions[module];
+                    let html = `
+                    <div class="col-lg-6 col-md-12 mb-3">
+                        <div class="card permission-card h-100">
+                            <div class="card-header bg-light">
+                                <h6 class="m-0 font-weight-bold text-primary">${module}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">`;
+
+                    perms.forEach(p => {
+                        let isRolePermission = rolePermissions.includes(p.name);
+                        let badge = isRolePermission ? '<span class="badge badge-info role-badge ml-1">Role</span>' : '';
+                        
+                        html += `
+                                    <div class="col-md-6 permission-item">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" name="permissions[]"
+                                                   class="custom-control-input"
+                                                   id="perm_${p.id}"
+                                                   value="${p.name}"
+                                                   ${isRolePermission ? 'checked' : ''}>
+                                            <label class="custom-control-label" for="perm_${p.id}">
+                                                ${p.name} ${badge}
+                                            </label>
+                                        </div>
+                                    </div>`;
+                    });
+
+                    html += `   </div>
+                            </div>
+                        </div>
+                    </div>`;
+                    container.append(html);
+                });
+            }
+
             // --- Reporting Manager Logic ---
             const admins = @json($admins);
             const teamLeads = @json($teamLeads);
@@ -307,20 +400,18 @@
             }
 
             $('#role').change(function() {
+                renderPermissions($(this).val());
                 populateManagers($(this).val());
             });
 
             // Initial population on page load (e.g., if validation failed)
             let initialRole = $('#role').val();
             if (initialRole) {
+                renderPermissions(initialRole);
                 populateManagers(initialRole);
             }
 
             // --- Existing Scripts ---
-            $('.select2').select2({
-                placeholder: "Select Permissions",
-                allowClear: true
-            });
 
             $('#createEmployeeForm').validate({
                 errorElement: 'span',
