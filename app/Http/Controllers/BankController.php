@@ -13,8 +13,9 @@ class BankController extends Controller
     {
         $this->middleware('permission:view bank', ['only' => ['index', 'show']]);
         $this->middleware('permission:create bank', ['only' => ['create','store']]);
-        $this->middleware('permission:edit bank', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit bank', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete bank', ['only' => ['destroy']]);
+        $this->middleware('permission:export bank', ['only' => ['export']]);
     }
 
     public function index(Request $request)

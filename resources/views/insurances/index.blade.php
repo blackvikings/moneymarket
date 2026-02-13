@@ -16,7 +16,7 @@
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
-                    @if(auth()->user()->hasRole('admin'))
+                    @if(auth()->user()->hasRole('admin') || auth()->user()->can('export insurance'))
                         <a href="{{ route(get_route_prefix(). 'insurances.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                     @endif
                 </div>

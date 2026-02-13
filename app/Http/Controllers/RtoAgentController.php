@@ -14,8 +14,9 @@ class RtoAgentController extends Controller
     {
         $this->middleware('permission:view rto agent', ['only' => ['index', 'show']]);
         $this->middleware('permission:create rto agent', ['only' => ['create','store']]);
-        $this->middleware('permission:edit rto agent', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit rto agent', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete rto agent', ['only' => ['destroy']]);
+        $this->middleware('permission:export rto agent', ['only' => ['export']]);
     }
 
     public function index(Request $request)

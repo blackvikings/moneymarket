@@ -10,6 +10,14 @@ use App\Exports\InsuranceLeadExport;
 
 class InsuranceLeadController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:view insurance lead', ['only' => ['index', 'show']]);
+        $this->middleware('permission:create insurance lead', ['only' => ['create', 'store']]);
+        $this->middleware('permission:edit insurance lead', ['only' => ['updateDetails']]);
+        $this->middleware('permission:export insurance lead', ['only' => ['export']]);
+    }
+
     public function index(Request $request)
     {
         $query = Lead::whereNotNull('insurance_lead_stage');
@@ -90,7 +98,7 @@ class InsuranceLeadController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export insurance lead')) {
             abort(403, 'Unauthorized action.');
         }
         return (new InsuranceLeadExport($request))->download('insurance-leads.csv');

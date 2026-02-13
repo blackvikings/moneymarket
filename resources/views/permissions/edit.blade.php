@@ -13,6 +13,17 @@
                 @csrf
                 @method('PUT')
                 <div class="form-group">
+                    <label for="module">Module <span class="text-danger">*</span></label>
+                    <select name="module" id="module" class="form-control @error('module') is-invalid @enderror" required>
+                        <option value="">Select Module</option>
+                        @foreach($modules as $module)
+                            <option value="{{ $module }}" {{ old('module', $permission->module) == $module ? 'selected' : '' }}>{{ $module }}</option>
+                        @endforeach
+                        <option value="Other" {{ old('module', $permission->module) == 'Other' ? 'selected' : '' }}>Other</option>
+                    </select>
+                    @error('module') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                </div>
+                <div class="form-group">
                     <label for="name">Name</label>
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $permission->name) }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror

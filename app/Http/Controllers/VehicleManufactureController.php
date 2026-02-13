@@ -14,8 +14,9 @@ class VehicleManufactureController extends Controller
     {
         $this->middleware('permission:view vehicle manufacture', ['only' => ['index', 'show']]);
         $this->middleware('permission:create vehicle manufacture', ['only' => ['create','store']]);
-        $this->middleware('permission:edit vehicle manufacture', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit vehicle manufacture', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete vehicle manufacture', ['only' => ['destroy']]);
+        $this->middleware('permission:export vehicle manufacture', ['only' => ['export']]);
     }
 
     public function index(Request $request)

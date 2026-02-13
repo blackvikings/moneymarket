@@ -13,8 +13,9 @@ class FirmController extends Controller
     {
         $this->middleware('permission:view firm', ['only' => ['index', 'show']]);
         $this->middleware('permission:create firm', ['only' => ['create','store']]);
-        $this->middleware('permission:edit firm', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit firm', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete firm', ['only' => ['destroy']]);
+        $this->middleware('permission:export firm', ['only' => ['export']]);
     }
 
     public function index(Request $request)

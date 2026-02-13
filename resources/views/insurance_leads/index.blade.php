@@ -9,7 +9,7 @@
 @section('content')
     <div class="row mb-3">
         <div class="col-md-12 text-right">
-            @if(auth()->user()->hasRole('admin'))
+            @if(auth()->user()->hasRole('admin') || auth()->user()->can('export insurance lead'))
                 <a href="{{ route(get_route_prefix() . 'insurance-leads.export', request()->all()) }}" class="btn btn-success mr-1">Export</a>
             @endif
             <a href="{{ route(get_route_prefix() . 'insurance-leads.create') }}" class="btn btn-primary">Add New Insurance Lead</a>

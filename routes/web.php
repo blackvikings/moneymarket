@@ -217,6 +217,15 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
     Route::get('vehicle-manufactures/{vehicleManufacture}/variants', [VehicleManufactureController::class, 'getVariants'])->name('vehicle-manufactures.variants');
     Route::resource('vehicle-manufactures', VehicleManufactureController::class);
+
+    // Employee Management Routes for Employees (if they have permission)
+    Route::get('employees/export', [EmployeeController::class, 'export'])->name('employees.export');
+    Route::post('employees/{employee}/update-status', [EmployeeController::class, 'updateStatus'])->name('employees.update-status');
+    Route::resource('employees', EmployeeController::class);
+
+    // Roles and Permissions for Employees (if they have permission)
+    Route::resource('roles', RoleController::class);
+    Route::resource('permissions', PermissionController::class);
 });
 
 // Location Routes (Shared)

@@ -21,6 +21,14 @@ class RtoController extends Controller
         'Loan Return'
     ];
 
+    public function __construct()
+    {
+        $this->middleware('permission:view rto', ['only' => ['index', 'show']]);
+        $this->middleware('permission:create rto', ['only' => ['create', 'store']]);
+        $this->middleware('permission:edit rto', ['only' => ['updateStage', 'updateChecklist', 'updateLoanReturn', 'updateVehicleDetail', 'updateRtoDone', 'rejectLead']]);
+        $this->middleware('permission:export rto', ['only' => ['export']]);
+    }
+
     public function index(Request $request)
     {
         // Show leads that are explicitly RTO type OR have completed the CRM Disbursal stage
@@ -310,7 +318,7 @@ class RtoController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export rto')) {
             abort(403, 'Unauthorized action.');
         }
         return (new RtoExport($request))->download('rto-leads.csv');

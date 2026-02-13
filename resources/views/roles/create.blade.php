@@ -15,11 +15,20 @@
         input.error, select.error, textarea.error {
             border: 1px solid red;
         }
-        .select2-container--default .select2-selection--multiple.error {
-            border: 1px solid red;
+        .permission-group {
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
         }
-        .invalid-feedback {
-            display: block;
+        .permission-group h5 {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .permission-item {
+            margin-bottom: 10px;
         }
     </style>
     <div class="card">
@@ -31,15 +40,59 @@
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
+
                 <div class="form-group">
-                    <label for="permissions">Permissions <span class="text-danger">*</span></label>
-                    <select name="permissions[]" id="permissions" class="form-control @error('permissions') is-invalid @enderror" multiple required>
-                        @foreach ($permissions as $permission)
-                            <option value="{{ $permission->id }}" {{ in_array($permission->id, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
+                    <label>Permissions <span class="text-danger">*</span></label>
+                    <div class="row">
+                        @php
+                            // Group permissions by module
+                            $groupedPermissions = $permissions->groupBy(function($permission) {
+                                $parts = explode(' ', $permission->name);
+                                // Handle special cases or default grouping
+                                if (count($parts) > 1) {
+                                    // e.g., "view employee" -> "Employee"
+                                    // "view rto agent" -> "Rto Agent"
+                                    // "view insurance lead" -> "Insurance Lead"
+                                    $module = array_slice($parts, 1);
+                                    return ucwords(implode(' ', $module));
+                                }
+                                return 'Other';
+                            });
+
+                            // Sort groups alphabetically
+                            $groupedPermissions = $groupedPermissions->sortKeys();
+                        @endphp
+
+                        @foreach($groupedPermissions as $module => $perms)
+                            <div class="col-md-4">
+                                <div class="permission-group">
+                                    <h5>
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input select-all-group" id="group_{{ Str::slug($module) }}">
+                                            <label class="custom-control-label" for="group_{{ Str::slug($module) }}">{{ $module }}</label>
+                                        </div>
+                                    </h5>
+                                    @foreach($perms as $permission)
+                                        <div class="permission-item">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" name="permissions[]"
+                                                       class="custom-control-input permission-checkbox group-{{ Str::slug($module) }}"
+                                                       id="perm_{{ $permission->id }}"
+                                                       value="{{ $permission->id }}"
+                                                       {{ in_array($permission->id, old('permissions', [])) ? 'checked' : '' }}>
+                                                <label class="custom-control-label" for="perm_{{ $permission->id }}">
+                                                    {{ ucwords($permission->name) }}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endforeach
-                    </select>
-                    @error('permissions') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    </div>
+                    @error('permissions') <span class="text-danger d-block">{{ $message }}</span> @enderror
                 </div>
+
                 <button type="submit" class="btn btn-primary">Save Role</button>
             </form>
         </div>
@@ -50,47 +103,36 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#permissions').select2({
-                placeholder: "Select Permissions",
-                allowClear: true
+            // Handle "Select All" for groups
+            $('.select-all-group').change(function() {
+                var groupId = $(this).attr('id').replace('group_', '');
+                $('.group-' + groupId).prop('checked', $(this).prop('checked'));
+            });
+
+            // If all items in a group are checked, check the "Select All" box
+            $('.permission-checkbox').change(function() {
+                var groupClass = $(this).attr('class').match(/group-[\w-]+/)[0];
+                var groupId = groupClass.replace('group-', '');
+                var allChecked = $('.' + groupClass + ':checked').length === $('.' + groupClass).length;
+                $('#group_' + groupId).prop('checked', allChecked);
             });
 
             $('#createRoleForm').validate({
-                errorElement: 'span',
-                errorPlacement: function (error, element) {
-                    error.addClass('invalid-feedback');
-                    if (element.hasClass('select2-hidden-accessible')) {
-                        error.insertAfter(element.next('.select2-container'));
-                    } else {
-                        element.closest('.form-group').append(error);
-                    }
-                },
-                highlight: function (element, errorClass, validClass) {
-                    $(element).addClass('is-invalid');
-                    if ($(element).hasClass('select2-hidden-accessible')) {
-                        $(element).next('.select2-container').find('.select2-selection').addClass('is-invalid');
-                    }
-                },
-                unhighlight: function (element, errorClass, validClass) {
-                    $(element).removeClass('is-invalid');
-                    if ($(element).hasClass('select2-hidden-accessible')) {
-                        $(element).next('.select2-container').find('.select2-selection').removeClass('is-invalid');
-                    }
-                },
-                ignore: [], // To validate hidden select2 fields
                 rules: {
                     name: { required: true },
-                    'permissions[]': { required: true }
+                    'permissions[]': { required: true, minlength: 1 }
                 },
                 messages: {
                     name: "Please enter a role name",
                     'permissions[]': "Please select at least one permission"
+                },
+                errorPlacement: function (error, element) {
+                    if (element.attr("name") == "permissions[]") {
+                        error.insertAfter(element.closest('.form-group').find('label').first());
+                    } else {
+                        error.insertAfter(element);
+                    }
                 }
-            });
-
-            // Trigger validation on select2 change
-            $('#permissions').on('change', function() {
-                $(this).valid();
             });
         });
     </script>

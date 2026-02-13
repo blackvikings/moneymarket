@@ -25,7 +25,9 @@ class CrmController extends Controller
 
     public function __construct()
     {
-        // Add permissions for CRM module later if needed
+        $this->middleware('permission:view crm', ['only' => ['index', 'show']]);
+        $this->middleware('permission:edit crm', ['only' => ['updateStage', 'storeDisbursal']]);
+        $this->middleware('permission:export crm', ['only' => ['export']]);
     }
 
     public function index(Request $request)
@@ -175,7 +177,7 @@ class CrmController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export crm')) {
             abort(403, 'Unauthorized action.');
         }
         return (new CrmExport($request))->download('crm-leads.csv');

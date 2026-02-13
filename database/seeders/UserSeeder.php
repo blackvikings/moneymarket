@@ -17,91 +17,114 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Create permissions
+        // Define permissions with their modules
         $permissions = [
-            'view employee',
-            'create employee',
-            'edit employee',
-            'delete employee',
-            'export employee',
-            'view role',
-            'create role',
-            'edit role',
-            'delete role',
-            'view permission',
-            'create permission',
-            'edit permission',
-            'delete permission',
-            'view bank',
-            'create bank',
-            'edit bank',
-            'delete bank',
-            'export bank',
-            'view firm',
-            'create firm',
-            'edit firm',
-            'delete firm',
-            'export firm',
-            'view rto agent',
-            'create rto agent',
-            'edit rto agent',
-            'delete rto agent',
-            'export rto agent',
-            'view insurance',
-            'create insurance',
-            'edit insurance',
-            'delete insurance',
-            'export insurance',
-            'view vehicle manufacture',
-            'create vehicle manufacture',
-            'edit vehicle manufacture',
-            'delete vehicle manufacture',
-            'export vehicle manufacture',
-            'view branch',
-            'create branch',
-            'edit branch',
-            'delete branch',
-            'view city',
-            'create city',
-            'edit city',
-            'delete city',
-            'export city',
-            'view lead',
-            'create lead',
-            'edit lead',
-            'delete lead',
-            'export lead',
-            'import lead',
-            'bulk assign lead',
-            'view user',
-            'create user',
-            'edit user',
-            'delete user',
-            'export crm',
-            'export rto',
-            'export insurance lead',
-            'show master option', // New permission
+            // Employee Module
+            'show employee option' => 'Employees',
+            'view employee' => 'Employees',
+            'create employee' => 'Employees',
+            'edit employee' => 'Employees',
+            'delete employee' => 'Employees',
+            'export employee' => 'Employees',
+            'view role' => 'Employees',
+            'create role' => 'Employees',
+            'edit role' => 'Employees',
+            'delete role' => 'Employees',
+            'view permission' => 'Employees',
+            'create permission' => 'Employees',
+            'edit permission' => 'Employees',
+            'delete permission' => 'Employees',
+
+            // Masters Module
+            'show master option' => 'Masters',
+            'view bank' => 'Masters',
+            'create bank' => 'Masters',
+            'edit bank' => 'Masters',
+            'delete bank' => 'Masters',
+            'export bank' => 'Masters',
+            'view firm' => 'Masters',
+            'create firm' => 'Masters',
+            'edit firm' => 'Masters',
+            'delete firm' => 'Masters',
+            'export firm' => 'Masters',
+            'view rto agent' => 'Masters',
+            'create rto agent' => 'Masters',
+            'edit rto agent' => 'Masters',
+            'delete rto agent' => 'Masters',
+            'export rto agent' => 'Masters',
+            'view insurance' => 'Masters',
+            'create insurance' => 'Masters',
+            'edit insurance' => 'Masters',
+            'delete insurance' => 'Masters',
+            'export insurance' => 'Masters',
+            'view vehicle manufacture' => 'Masters',
+            'create vehicle manufacture' => 'Masters',
+            'edit vehicle manufacture' => 'Masters',
+            'delete vehicle manufacture' => 'Masters',
+            'export vehicle manufacture' => 'Masters',
+            'view branch' => 'Masters',
+            'create branch' => 'Masters',
+            'edit branch' => 'Masters',
+            'delete branch' => 'Masters',
+            'view city' => 'Masters',
+            'create city' => 'Masters',
+            'edit city' => 'Masters',
+            'delete city' => 'Masters',
+            'export city' => 'Masters',
+
+            // LMS Module (Leads)
+            'show lms option' => 'LMS',
+            'view lead' => 'LMS',
+            'create lead' => 'LMS',
+            'edit lead' => 'LMS',
+            'delete lead' => 'LMS',
+            'export lead' => 'LMS',
+            'import lead' => 'LMS',
+            'bulk assign lead' => 'LMS',
+            'view user' => 'LMS', // Used in lead assignment dropdowns
+            'create user' => 'LMS',
+            'edit user' => 'LMS',
+            'delete user' => 'LMS',
+
+            // CRM Module
+            'show crm option' => 'CRM',
+            'view crm' => 'CRM',
+            'edit crm' => 'CRM',
+            'export crm' => 'CRM',
+            'view rto' => 'CRM',
+            'create rto' => 'CRM',
+            'edit rto' => 'CRM',
+            'export rto' => 'CRM',
+            'view insurance lead' => 'CRM',
+            'create insurance lead' => 'CRM',
+            'edit insurance lead' => 'CRM',
+            'export insurance lead' => 'CRM',
         ];
 
-        foreach ($permissions as $permission) {
-            Permission::firstOrCreate(['name' => $permission]);
+        foreach ($permissions as $permissionName => $module) {
+            Permission::firstOrCreate(
+                ['name' => $permissionName],
+                ['module' => $module]
+            );
         }
 
         // Create roles
         $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $adminRole->syncPermissions($permissions);
+        $adminRole->syncPermissions(array_keys($permissions));
 
         $teamLeadRole = Role::firstOrCreate(['name' => 'Team Lead']);
         $teamLeadRole->syncPermissions([
-            'view employee', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm',
-            'view lead', 'create lead', 'edit lead', 'bulk assign lead', 'export lead', 'import lead',
-            'export crm', 'export rto', 'export insurance lead',
-            'show master option'
+            'show employee option', 'view employee',
+            'show master option', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm',
+            'show lms option', 'view lead', 'create lead', 'edit lead', 'bulk assign lead', 'export lead', 'import lead',
+            'show crm option', 'view crm', 'edit crm', 'export crm',
+            'view rto', 'create rto', 'edit rto', 'export rto',
+            'view insurance lead', 'create insurance lead', 'edit insurance lead', 'export insurance lead',
         ]);
 
         $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);
         $teleCallerRole->syncPermissions([
-            'view lead', 'edit lead',
+            'show lms option', 'view lead', 'edit lead',
         ]);
 
 

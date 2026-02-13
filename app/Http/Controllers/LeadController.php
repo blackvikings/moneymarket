@@ -24,8 +24,9 @@ class LeadController extends Controller
     {
         $this->middleware('permission:view lead', ['only' => ['index', 'show']]);
         $this->middleware('permission:create lead', ['only' => ['create', 'store', 'import', 'downloadSample']]);
-        $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus', 'bulkAssign']]);
+        $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus', 'bulkAssign', 'assignBank']]);
         $this->middleware('permission:delete lead', ['only' => ['destroy']]);
+        $this->middleware('permission:export lead', ['only' => ['export']]);
     }
 
     public function index(Request $request)

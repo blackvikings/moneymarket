@@ -118,7 +118,7 @@
 
     <div class="row mb-3">
         <div class="col-md-12 text-right">
-            @if(auth()->user()->hasRole('admin'))
+            @if(auth()->user()->hasRole('admin') || auth()->user()->can('export rto'))
                 <a href="{{ route(get_route_prefix() . 'rto.export', request()->all()) }}" class="btn btn-success btn-sm mr-1">Export</a>
             @endif
             <a href="{{ route(get_route_prefix() . 'rto.create') }}" class="btn btn-success btn-sm mr-1">Add New RTO Lead</a>

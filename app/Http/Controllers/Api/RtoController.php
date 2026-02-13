@@ -26,7 +26,7 @@ class RtoController extends Controller
 
         $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
             $q->whereNotNull('rto_stage')
-              ->orWhere('crm_stage', 'Closed');
+              ->orWhere('crm_stage', 'Disbursal');
         });
 
         // Non-admin users can only see their own leads

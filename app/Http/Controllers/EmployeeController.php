@@ -22,12 +22,18 @@ class EmployeeController extends Controller
     {
         $this->middleware('permission:view employee', ['only' => ['index']]);
         $this->middleware('permission:create employee', ['only' => ['create','store']]);
-        $this->middleware('permission:edit employee', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit employee', ['only' => ['edit','update', 'updateStatus']]);
         $this->middleware('permission:delete employee', ['only' => ['destroy']]);
+        $this->middleware('permission:export employee', ['only' => ['export']]);
     }
 
     public function index(Request $request)
     {
+        // Ensure user has permission to view employees
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('view employee')) {
+            abort(403, 'Unauthorized action.');
+        }
+
         $query = User::whereDoesntHave('roles', function ($query) {
             $query->where('name', 'admin');
         });
@@ -230,7 +236,7 @@ class EmployeeController extends Controller
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin')) {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export employee')) {
             abort(403, 'Unauthorized action.');
         }
         return (new EmployeeExport($request))->download();

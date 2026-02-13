@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\City;
 use Illuminate\Http\Request;
 use App\Exports\CityExport;
+use Illuminate\Support\Facades\Auth;
 
 class CityController extends Controller
 {
@@ -12,8 +13,9 @@ class CityController extends Controller
     {
         $this->middleware('permission:view city', ['only' => ['index']]);
         $this->middleware('permission:create city', ['only' => ['create','store']]);
-        $this->middleware('permission:edit city', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit city', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete city', ['only' => ['destroy']]);
+        $this->middleware('permission:export city', ['only' => ['export']]);
     }
 
     public function index(Request $request)
@@ -79,6 +81,9 @@ class CityController extends Controller
 
     public function export(Request $request)
     {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export city')) {
+            abort(403, 'Unauthorized action.');
+        }
         return (new CityExport($request))->download();
     }
 }

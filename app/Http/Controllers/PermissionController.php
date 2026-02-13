@@ -15,40 +15,67 @@ class PermissionController extends Controller
         $this->middleware('permission:delete permission', ['only' => ['destroy']]);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $permissions = Permission::orderBy('id', 'desc')->paginate(10);
-        return view('permissions.index', compact('permissions'));
+        $query = Permission::query();
+
+        if ($request->has('module') && $request->module != '') {
+            $query->where('module', $request->module);
+        }
+
+        if ($request->has('name') && $request->name != '') {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        // Increased pagination to keep groups together as much as possible
+        $permissions = $query->orderBy('module')->orderBy('name')->paginate(50);
+
+        // Get unique modules for filter dropdown
+        $modules = Permission::select('module')->distinct()->whereNotNull('module')->pluck('module');
+
+        return view('permissions.index', compact('permissions', 'modules'));
     }
 
     public function create()
     {
-        return view('permissions.create');
+        // Get unique modules for dropdown
+        $modules = Permission::select('module')->distinct()->whereNotNull('module')->pluck('module');
+        return view('permissions.create', compact('modules'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|unique:permissions,name',
+            'module' => 'required|string',
         ]);
 
-        Permission::create(['name' => $request->name]);
+        Permission::create([
+            'name' => $request->name,
+            'module' => $request->module,
+        ]);
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission created successfully');
     }
 
     public function edit(Permission $permission)
     {
-        return view('permissions.edit', compact('permission'));
+        // Get unique modules for dropdown
+        $modules = Permission::select('module')->distinct()->whereNotNull('module')->pluck('module');
+        return view('permissions.edit', compact('permission', 'modules'));
     }
 
     public function update(Request $request, Permission $permission)
     {
         $request->validate([
             'name' => 'required|unique:permissions,name,'.$permission->id,
+            'module' => 'required|string',
         ]);
 
-        $permission->update(['name' => $request->name]);
+        $permission->update([
+            'name' => $request->name,
+            'module' => $request->module,
+        ]);
 
         return redirect()->route('admin.permissions.index')->with('success', 'Permission updated successfully');
     }

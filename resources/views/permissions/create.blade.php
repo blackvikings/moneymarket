@@ -24,6 +24,17 @@
             <form action="{{ route('admin.permissions.store') }}" method="POST" id="createPermissionForm">
                 @csrf
                 <div class="form-group">
+                    <label for="module">Module <span class="text-danger">*</span></label>
+                    <select name="module" id="module" class="form-control @error('module') is-invalid @enderror" required>
+                        <option value="">Select Module</option>
+                        @foreach($modules as $module)
+                            <option value="{{ $module }}" {{ old('module') == $module ? 'selected' : '' }}>{{ $module }}</option>
+                        @endforeach
+                        <option value="Other">Other</option>
+                    </select>
+                    @error('module') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                </div>
+                <div class="form-group">
                     <label for="name">Permission Name <span class="text-danger">*</span></label>
                     <input type="text" name="name" id="name" class="form-control @error('name') is-invalid @enderror" value="{{ old('name') }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -51,9 +62,11 @@
                     $(element).removeClass('is-invalid');
                 },
                 rules: {
+                    module: { required: true },
                     name: { required: true }
                 },
                 messages: {
+                    module: "Please select a module",
                     name: "Please enter a permission name"
                 }
             });

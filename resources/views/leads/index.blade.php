@@ -137,7 +137,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
                 <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => request('status')]) }}" class="btn btn-secondary ml-2">Reset</a>
-                @if(auth()->user()->hasRole('admin'))
+                @if(auth()->user()->hasRole('admin') || auth()->user()->can('export lead'))
                     <a href="{{ route(get_route_prefix() . 'leads.export', request()->all()) }}" class="btn btn-success ml-2">Export</a>
                 @endif
             </form>

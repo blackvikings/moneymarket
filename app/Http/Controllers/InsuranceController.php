@@ -15,8 +15,9 @@ class InsuranceController extends Controller
     {
         $this->middleware('permission:view insurance', ['only' => ['index', 'show']]);
         $this->middleware('permission:create insurance', ['only' => ['create','store']]);
-        $this->middleware('permission:edit insurance', ['only' => ['edit','update']]);
+        $this->middleware('permission:edit insurance', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete insurance', ['only' => ['destroy']]);
+        $this->middleware('permission:export insurance', ['only' => ['export']]);
     }
 
     public function index(Request $request)
