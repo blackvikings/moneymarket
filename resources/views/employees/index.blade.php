@@ -52,6 +52,7 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>Employee ID</th>
                         <th>Name</th>
                         <th>Email</th>
                         <th>Type</th>
@@ -62,6 +63,7 @@
                 <tbody>
                     @foreach ($employees as $employee)
                         <tr>
+                            <td>{{ $employee->employee_id }}</td>
                             <td>{{ $employee->name }}</td>
                             <td>{{ $employee->email }}</td>
                             <td>{{ $employee->employee_type }}</td>
