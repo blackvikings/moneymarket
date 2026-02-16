@@ -416,6 +416,11 @@
                     let selected = (oldManagerId == manager.id) ? 'selected' : '';
                     managerSelect.append('<option value="' + manager.id + '" ' + selected + '>' + manager.name + '</option>');
                 });
+
+                // Auto-select if only one option exists (excluding the default "Select Manager")
+                if (managersToDisplay.length === 1) {
+                    managerSelect.val(managersToDisplay[0].id);
+                }
             }
 
             if (initialRole) {

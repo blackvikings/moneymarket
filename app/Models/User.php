@@ -9,11 +9,16 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\Log;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable;
+
+    use HasRoles {
+        hasPermissionTo as hasSpatiePermissionTo;
+    }
 
     /**
      * The attributes that are mass assignable.
@@ -142,11 +147,18 @@ class User extends Authenticatable
 
         // Check if this permission is explicitly denied for the user
         // Use permissions.id to avoid ambiguity
-        if ($this->deniedPermissions()->where('permissions.id', $permissionObj->id)->exists()) {
+        $isDenied = $this->deniedPermissions()->where('permissions.id', $permissionObj->id)->exists();
+
+        if ($isDenied) {
+             Log::info("Permission '{$permissionObj->name}' is DENIED for user {$this->id}");
             return false;
         }
 
         // If not denied, proceed with standard Spatie permission check
-        return $this->hasDirectPermission($permissionObj) || $this->hasPermissionViaRole($permissionObj);
+        $hasPermission = $this->hasSpatiePermissionTo($permissionObj, $guardName);
+
+         Log::info("Permission '{$permissionObj->name}' check for user {$this->id}: " . ($hasPermission ? 'GRANTED' : 'NOT GRANTED'));
+
+        return $hasPermission;
     }
 }

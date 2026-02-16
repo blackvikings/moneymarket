@@ -34,15 +34,42 @@ class LeadController extends Controller
         $query = Lead::with(['assignedTo', 'bank']);
         $statuses = ['New', 'Follow up', 'Lead', 'Bank Assign', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
+        $user = Auth::user();
 
-        // Base query for filtering
+        // --- Hierarchy Logic ---
+        if ($user->hasRole('admin')) {
+            // Admin sees all leads (No filter needed)
+        } elseif ($user->hasRole('Team Lead')) {
+            // Team Lead sees own leads + subordinates' leads
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $subordinateIds[] = $user->id; // Include self
+            $query->whereIn('assigned_to', $subordinateIds);
+        } else {
+            // Other users (Tele Caller, etc.) see only their own leads
+            $query->where('assigned_to', $user->id);
+        }
+        // -----------------------
+
+        // Base query for filtering (apply same hierarchy logic to base query for counts)
         $baseQuery = Lead::query();
+        if ($user->hasRole('admin')) {
+             // No filter
+        } elseif ($user->hasRole('Team Lead')) {
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $subordinateIds[] = $user->id;
+            $baseQuery->whereIn('assigned_to', $subordinateIds);
+        } else {
+            $baseQuery->where('assigned_to', $user->id);
+        }
+
 
         if ($request->has('start_date') && $request->start_date != '') {
             $baseQuery->whereDate('created_at', '>=', $request->start_date);
+            $query->whereDate('created_at', '>=', $request->start_date); // Apply to main query too
         }
         if ($request->has('end_date') && $request->end_date != '') {
             $baseQuery->whereDate('created_at', '<=', $request->end_date);
+            $query->whereDate('created_at', '<=', $request->end_date); // Apply to main query too
         }
 
         // Calculate counts based on the filtered query
@@ -52,9 +79,6 @@ class LeadController extends Controller
             $dbStatus = ($status === 'Follow up') ? 'Prospect' : $status;
             $counts[$status] = $baseQuery->clone()->where('status', $dbStatus)->count();
         }
-
-        // Main query for fetching paginated leads
-        $query = $baseQuery->clone()->with(['assignedTo', 'bank']);
 
         if ($currentStatus) {
             if (in_array($currentStatus, $statuses)) {
@@ -76,13 +100,17 @@ class LeadController extends Controller
             $query->where('assigned_to', $request->assigned_to);
         }
 
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->hasRole('Team Lead')) {
-             $query->where('assigned_to', Auth::id());
-        }
-
         // Sort by unassigned first (assigned_to IS NULL), then by ID descending
         $leads = $query->orderByRaw('assigned_to IS NULL DESC, id DESC')->paginate(10)->appends($request->except('page'));
-        $users = User::role('Tele Caller')->get();
+
+        // Users for dropdown (Admin sees all, Team Lead sees subordinates)
+        if ($user->hasRole('admin')) {
+            $users = User::role('Tele Caller')->get(); // Or all users? Usually Tele Callers are assignees
+        } elseif ($user->hasRole('Team Lead')) {
+             $users = User::where('reporting_manager_id', $user->id)->get();
+        } else {
+            $users = collect([]); // Empty for others
+        }
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }

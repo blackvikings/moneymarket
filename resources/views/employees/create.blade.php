@@ -57,12 +57,12 @@
         </div>
     @endif
 
-    <div class="card shadow mb-4">
+    <div class="card">
         <div class="card-body">
             <form action="{{ route('admin.employees.store') }}" method="POST" enctype="multipart/form-data" id="createEmployeeForm">
                 @csrf
 
-                <h5 class="text-primary font-weight-bold mb-3">Personal Details</h5>
+                <h5>Personal Details</h5>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -142,10 +142,10 @@
                 </div>
 
                 <hr>
-                <h5 class="text-primary font-weight-bold mb-3">Address Details</h5>
+                <h5>Address Details</h5>
                 <div class="row">
                     <div class="col-md-6">
-                        <h6 class="font-weight-bold">Current Address <span class="text-danger">*</span></h6>
+                        <h6>Current Address <span class="text-danger">*</span></h6>
                         <div class="form-group">
                             <label>Address Line</label>
                             <input type="text" name="current_address_line" id="current_address_line" class="form-control" required>
@@ -177,7 +177,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6 class="font-weight-bold">Permanent Address <span class="text-danger">*</span></h6>
+                            <h6>Permanent Address <span class="text-danger">*</span></h6>
                             <div class="form-group mb-0">
                                 <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
                             </div>
@@ -235,24 +235,24 @@
                 </div>
 
                 <hr>
-                <h5 class="text-primary font-weight-bold mb-3">Education Details</h5>
+                <h5>Education Details</h5>
                 <div id="education-container">
                     {{-- Education fields will be added here by JS --}}
                 </div>
-                <button type="button" class="btn btn-success btn-sm mt-2" id="add-education"><i class="fas fa-plus"></i> Add Education</button>
+                <button type="button" class="btn btn-success btn-sm" id="add-education">Add Education</button>
 
                 <hr>
-                <h5 class="text-primary font-weight-bold mb-3">Official Details</h5>
+                <h5>Official Details</h5>
                 <div class="row">
-                    <div class="col-md-12">
+                    <div class="col-md-6">
                         <div class="form-group">
-                            <label class="font-weight-bold">Permissions</label>
-                            <p class="text-muted small">
-                                <i class="fas fa-info-circle"></i> Permissions inherited from the selected Role are marked with a <span class="badge badge-info">Role</span> badge.
-                            </p>
-                            <div class="row" id="permissions-container">
-                                {{-- Permissions will be populated by JS based on role --}}
-                            </div>
+                            <label>Assign Individual Permissions</label>
+                            <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple">
+                                @foreach($permissions as $permission)
+                                    <option value="{{ $permission->name }}" {{ in_array($permission->name, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="form-text text-muted">These permissions will be assigned directly to the user in addition to their role's permissions.</small>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -267,7 +267,7 @@
                 </div>
 
                 <hr>
-                <h5 class="text-primary font-weight-bold mb-3">Account Details</h5>
+                <h5>Account Details</h5>
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
@@ -302,9 +302,7 @@
                     </div>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save mr-2"></i> Save Employee</button>
-                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Employee</button>
             </form>
         </div>
     </div>
@@ -351,7 +349,7 @@
                     perms.forEach(p => {
                         let isRolePermission = rolePermissions.includes(p.name);
                         let badge = isRolePermission ? '<span class="badge badge-info role-badge ml-1">Role</span>' : '';
-                        
+
                         html += `
                                     <div class="col-md-6 permission-item">
                                         <div class="custom-control custom-checkbox">
@@ -397,21 +395,28 @@
                     let selected = (oldManagerId == manager.id) ? 'selected' : '';
                     managerSelect.append('<option value="' + manager.id + '" ' + selected + '>' + manager.name + '</option>');
                 });
+
+                // Auto-select if only one option exists (excluding the default "Select Manager")
+                if (managersToDisplay.length === 1) {
+                    managerSelect.val(managersToDisplay[0].id);
+                }
             }
 
             $('#role').change(function() {
-                renderPermissions($(this).val());
                 populateManagers($(this).val());
             });
 
             // Initial population on page load (e.g., if validation failed)
             let initialRole = $('#role').val();
             if (initialRole) {
-                renderPermissions(initialRole);
                 populateManagers(initialRole);
             }
 
             // --- Existing Scripts ---
+            $('.select2').select2({
+                placeholder: "Select Permissions",
+                allowClear: true
+            });
 
             $('#createEmployeeForm').validate({
                 errorElement: 'span',

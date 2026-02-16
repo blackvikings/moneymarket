@@ -7,7 +7,7 @@
         <h1>Leads</h1>
         <div>
             @can('create lead')
-                @if(auth()->user()->hasRole('admin'))
+                @if(auth()->user()->hasRole('admin') || auth()->user()->can('import lead'))
                     <button type="button" class="btn btn-info mr-1" data-toggle="modal" data-target="#importModal">Import Leads</button>
                 @endif
                 <a href="{{ route(get_route_prefix() . 'leads.create') }}" class="btn btn-success">Add Lead</a>
@@ -425,7 +425,7 @@
     </div>
 
     <!-- Import Modal -->
-    @if(auth()->user()->hasRole('admin'))
+    @if(auth()->user()->hasRole('admin') || auth()->user()->can('import lead'))
     <div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">

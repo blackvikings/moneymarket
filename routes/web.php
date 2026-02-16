@@ -234,3 +234,13 @@ Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->nam
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
 Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');
+
+// Debug Route
+Route::get('/debug-permissions', function() {
+    $user = auth()->user();
+    return response()->json([
+        'user' => $user->name,
+        'roles' => $user->getRoleNames(),
+        'permissions' => $user->getAllPermissions()->pluck('name'),
+    ]);
+});
