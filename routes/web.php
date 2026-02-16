@@ -153,6 +153,18 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
         ]);
     });
 
+    // Log Viewer Route (Restricted to Admin)
+    Route::get('logs', function () {
+        if (!auth()->user()->hasRole('admin')) {
+            abort(403);
+        }
+        $logFile = storage_path('logs/laravel.log');
+        if (!file_exists($logFile)) {
+            return 'No log file found.';
+        }
+        return '<pre>' . file_get_contents($logFile) . '</pre>';
+    })->name('logs');
+
     // Employees typically manage leads
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
@@ -234,13 +246,3 @@ Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->nam
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
 Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');
-
-// Debug Route
-Route::get('/debug-permissions', function() {
-    $user = auth()->user();
-    return response()->json([
-        'user' => $user->name,
-        'roles' => $user->getRoleNames(),
-        'permissions' => $user->getAllPermissions()->pluck('name'),
-    ]);
-});
