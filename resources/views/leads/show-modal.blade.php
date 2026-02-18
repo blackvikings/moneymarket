@@ -36,7 +36,7 @@
         <hr>
         <div class="alert alert-info py-2">
             <h6 class="mb-1"><i class="icon fas fa-calendar-alt"></i> <strong>Next Follow-up</strong></h6>
-            <strong>Date:</strong> {{ $lead->follow_up_date->format('d-m-Y') }} |
+            <strong>Date:</strong> {{ \Carbon\Carbon::parse($lead->follow_up_date)->format('d-m-Y') }} |
             <strong>Time:</strong> {{ $lead->follow_up_time ?? 'Not specified' }}
         </div>
     @endif
@@ -85,6 +85,16 @@
     @elseif($lead->lead_type == 'Insurance')
         <p><strong>Manufacturer:</strong> {{ $lead->mfg_name }}</p>
         <p><strong>Model:</strong> {{ $lead->model_name }} ({{ $lead->variant }})</p>
+    @endif
+
+    @if($lead->bank)
+        <hr>
+        <h6><strong>Assigned Bank Details</strong></h6>
+        <p><strong>Bank:</strong> {{ $lead->bank->name }}</p>
+        @if($lead->bankBranch)
+            <p><strong>Branch:</strong> {{ $lead->bankBranch->name }}</p>
+            <p><strong>Address:</strong> {{ $lead->bankBranch->address_line }}, {{ $lead->bankBranch->city->name ?? '' }}, {{ $lead->bankBranch->state->name ?? '' }} - {{ $lead->bankBranch->pincode }}</p>
+        @endif
     @endif
 
     <hr>

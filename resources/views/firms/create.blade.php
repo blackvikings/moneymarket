@@ -85,6 +85,20 @@
                 },
                 unhighlight: function (element, errorClass, validClass) {
                     $(element).removeClass('is-invalid');
+                },
+                rules: {
+                    name: { required: true },
+                    address_line: { required: true },
+                    pincode: { required: true },
+                    state_id: { required: true },
+                    city_id: { required: true }
+                },
+                messages: {
+                    name: "Please enter the firm name",
+                    address_line: "Please enter the address line",
+                    pincode: "Please enter the pincode",
+                    state_id: "Please select a state",
+                    city_id: "Please select a city"
                 }
             });
 

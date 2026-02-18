@@ -257,26 +257,25 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Bank Name</label>
-                            <select name="bank_id" id="bank_id" class="form-control">
-                                <option value="">Select Bank</option>
-                                @foreach($banks as $bank)
-                                    <option value="{{ $bank->id }}" {{ old('bank_id', $employee->bank_id) == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="bank_name" id="bank_name" class="form-control" value="{{ old('bank_name', $employee->bank_name) }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Branch Name</label>
-                            <select name="bank_branch_id" id="bank_branch_id" class="form-control">
-                                <option value="">Select Branch</option>
-                            </select>
+                            <input type="text" name="bank_branch_name" id="bank_branch_name" class="form-control" value="{{ old('bank_branch_name', $employee->bank_branch_name) }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Account Holder Name</label>
                             <input type="text" name="account_holder_name" id="account_holder_name" class="form-control" value="{{ old('account_holder_name', $employee->account_holder_name) }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="form-control" value="{{ old('account_number', $employee->account_number) }}">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -555,7 +554,7 @@
                 }
             });
 
-            // --- Education & Bank Logic ---
+            // --- Education Logic ---
             let eduIndex = {{ $employee->education->count() }};
             $('#add-education').click(function() {
                 let html = `
@@ -578,33 +577,6 @@
             $(document).on('click', '.remove-education', function() {
                 $(this).closest('.education-card').remove();
             });
-
-            function fetchBranches(bankId, selectedBranchId = null) {
-                let branchSelect = $('#bank_branch_id');
-                branchSelect.empty().append('<option value="">Select Branch</option>');
-
-                if (bankId) {
-                    $.ajax({
-                        url: '{{ route("admin.get-branches", ["bank" => ":bankId"]) }}'.replace(':bankId', bankId),
-                        type: 'GET',
-                        success: function(data) {
-                            $.each(data, function(key, branch) {
-                                let selected = selectedBranchId == branch.id ? 'selected' : '';
-                                branchSelect.append('<option value="' + branch.id + '" ' + selected + '>' + branch.name + '</option>');
-                            });
-                        }
-                    });
-                }
-            }
-
-            $('#bank_id').change(function() {
-                fetchBranches($(this).val());
-            });
-
-            let initialBankId = $('#bank_id').val();
-            if (initialBankId) {
-                fetchBranches(initialBankId, {{ old('bank_branch_id', $employee->bank_branch_id) ?? 'null' }});
-            }
         });
     </script>
 @stop

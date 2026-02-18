@@ -4,7 +4,7 @@ namespace App\Exports;
 
 use App\Models\Insurance;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class InsuranceExport
 {
@@ -17,7 +17,7 @@ class InsuranceExport
 
     public function download()
     {
-        $query = Insurance::with('types.subTypes');
+        $query = Insurance::with(['types.subTypes', 'state', 'city']);
 
         if ($this->request->has('company_name') && $this->request->company_name != '') {
             $query->where('company_name', 'like', '%' . $this->request->company_name . '%');
@@ -37,7 +37,7 @@ class InsuranceExport
             "Expires" => "0"
         ];
 
-        $columns = ['ID', 'Company Name', 'Agent Name', 'Address', 'Types', 'Status', 'Created At'];
+        $columns = ['ID', 'Company Name', 'Agent Name', 'Address', 'City', 'State', 'Pincode', 'Types', 'Status', 'Created At'];
 
         $callback = function() use ($insurances, $columns) {
             $file = fopen('php://output', 'w');
@@ -53,7 +53,10 @@ class InsuranceExport
                     $insurance->id,
                     $insurance->company_name,
                     $insurance->agent_name,
-                    $insurance->address,
+                    $insurance->address_line,
+                    $insurance->city->name ?? '',
+                    $insurance->state->name ?? '',
+                    $insurance->pincode,
                     $types,
                     $insurance->is_active ? 'Active' : 'Blocked',
                     $insurance->created_at
@@ -63,6 +66,6 @@ class InsuranceExport
             fclose($file);
         };
 
-        return Response::stream($callback, 200, $headers);
+        return new StreamedResponse($callback, 200, $headers);
     }
 }

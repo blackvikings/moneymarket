@@ -167,14 +167,6 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
-                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                            @if($lead->current_address_proof_path)
-                                <small><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank">View Current Proof</a></small>
-                            @endif
-                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center">
@@ -218,7 +210,33 @@
                         {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
-
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof Type</label>
+                            <select name="proof_id_type" class="form-control @error('proof_id_type') is-invalid @enderror">
+                                <option value="">Select Type</option>
+                                <option value="Aadhar" {{ old('proof_id_type', $lead->proof_id_type) == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
+                                <option value="Voter Id" {{ old('proof_id_type', $lead->proof_id_type) == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
+                                <option value="Driving Licence" {{ old('proof_id_type', $lead->proof_id_type) == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
+                                <option value="Pancard" {{ old('proof_id_type', $lead->proof_id_type) == 'Pancard' ? 'selected' : '' }}>Pancard</option>
+                                <option value="Passport" {{ old('proof_id_type', $lead->proof_id_type) == 'Passport' ? 'selected' : '' }}>Passport</option>
+                                <option value="Electricity Bill" {{ old('proof_id_type', $lead->proof_id_type) == 'Electricity Bill' ? 'selected' : '' }}>Electricity Bill</option>
+                            </select>
+                            @error('proof_id_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
+                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            @if($lead->current_address_proof_path)
+                                <small><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank">View Current Proof</a></small>
+                            @endif
+                        </div>
+                    </div>
+                </div>
                 <hr>
                 {{-- Job Profile --}}
                 <div id="job_profile_section">

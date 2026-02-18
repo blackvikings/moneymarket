@@ -60,22 +60,22 @@
                 <h5>Address Details</h5>
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Current Address</h6>
+                        <h6>Current Address </h6>
                         <div class="form-group">
-                            <label>Address Line</label>
-                            <input type="text" name="current_address_line" id="current_address_line" class="form-control">
+                            <label>Address Line </label>
+                            <input type="text" name="current_address_line" id="current_address_line" class="form-control" >
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Pin Code</label>
-                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input">
+                                    <label>Pin Code </label>
+                                    <input type="text" name="current_address_pincode" id="current_pincode" class="form-control pincode-input" >
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>State</label>
-                                    <select name="current_address_state" id="current_state" class="form-control state-select">
+                                    <label>State </label>
+                                    <select name="current_address_state" id="current_state" class="form-control state-select" >
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
@@ -83,7 +83,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>City</label>
-                                    <select name="current_address_city" id="current_city" class="form-control city-select">
+                                    <select name="current_address_city" id="current_city" class="form-control city-select" >
                                         <option value="">Select State First</option>
                                     </select>
                                 </div>
@@ -98,28 +98,28 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Address Line</label>
-                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control">
+                            <label>Address Line </label>
+                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control" >
                         </div>
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Pin Code</label>
-                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input">
+                                    <label>Pin Code </label>
+                                    <input type="text" name="permanent_address_pincode" id="permanent_pincode" class="form-control pincode-input" >
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>State</label>
-                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select">
+                                    <label>State </label>
+                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select" >
                                         <option value="">Select State</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>City</label>
-                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select">
+                                    <label>City </label>
+                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select" >
                                         <option value="">Select State First</option>
                                     </select>
                                 </div>
@@ -130,14 +130,14 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Address Proof Upload <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="insurance_address_proof" class="form-control-file">
+                            <label>Address Proof Upload <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> <span class="text-danger">*</span></label>
+                            <input type="file" name="insurance_address_proof" class="form-control-file" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Address Proof Type</label>
-                            <input type="text" name="insurance_address_proof_type" class="form-control" placeholder="e.g., Aadhar, Voter ID">
+                            <label>Address Proof Type <span class="text-danger">*</span></label>
+                            <input type="text" name="insurance_address_proof_type" class="form-control" placeholder="e.g., Aadhar, Voter ID" required>
                         </div>
                     </div>
                 </div>

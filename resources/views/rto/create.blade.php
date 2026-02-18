@@ -20,6 +20,10 @@
         <div class="card-body">
             <form action="{{ route(get_route_prefix(). 'rto.store') }}" method="POST" enctype="multipart/form-data" id="createRtoLeadForm">
                 @csrf
+                <input type="hidden" name="lead_type" value="RTO">
+                {{-- This will hold the actual ID of the selected variant --}}
+                <input type="hidden" name="vehicle_name_id" id="vehicle_name_id" value="{{ old('vehicle_name_id') }}">
+
                 <h5>Customer Details</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -136,9 +140,120 @@
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label>Upload Address Proof <span class="text-danger">*</span></label>
-                    <input type="file" name="rto_address_proof" class="form-control-file" required>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof Type</label>
+                            <select name="proof_id_type" class="form-control @error('proof_id_type') is-invalid @enderror">
+                                <option value="">Select Type</option>
+                                <option value="Aadhar" {{ old('proof_id_type') == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
+                                <option value="Voter Id" {{ old('proof_id_type') == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
+                                <option value="Driving Licence" {{ old('proof_id_type') == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
+                                <option value="Pancard" {{ old('proof_id_type') == 'Pancard' ? 'selected' : '' }}>Pancard</option>
+                                <option value="Passport" {{ old('proof_id_type') == 'Passport' ? 'selected' : '' }}>Passport</option>
+                                <option value="Electricity Bill" {{ old('proof_id_type') == 'Electricity Bill' ? 'selected' : '' }}>Electricity Bill</option>
+                            </select>
+                            @error('proof_id_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Upload Address Proof <span class="text-danger">*</span></label>
+                            <input type="file" name="current_address_proof" class="form-control-file" required>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                {{-- RTO Details Section --}}
+                <div id="rto_section">
+                    <h5>RTO Details</h5>
+                    <div class="row">
+                        <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control @error('rto_rc_number') is-invalid @enderror" value="{{ old('rto_rc_number') }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control @error('rto_engine_number') is-invalid @enderror" value="{{ old('rto_engine_number') }}">@error('rto_engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control @error('rto_chassis_number') is-invalid @enderror" value="{{ old('rto_chassis_number') }}">@error('rto_chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="rto_mfg_year" class="form-control @error('rto_mfg_year') is-invalid @enderror" value="{{ old('rto_mfg_year') }}">@error('rto_mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Mfg Name</label>
+                                <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
+                                    <option value="">Select Manufacturer</option>
+                                    @foreach($manufactures as $mfg)
+                                        <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name') == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                    @endforeach
+                                </select>
+                                @error('rto_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Model Name</label>
+                                <select name="rto_model_name" class="form-control vehicle-name-select @error('rto_model_name') is-invalid @enderror">
+                                    <option value="">Select Manufacturer First</option>
+                                </select>
+                                @error('rto_model_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Variant</label>
+                                <select name="rto_variant" class="form-control variant-select @error('rto_variant') is-invalid @enderror @error('vehicle_name_id') is-invalid @enderror">
+                                    <option value="">Select Vehicle First</option>
+                                </select>
+                                @error('rto_variant') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control @error('rto_owner_serial_number') is-invalid @enderror" value="{{ old('rto_owner_serial_number') }}">@error('rto_owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Insurance Available?</label>
+                                <select name="insurance_available" id="rto_insurance_available" class="form-control @error('insurance_available') is-invalid @enderror">
+                                    <option value="0" {{ old('insurance_available') == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('insurance_available') == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                                @error('insurance_available') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="rto_insurance_details_div" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Vendor</label>
+                                        <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
+                                            <option value="">Select Vendor</option>
+                                            @foreach($insurances as $ins)
+                                                <option value="{{ $ins->id }}" {{ old('insurance_id') == $ins->id ? 'selected' : '' }}>{{ $ins->company_name }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('insurance_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-3"><div class="form-group"><label>Start Date</label><input type="date" name="insurance_start_date" class="form-control @error('insurance_start_date') is-invalid @enderror" value="{{ old('insurance_start_date') }}">@error('insurance_start_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>End Date</label><input type="date" name="insurance_end_date" class="form-control @error('insurance_end_date') is-invalid @enderror" value="{{ old('insurance_end_date') }}">@error('insurance_end_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-2"><div class="form-group"><label>Amount</label><input type="number" step="0.01" name="insurance_amount" class="form-control @error('insurance_amount') is-invalid @enderror" value="{{ old('insurance_amount') }}">@error('insurance_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label>Hypothecation (HP)?</label>
+                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
+                                    <option value="0" {{ old('rto_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('rto_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                                @error('rto_hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
+                            <div class="row">
+                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer') }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('rto_close_amount') }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('rto_emi_paid_count') }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-primary mt-3">Add RTO Lead</button>
@@ -164,7 +279,8 @@
                     permanent_address_line: { required: true },
                     permanent_address_state: { required: true },
                     permanent_address_city: { required: true },
-                    rto_address_proof: { required: true }
+                    current_address_proof: { required: true },
+                    rto_rc_number: { required: true }
                 },
                 messages: {
                     customer_name: "Please enter the customer's name",
@@ -186,7 +302,8 @@
                     permanent_address_line: "Please enter the permanent address",
                     permanent_address_state: "Please select a state",
                     permanent_address_city: "Please select a city",
-                    rto_address_proof: "Please upload an address proof document"
+                    current_address_proof: "Please upload an address proof document",
+                    rto_rc_number: "Please enter the RC number"
                 }
             });
 
@@ -288,6 +405,103 @@
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');
                 }
             });
+
+            // --- Vehicle Logic ---
+            function populateVehicleNames(manufactureId, container, selectedVehicleName = null) {
+                let vehicleSelect = container.find('.vehicle-name-select');
+                vehicleSelect.empty().append('<option value="">Loading...</option>');
+
+                if (manufactureId) {
+                    $.ajax({
+                        url: '{{ url("get-vehicle-names") }}/' + manufactureId,
+                        type: 'GET',
+                        success: function(data) {
+                            vehicleSelect.empty().append('<option value="">Select Vehicle</option>');
+                            $.each(data, function(key, name) {
+                                let option = $('<option></option>').attr('value', name).text(name);
+                                if (name == selectedVehicleName) {
+                                    option.prop('selected', true);
+                                }
+                                vehicleSelect.append(option);
+                            });
+                            if(selectedVehicleName) {
+                                vehicleSelect.trigger('change');
+                            }
+                        }
+                    });
+                } else {
+                    vehicleSelect.empty().append('<option value="">Select Manufacturer First</option>');
+                }
+            }
+
+            function populateVariants(manufactureId, vehicleName, container, selectedVariant = null) {
+                let variantSelect = container.find('.variant-select');
+                variantSelect.empty().append('<option value="">Loading...</option>');
+
+                if (manufactureId && vehicleName) {
+                    $.ajax({
+                        url: '{{ route("get-variants") }}',
+                        type: 'GET',
+                        data: {
+                            manufactureId: manufactureId,
+                            vehicleName: vehicleName
+                        },
+                        success: function(data) {
+                            variantSelect.empty().append('<option value="">Select Variant</option>');
+                            $.each(data, function(key, item) {
+                                let option = $('<option></option>').attr('value', item.variant).text(item.variant).data('id', item.id);
+                                if (item.variant == selectedVariant) {
+                                    option.prop('selected', true);
+                                    $('#vehicle_name_id').val(item.id); // Pre-select the ID
+                                }
+                                variantSelect.append(option);
+                            });
+                        }
+                    });
+                } else {
+                    variantSelect.empty().append('<option value="">Select Vehicle First</option>');
+                }
+            }
+
+            $(document).on('change', '.manufacture-select', function() {
+                let selectedOption = $(this).find('option:selected');
+                let mfgId = selectedOption.attr('data-id'); // Try getting data-id attribute
+
+                if (!mfgId) {
+                    mfgId = $(this).val(); // Fallback to value (for New Purchase)
+                }
+
+                let container = $(this).closest('.row');
+                populateVehicleNames(mfgId, container);
+            });
+
+            $(document).on('change', '.vehicle-name-select', function() {
+                let vehicleName = $(this).val();
+                let container = $(this).closest('.row');
+
+                let mfgSelect = container.find('.manufacture-select');
+                let selectedOption = mfgSelect.find('option:selected');
+                let mfgId = selectedOption.attr('data-id');
+                if (!mfgId) {
+                    mfgId = mfgSelect.val();
+                }
+
+                let variantToSelect = container.find('.variant-select').data('selected');
+                populateVariants(mfgId, vehicleName, container, variantToSelect);
+            });
+
+            $(document).on('change', '.variant-select', function() {
+                let selectedId = $(this).find(':selected').data('id');
+                $('#vehicle_name_id').val(selectedId);
+            });
+
+            $('#rto_insurance_available').change(function() {
+                $('#rto_insurance_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
+
+            $('#rto_hypothecation_status').change(function() {
+                $('#rto_hp_details_div').toggle($(this).val() == '1');
+            }).trigger('change');
         });
     </script>
 @stop

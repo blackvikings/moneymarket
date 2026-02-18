@@ -73,18 +73,20 @@
                                 @endif
                             </td>
                             <td>
-                                @can('view insurance')
-                                    <button type="button" class="btn btn-sm btn-info view-insurance-btn" data-id="{{ $insurance->id }}">View</button>
-                                @endcan
-                                @can('edit insurance')
-                                    <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route(get_route_prefix(). 'insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $insurance->is_active ? 'Block' : 'Unblock' }}
-                                        </button>
-                                    </form>
-                                @endcan
+                                <div class="btn-group">
+                                    @can('view insurance')
+                                        <button type="button" class="btn btn-sm btn-info view-insurance-btn mr-1" data-id="{{ $insurance->id }}">View</button>
+                                    @endcan
+                                    @can('edit insurance')
+                                        <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                        <form action="{{ route(get_route_prefix(). 'insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}">
+                                                {{ $insurance->is_active ? 'Block' : 'Unblock' }}
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
                             </td>
                         </tr>
                     @endforeach

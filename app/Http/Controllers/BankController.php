@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bank;
+use App\Models\BankBranch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\BankExport;
@@ -20,7 +21,7 @@ class BankController extends Controller
 
     public function index(Request $request)
     {
-        $query = Bank::with(['branches', 'state', 'city']);
+        $query = Bank::with(['branches.state', 'branches.city']);
 
         if ($request->has('name') && $request->name != '') {
             $query->where('name', 'like', '%' . $request->name . '%');
@@ -44,27 +45,27 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name',
-            'address_line' => 'required|string',
-            'pincode' => 'required|string|max:10',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
-            'branches' => 'nullable|array',
-            'branches.*' => 'nullable|string',
+            'branches' => 'required|array',
+            'branches.*.name' => 'required|string',
+            'branches.*.address_line' => 'nullable|string',
+            'branches.*.pincode' => 'nullable|string|max:10',
+            'branches.*.state_id' => 'nullable|exists:states,id',
+            'branches.*.city_id' => 'nullable|exists:cities,id',
         ]);
 
         $bank = Bank::create([
             'name' => $request->name,
-            'address_line' => $request->address_line,
-            'pincode' => $request->pincode,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
         ]);
 
         if ($request->has('branches')) {
-            foreach ($request->branches as $branchName) {
-                if (!empty($branchName)) {
-                    $bank->branches()->create(['name' => $branchName]);
-                }
+            foreach ($request->branches as $branchData) {
+                $bank->branches()->create([
+                    'name' => $branchData['name'],
+                    'address_line' => $branchData['address_line'],
+                    'pincode' => $branchData['pincode'],
+                    'state_id' => $branchData['state_id'],
+                    'city_id' => $branchData['city_id'],
+                ]);
             }
         }
 
@@ -73,13 +74,13 @@ class BankController extends Controller
 
     public function show(Bank $bank)
     {
-        $bank->load(['branches', 'state', 'city']);
+        $bank->load(['branches.state', 'branches.city']);
         return view('banks.show-modal', compact('bank'))->render();
     }
 
     public function edit(Bank $bank)
     {
-        $bank->load(['branches', 'state', 'city']);
+        $bank->load(['branches.state', 'branches.city']);
         return view('banks.edit', compact('bank'));
     }
 
@@ -87,30 +88,30 @@ class BankController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:banks,name,' . $bank->id,
-            'address_line' => 'required|string',
-            'pincode' => 'required|string|max:10',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
-            'branches' => 'nullable|array',
-            'branches.*' => 'nullable|string',
+            'branches' => 'required|array',
+            'branches.*.name' => 'required|string',
+            'branches.*.address_line' => 'nullable|string',
+            'branches.*.pincode' => 'nullable|string|max:10',
+            'branches.*.state_id' => 'nullable|exists:states,id',
+            'branches.*.city_id' => 'nullable|exists:cities,id',
         ]);
 
         $bank->update([
             'name' => $request->name,
-            'address_line' => $request->address_line,
-            'pincode' => $request->pincode,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
         ]);
 
         // Sync branches: delete all and recreate
         $bank->branches()->delete();
 
         if ($request->has('branches')) {
-            foreach ($request->branches as $branchName) {
-                if (!empty($branchName)) {
-                    $bank->branches()->create(['name' => $branchName]);
-                }
+            foreach ($request->branches as $branchData) {
+                $bank->branches()->create([
+                    'name' => $branchData['name'],
+                    'address_line' => $branchData['address_line'],
+                    'pincode' => $branchData['pincode'],
+                    'state_id' => $branchData['state_id'],
+                    'city_id' => $branchData['city_id'],
+                ]);
             }
         }
 

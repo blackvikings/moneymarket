@@ -44,7 +44,7 @@
         <hr>
         <div class="alert alert-warning">
             <h6><strong>Loan Return Details</strong></h6>
-            <p><strong>Date:</strong> {{ $lead->loan_return_date ? $lead->loan_return_date->format('d-m-Y') : '-' }}</p>
+            <p><strong>Date:</strong> {{ $lead->loan_return_date ? \Carbon\Carbon::parse($lead->loan_return_date)->format('d-m-Y') : '-' }}</p>
             <p><strong>Reason:</strong> {{ $lead->loan_return_reason }}</p>
         </div>
     @endif

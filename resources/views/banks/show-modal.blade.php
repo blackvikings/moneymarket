@@ -9,19 +9,35 @@
         <div class="col-md-12">
             <p><strong>Bank Name:</strong> {{ $bank->name }}</p>
             <p><strong>Status:</strong> <span class="badge badge-{{ $bank->is_active ? 'success' : 'danger' }}">{{ $bank->is_active ? 'Active' : 'Blocked' }}</span></p>
-            <p><strong>Address:</strong> {{ $bank->address_line }}, {{ $bank->city->name ?? '' }}, {{ $bank->state->name ?? '' }} - {{ $bank->pincode }}</p>
         </div>
     </div>
 
     <hr>
     <h6><strong>Branches</strong></h6>
     @if($bank->branches->count() > 0)
-        <div class="row">
-            @foreach($bank->branches as $branch)
-                <div class="col-md-4 mb-2">
-                    <span class="badge badge-info p-2 w-100">{{ $branch->name }}</span>
-                </div>
-            @endforeach
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th>Branch Name</th>
+                        <th>Address</th>
+                        <th>City</th>
+                        <th>State</th>
+                        <th>Pincode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($bank->branches as $branch)
+                        <tr>
+                            <td>{{ $branch->name }}</td>
+                            <td>{{ $branch->address_line }}</td>
+                            <td>{{ $branch->city->name ?? 'N/A' }}</td>
+                            <td>{{ $branch->state->name ?? 'N/A' }}</td>
+                            <td>{{ $branch->pincode }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     @else
         <p class="text-muted">No branches added.</p>

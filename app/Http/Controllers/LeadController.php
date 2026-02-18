@@ -129,15 +129,16 @@ class LeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
-            'father_name' => 'required|string|max:255',
+            'father_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
-            'firm_id' => 'required|exists:firms,id',
-            'residence_type' => 'required|string',
-            'current_address_line' => 'required|string',
-            'permanent_address_line' => 'required|string',
-            'lead_type' => 'required|in:Loan,RTO,Insurance',
+            'firm_id' => 'nullable|exists:firms,id',
+            'residence_type' => 'nullable|string',
+            'current_address_line' => 'nullable|string',
+            'permanent_address_line' => 'nullable|string',
+            'lead_type' => 'nullable|in:Loan,RTO,Insurance',
             'assigned_to' => 'nullable|exists:users,id',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'proof_id_type' => 'nullable|string|max:255',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
             'aadhar_number' => 'nullable|string|max:20',
@@ -150,7 +151,7 @@ class LeadController extends Controller
         $data['status'] = 'New';
 
         // Initialize insurance_lead_stage if lead type is Insurance
-        if ($data['lead_type'] === 'Insurance') {
+        if (isset($data['lead_type']) && $data['lead_type'] === 'Insurance') {
             $data['insurance_lead_stage'] = 'New';
         }
 
@@ -207,6 +208,7 @@ class LeadController extends Controller
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'proof_id_type' => 'nullable|string|max:255',
             'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
@@ -238,7 +240,7 @@ class LeadController extends Controller
         }
 
         // Ensure insurance_lead_stage is set if lead type is Insurance (for updates)
-        if ($data['lead_type'] === 'Insurance' && !$lead->insurance_lead_stage) {
+        if (isset($data['lead_type']) && $data['lead_type'] === 'Insurance' && !$lead->insurance_lead_stage) {
             $data['insurance_lead_stage'] = 'New';
         }
 
@@ -329,6 +331,13 @@ class LeadController extends Controller
             ];
             $logData['status'] = 'Prospect';
             $logData['remark'] = 'Follow-up set: ' . $request->remark;
+
+            if ($request->has('not_active') && $request->not_active == 1) {
+                $data['status'] = 'Not_Active';
+                $logData['status'] = 'Not_Active';
+                $logData['remark'] .= ' (Marked as Not Active)';
+            }
+
         } elseif ($action === 'qualify') {
             if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
                 // Pass data via query parameters to ensure it persists to the edit page

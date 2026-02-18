@@ -52,7 +52,6 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Address</th>
                         <th>Branches</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -63,16 +62,10 @@
                         <tr>
                             <td>{{ $bank->name }}</td>
                             <td>
-                                @if($bank->address_line)
-                                    {{ $bank->address_line }},<br>
-                                    {{ $bank->city->name ?? '' }}, {{ $bank->state->name ?? '' }} - {{ $bank->pincode }}
-                                @else
-                                    <span class="text-muted">No address</span>
-                                @endif
-                            </td>
-                            <td>
                                 @foreach ($bank->branches as $branch)
-                                    <span class="badge badge-info">{{ $branch->name }}</span>
+                                    <span class="badge badge-info" title="{{ $branch->address_line }}, {{ $branch->city->name ?? '' }}, {{ $branch->state->name ?? '' }} - {{ $branch->pincode }}">
+                                        {{ $branch->name }}
+                                    </span>
                                 @endforeach
                             </td>
                             <td>
@@ -84,10 +77,10 @@
                             </td>
                             <td>
                                 @can('view bank')
-                                    <button type="button" class="btn btn-sm btn-info view-bank-btn" data-id="{{ $bank->id }}">View</button>
+                                    <button type="button" class="btn btn-sm btn-info view-bank-btn mr-1" data-id="{{ $bank->id }}">View</button>
                                 @endcan
                                 @can('edit bank')
-                                    <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
                                     <form action="{{ route('admin.banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         <button type="submit" class="btn btn-sm {{ $bank->is_active ? 'btn-warning' : 'btn-success' }}">

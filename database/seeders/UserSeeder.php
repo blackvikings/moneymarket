@@ -141,26 +141,26 @@ class UserSeeder extends Seeder
         $admin->assignRole($adminRole);
 
         // Create Tele Caller users
-        $teleCaller1 = User::firstOrCreate(
-            ['email' => 'telecaller1@example.com'],
-            [
-                'name' => 'Tele Caller 1',
-                'password' => Hash::make('password'),
-                'employee_type' => 'Tele Caller',
-                'is_first_login' => true,
-            ]
-        );
-        $teleCaller1->assignRole($teleCallerRole);
+//        $teleCaller1 = User::firstOrCreate(
+//            ['email' => 'telecaller1@example.com'],
+//            [
+//                'name' => 'Tele Caller 1',
+//                'password' => Hash::make('password'),
+//                'employee_type' => 'Tele Caller',
+//                'is_first_login' => true,
+//            ]
+//        );
+//        $teleCaller1->assignRole($teleCallerRole);
 
-        $teleCaller2 = User::firstOrCreate(
-            ['email' => 'telecaller2@example.com'],
-            [
-                'name' => 'Tele Caller 2',
-                'password' => Hash::make('password'),
-                'employee_type' => 'Tele Caller',
-                'is_first_login' => true,
-            ]
-        );
-        $teleCaller2->assignRole($teleCallerRole);
+//        $teleCaller2 = User::firstOrCreate(
+//            ['email' => 'telecaller2@example.com'],
+//            [
+//                'name' => 'Tele Caller 2',
+//                'password' => Hash::make('password'),
+//                'employee_type' => 'Tele Caller',
+//                'is_first_login' => true,
+//            ]
+//        );
+//        $teleCaller2->assignRole($teleCallerRole);
     }
 }

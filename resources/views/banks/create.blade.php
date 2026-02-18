@@ -30,41 +30,6 @@
                 </div>
 
                 <hr>
-                <h5>Address Details</h5>
-                <div class="form-group">
-                    <label>Address Line <span class="text-danger">*</span></label>
-                    <input type="text" name="address_line" id="address_line" class="form-control @error('address_line') is-invalid @enderror" value="{{ old('address_line') }}" required>
-                    @error('address_line') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Pin Code <span class="text-danger">*</span></label>
-                            <input type="text" name="pincode" id="pincode" class="form-control pincode-input @error('pincode') is-invalid @enderror" value="{{ old('pincode') }}" required>
-                            @error('pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>State <span class="text-danger">*</span></label>
-                            <select name="state_id" id="state_id" class="form-control state-select @error('state_id') is-invalid @enderror" required>
-                                <option value="">Select State</option>
-                            </select>
-                            @error('state_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>City <span class="text-danger">*</span></label>
-                            <select name="city_id" id="city_id" class="form-control city-select @error('city_id') is-invalid @enderror" required>
-                                <option value="">Select State First</option>
-                            </select>
-                            @error('city_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <hr>
                 <h5>Branches</h5>
                 <div id="branches-container">
                     {{-- Initial branch row will be added by JS --}}
@@ -82,73 +47,91 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
-            $('#createBankForm').validate({
-                errorElement: 'span',
-                errorPlacement: function (error, element) {
-                    error.addClass('invalid-feedback');
-                    element.closest('.form-group').append(error);
-                },
-                highlight: function (element, errorClass, validClass) {
-                    $(element).addClass('is-invalid');
-                },
-                unhighlight: function (element, errorClass, validClass) {
-                    $(element).removeClass('is-invalid');
-                },
-                rules: {
-                    name: { required: true },
-                    address_line: { required: true },
-                    pincode: { required: true },
-                    state_id: { required: true },
-                    city_id: { required: true }
-                },
-                messages: {
-                    name: "Please enter the bank name",
-                    address_line: "Please enter the address line",
-                    pincode: "Please enter the pincode",
-                    state_id: "Please select a state",
-                    city_id: "Please select a city"
-                }
-            });
+            let branchIndex = 0;
 
             function addBranchRow() {
                 let html = `
-                    <div class="row branch-row mb-2">
-                        <div class="col-md-10">
-                            <div class="form-group">
-                                <input type="text" name="branches[]" class="form-control" placeholder="Branch Name">
+                    <div class="card branch-row mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-12 text-right">
+                                    <button type="button" class="btn btn-danger btn-sm remove-branch">X</button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-2">
-                            <button type="button" class="btn btn-danger remove-branch">X</button>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Branch Name <span class="text-danger">*</span></label>
+                                        <input type="text" name="branches[${branchIndex}][name]" class="form-control" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label>Address Line</label>
+                                        <input type="text" name="branches[${branchIndex}][address_line]" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Pin Code</label>
+                                        <input type="text" name="branches[${branchIndex}][pincode]" class="form-control pincode-input">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>State</label>
+                                        <select name="branches[${branchIndex}][state_id]" class="form-control state-select">
+                                            <option value="">Select State</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>City</label>
+                                        <select name="branches[${branchIndex}][city_id]" class="form-control city-select">
+                                            <option value="">Select State First</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 `;
                 $('#branches-container').append(html);
+
+                // Populate states for the new row
+                let newStateSelect = $('#branches-container .branch-row:last .state-select');
+                populateStates(newStateSelect);
+
+                branchIndex++;
             }
 
             // Add one row by default
             addBranchRow();
 
-            $('#add-branch').click(addBranchRow);
+            $('#add-branch').click(function() {
+                addBranchRow();
+            });
 
             $(document).on('click', '.remove-branch', function() {
                 if ($('.branch-row').length > 1) {
                     $(this).closest('.branch-row').remove();
                 } else {
-                    alert('At least one branch row is required.');
+                    alert('At least one branch is required.');
                 }
             });
 
             // --- Location Scripts ---
-            function populateStates(selector) {
+            function populateStates(element) {
                 $.ajax({
                     url: '{{ route("get-states") }}',
                     type: 'GET',
                     success: function(data) {
-                        let stateSelects = $(selector);
-                        stateSelects.empty().append('<option value="">Select State</option>');
+                        element.empty().append('<option value="">Select State</option>');
                         $.each(data, function(key, state) {
-                            stateSelects.append('<option value="' + state.id + '">' + state.name + '</option>');
+                            element.append('<option value="' + state.id + '">' + state.name + '</option>');
                         });
                     }
                 });
@@ -180,27 +163,24 @@
                 }
             }
 
-            // Initial population
-            populateStates('.state-select');
-
-            // Event Handlers
-            $('.state-select').change(function() {
-                let citySelect = $(this).closest('.card-body').find('.city-select');
-                let pincodeInput = $(this).closest('.card-body').find('.pincode-input');
+            // Event Handlers using delegation for dynamic elements
+            $(document).on('change', '.state-select', function() {
+                let citySelect = $(this).closest('.branch-row').find('.city-select');
+                let pincodeInput = $(this).closest('.branch-row').find('.pincode-input');
                 populateCities(this, citySelect, pincodeInput);
             });
 
-            $('.city-select').change(function() {
+            $(document).on('change', '.city-select', function() {
                 let pincode = $(this).find(':selected').data('pincode');
-                let pincodeInput = $(this).closest('.card-body').find('.pincode-input');
-                pincodeInput.val(pincode);
+                let pincodeInput = $(this).closest('.branch-row').find('.pincode-input');
+                if(pincode) pincodeInput.val(pincode);
             });
 
-            $('.pincode-input').on('input', function() {
+            $(document).on('input', '.pincode-input', function() {
                 let pincode = $(this).val();
                 if (pincode.length === 6) {
-                    let stateSelect = $(this).closest('.card-body').find('.state-select');
-                    let citySelect = $(this).closest('.card-body').find('.city-select');
+                    let stateSelect = $(this).closest('.branch-row').find('.state-select');
+                    let citySelect = $(this).closest('.branch-row').find('.city-select');
 
                     $.ajax({
                         url: '{{ url("get-location-by-pincode") }}/' + pincode,
@@ -213,7 +193,7 @@
                         },
                         error: function(jqXHR, textStatus, errorThrown) {
                             if(jqXHR.status == 404) {
-                                alert('Invalid Pincode');
+                                // alert('Invalid Pincode');
                             }
                         }
                     });

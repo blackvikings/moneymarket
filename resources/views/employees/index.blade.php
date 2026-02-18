@@ -12,17 +12,17 @@
             <div class="row">
                 <div class="col-md-6">
                     @can('create employee')
-                        <a href="{{ route(get_route_prefix(). 'employees.create') }}" class="btn btn-primary">Create Employee</a>
+                        <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">Create Employee</a>
                     @endcan
                 </div>
                 <div class="col-md-6 text-right">
                     @if(auth()->user()->hasRole('admin') || auth()->user()->can('export employee'))
-                        <a href="{{ route(get_route_prefix(). 'employees.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
+                        <a href="{{ route('admin.employees.export', request()->all()) }}" class="btn btn-success">Export Excel</a>
                     @endif
                 </div>
             </div>
             <br>
-            <form action="{{ route(get_route_prefix(). 'employees.index') }}" method="GET">
+            <form action="{{ route('admin.employees.index') }}" method="GET">
                 <div class="row">
                     <div class="col-md-4">
                         <input type="text" name="name" class="form-control" placeholder="Search by Name" value="{{ request('name') }}">
@@ -37,7 +37,7 @@
                     </div>
                     <div class="col-md-4">
                         <button type="submit" class="btn btn-primary">Filter</button>
-                        <a href="{{ route(get_route_prefix(). 'employees.index') }}" class="btn btn-secondary">Reset</a>
+                        <a href="{{ route('admin.employees.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
                 </div>
             </form>
@@ -56,6 +56,9 @@
                         <th>Name</th>
                         <th>Email</th>
                         <th>Type</th>
+                        <th>Joined Firm</th>
+                        <th>Joining Date</th>
+                        <th>Contact Number</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -66,7 +69,10 @@
                             <td>{{ $employee->employee_id }}</td>
                             <td>{{ $employee->name }}</td>
                             <td>{{ $employee->email }}</td>
-                            <td>{{ $employee->employee_type }}</td>
+                            <td>{{ $employee->roles->first()->name ?? 'N/A' }}</td>
+                            <td>{{ $employee->firm->name ?? 'N/A' }}</td>
+                            <td>{{ $employee->created_at ? $employee->created_at->format('d-m-Y') : 'N/A' }}</td>
+                            <td>{{ $employee->contact_number ?? 'N/A' }}</td>
                             <td>
                                 <span class="badge badge-{{ $employee->status == 'Active' ? 'success' : ($employee->status == 'Blocked' ? 'danger' : 'warning') }}">
                                     {{ $employee->status }}
@@ -74,24 +80,31 @@
                             </td>
                             <td>
                                 @if(!$employee->hasRole('admin'))
-                                    @can('view employee')
-                                        <button type="button" class="btn btn-sm btn-info view-employee-btn" data-id="{{ $employee->id }}">View</button>
-                                    @endcan
-                                    @can('edit employee')
-                                        <a href="{{ route(get_route_prefix(). 'employees.edit', $employee->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <div>
+                                        @can('view employee')
+                                            <button type="button" class="btn btn-sm btn-info view-employee-btn mr-1" data-id="{{ $employee->id }}">View</button>
+                                        @endcan
+                                        @can('edit employee')
+                                            <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
 
-                                        {{-- Block/Unblock Button --}}
-                                        <form action="{{ route(get_route_prefix(). 'employees.update-status', $employee->id) }}" method="POST" class="d-inline">
-                                            @csrf
+                                            {{-- Block/Unblock Button --}}
                                             @if($employee->status == 'Active')
-                                                <input type="hidden" name="status" value="Blocked">
-                                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Are you sure you want to block this employee?')">Block</button>
+                                                <form action="{{ route('admin.employees.update-status', $employee->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="status" value="Blocked">
+                                                    <button type="submit" class="btn btn-sm btn-warning mr-1" onclick="return confirm('Are you sure you want to block this employee?')">Block</button>
+                                                </form>
                                             @elseif($employee->status == 'Blocked')
-                                                <input type="hidden" name="status" value="Active">
-                                                <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to unblock this employee?')">Unblock</button>
+                                                <form action="{{ route('admin.employees.update-status', $employee->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('PUT')
+                                                    <input type="hidden" name="status" value="Active">
+                                                    <button type="submit" class="btn btn-sm btn-success mr-1" onclick="return confirm('Are you sure you want to unblock this employee?')">Unblock</button>
+                                                </form>
                                             @endif
-                                        </form>
-                                    @endcan
+                                        @endcan
+                                    </div>
                                 @else
                                     <span class="text-muted">N/A</span>
                                 @endif
@@ -119,7 +132,7 @@
         $(document).ready(function() {
             $('.view-employee-btn').click(function() {
                 let employeeId = $(this).data('id');
-                let url = '{{ route(get_route_prefix() . "employees.show", ":id") }}'.replace(':id', employeeId);
+                let url = '{{ route("admin.employees.show", ":id") }}'.replace(':id', employeeId);
 
                 $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
                 $('#globalViewModal').modal('show');

@@ -48,9 +48,10 @@ class User extends Authenticatable
         'proof_id_type',
         'proof_id_number',
         'reporting_manager_id',
-        'bank_id',
-        'bank_branch_id',
+        'bank_name',
+        'bank_branch_name',
         'account_holder_name',
+        'account_number',
         'ifsc_code',
         'status',
     ];
@@ -95,15 +96,15 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'reporting_manager_id');
     }
 
-    public function bank()
-    {
-        return $this->belongsTo(Bank::class);
-    }
+    // public function bank()
+    // {
+    //     return $this->belongsTo(Bank::class);
+    // }
 
-    public function bankBranch()
-    {
-        return $this->belongsTo(BankBranch::class);
-    }
+    // public function bankBranch()
+    // {
+    //     return $this->belongsTo(BankBranch::class);
+    // }
 
     /**
      * Relationship for denied permissions.

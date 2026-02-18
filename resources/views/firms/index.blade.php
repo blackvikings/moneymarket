@@ -71,18 +71,20 @@
                                 @endif
                             </td>
                             <td>
-                                @can('view firm')
-                                    <button type="button" class="btn btn-sm btn-info view-firm-btn" data-id="{{ $firm->id }}">View</button>
-                                @endcan
-                                @can('edit firm')
-                                    <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary">Edit</a>
-                                    <form action="{{ route('admin.firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $firm->is_active ? 'Block' : 'Unblock' }}
-                                        </button>
-                                    </form>
-                                @endcan
+                                <div class="btn-group">
+                                    @can('view firm')
+                                        <button type="button" class="btn btn-sm btn-info view-firm-btn mr-1" data-id="{{ $firm->id }}">View</button>
+                                    @endcan
+                                    @can('edit firm')
+                                        <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                        <form action="{{ route('admin.firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}">
+                                                {{ $firm->is_active ? 'Block' : 'Unblock' }}
+                                            </button>
+                                        </form>
+                                    @endcan
+                                </div>
                             </td>
                         </tr>
                     @endforeach

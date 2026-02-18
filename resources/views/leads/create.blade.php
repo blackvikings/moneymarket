@@ -36,15 +36,15 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Father Name <span class="text-danger">*</span></label>
-                            <input type="text" name="father_name" class="form-control @error('father_name') is-invalid @enderror" value="{{ old('father_name') }}" required>
+                            <label>Father Name</label>
+                            <input type="text" name="father_name" class="form-control @error('father_name') is-invalid @enderror" value="{{ old('father_name') }}">
                             @error('father_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Enquire At (Firm) <span class="text-danger">*</span></label>
-                            <select name="firm_id" class="form-control @error('firm_id') is-invalid @enderror" required>
+                            <label>Enquire At (Firm)</label>
+                            <select name="firm_id" class="form-control @error('firm_id') is-invalid @enderror">
                                 <option value="">Select Firm</option>
                                 @foreach($firms as $firm)
                                     <option value="{{ $firm->id }}" {{ old('firm_id') == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
@@ -80,8 +80,8 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Residence Type <span class="text-danger">*</span></label>
-                            <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror" required>
+                            <label>Residence Type</label>
+                            <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror">
                                 <option value="">Select Type</option>
                                 <option value="Rented" {{ old('residence_type') == 'Rented' ? 'selected' : '' }}>Rented</option>
                                 <option value="Own" {{ old('residence_type') == 'Own' ? 'selected' : '' }}>Own</option>
@@ -91,8 +91,8 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Lead Type <span class="text-danger">*</span></label>
-                            <select name="lead_type" id="lead_type" class="form-control @error('lead_type') is-invalid @enderror" required>
+                            <label>Lead Type</label>
+                            <select name="lead_type" id="lead_type" class="form-control @error('lead_type') is-invalid @enderror">
                                 <option value="">Select Lead Type</option>
                                 <option value="Loan" {{ old('lead_type') == 'Loan' ? 'selected' : '' }}>Loan</option>
                                 <option value="RTO" {{ old('lead_type') == 'RTO' ? 'selected' : '' }}>RTO</option>
@@ -114,10 +114,10 @@
                 {{-- Address Details --}}
                 <div class="row">
                     <div class="col-md-6">
-                        <h6>Current Address <span class="text-danger">*</span></h6>
+                        <h6>Current Address</h6>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="current_address_line" id="current_address_line" class="form-control @error('current_address_line') is-invalid @enderror" value="{{ old('current_address_line') }}" required>
+                            <input type="text" name="current_address_line" id="current_address_line" class="form-control @error('current_address_line') is-invalid @enderror" value="{{ old('current_address_line') }}">
                             @error('current_address_line') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                         <div class="row">
@@ -131,7 +131,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <select name="current_address_state" id="current_state" class="form-control state-select @error('current_address_state') is-invalid @enderror" required>
+                                    <select name="current_address_state" id="current_state" class="form-control state-select @error('current_address_state') is-invalid @enderror">
                                         <option value="">Select State</option>
                                     </select>
                                     @error('current_address_state') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -140,29 +140,24 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>City</label>
-                                    <select name="current_address_city" id="current_city" class="form-control city-select @error('current_address_city') is-invalid @enderror" required>
+                                    <select name="current_address_city" id="current_city" class="form-control city-select @error('current_address_city') is-invalid @enderror">
                                         <option value="">Select State First</option>
                                     </select>
                                     @error('current_address_city') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
-                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="d-flex justify-content-between align-items-center">
-                            <h6>Permanent Address <span class="text-danger">*</span></h6>
+                            <h6>Permanent Address</h6>
                             <div class="form-group mb-0">
                                 <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Address Line</label>
-                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control @error('permanent_address_line') is-invalid @enderror" value="{{ old('permanent_address_line') }}" required>
+                            <input type="text" name="permanent_address_line" id="permanent_address_line" class="form-control @error('permanent_address_line') is-invalid @enderror" value="{{ old('permanent_address_line') }}">
                             @error('permanent_address_line') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                         <div class="row">
@@ -176,7 +171,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>State</label>
-                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select @error('permanent_address_state') is-invalid @enderror" required>
+                                    <select name="permanent_address_state" id="permanent_state" class="form-control state-select @error('permanent_address_state') is-invalid @enderror">
                                         <option value="">Select State</option>
                                     </select>
                                     @error('permanent_address_state') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -185,7 +180,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>City</label>
-                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select @error('permanent_address_city') is-invalid @enderror" required>
+                                    <select name="permanent_address_city" id="permanent_city" class="form-control city-select @error('permanent_address_city') is-invalid @enderror">
                                         <option value="">Select State First</option>
                                     </select>
                                     @error('permanent_address_city') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -195,11 +190,34 @@
                         {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
-
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof Type</label>
+                            <select name="proof_id_type" class="form-control @error('proof_id_type') is-invalid @enderror">
+                                <option value="">Select Type</option>
+                                <option value="Aadhar" {{ old('proof_id_type') == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
+                                <option value="Voter Id" {{ old('proof_id_type') == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
+                                <option value="Driving Licence" {{ old('proof_id_type') == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
+                                <option value="Pancard" {{ old('proof_id_type') == 'Pancard' ? 'selected' : '' }}>Pancard</option>
+                                <option value="Passport" {{ old('proof_id_type') == 'Passport' ? 'selected' : '' }}>Passport</option>
+                                <option value="Electricity Bill" {{ old('proof_id_type') == 'Electricity Bill' ? 'selected' : '' }}>Electricity Bill</option>
+                            </select>
+                            @error('proof_id_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
+                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
                 <hr>
                 {{-- Job Profile --}}
                 <div id="job_profile_section">
-                    <h5>Job Profile <span class="text-danger">*</span></h5>
+                    <h5>Job Profile</h5>
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
@@ -215,14 +233,14 @@
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Company Name <span class="text-danger">*</span></label>
+                                <label>Company Name</label>
                                 <input type="text" name="other_company_name" class="form-control @error('other_company_name') is-invalid @enderror" value="{{ old('other_company_name') }}">
                                 @error('other_company_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Designation <span class="text-danger">*</span></label>
+                                <label>Designation</label>
                                 <input type="text" name="designation" class="form-control @error('designation') is-invalid @enderror" value="{{ old('designation') }}">
                                 @error('designation') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
@@ -306,7 +324,7 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label>Loan Type Required <span class="text-danger">*</span></label>
+                                <label>Loan Type Required</label>
                                 <select name="loan_type" id="loan_type" class="form-control @error('loan_type') is-invalid @enderror">
                                     <option value="">Select Type</option>
                                     <option value="Vehicle Loan" {{ old('loan_type') == 'Vehicle Loan' ? 'selected' : '' }}>Vehicle Loan</option>
@@ -333,7 +351,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Vehicle Type <span class="text-danger">*</span></label>
+                                    <label>Vehicle Type</label>
                                     <select name="vehicle_loan_type" id="vehicle_loan_type" class="form-control @error('vehicle_loan_type') is-invalid @enderror">
                                         <option value="">Select Vehicle Type</option>
                                         <option value="Car" {{ old('vehicle_loan_type') == 'Car' ? 'selected' : '' }}>Car</option>
@@ -354,7 +372,7 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Purchase Type <span class="text-danger">*</span></label>
+                                    <label>Purchase Type</label>
                                     <select name="vehicle_purchase_type" id="vehicle_purchase_type" class="form-control @error('vehicle_purchase_type') is-invalid @enderror">
                                         <option value="">Select Purchase Type</option>
                                         <option value="New Purchase" {{ old('vehicle_purchase_type') == 'New Purchase' ? 'selected' : '' }}>New Purchase</option>
@@ -372,7 +390,7 @@
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Manufacturer <span class="text-danger">*</span></label>
+                                        <label>Manufacturer</label>
                                         <select name="manufacture_id" class="form-control manufacture-select @error('manufacture_id') is-invalid @enderror">
                                             <option value="">Select Manufacturer</option>
                                             @foreach($manufactures as $mfg)
@@ -384,7 +402,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Vehicle Name <span class="text-danger">*</span></label>
+                                        <label>Vehicle Name</label>
                                         <select name="vehicle_name_id_display" class="form-control vehicle-name-select @error('vehicle_name_id_display') is-invalid @enderror">
                                             <option value="">Select Manufacturer First</option>
                                         </select>
@@ -422,7 +440,7 @@
                         <div id="repurchase_div" style="display:none;">
                             <h6>RC Details</h6>
                             <div class="row">
-                                <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rc_number" class="form-control @error('rc_number') is-invalid @enderror" value="{{ old('rc_number') }}">@error('rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rc_number" class="form-control @error('rc_number') is-invalid @enderror" value="{{ old('rc_number') }}">@error('rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control @error('engine_number') is-invalid @enderror" value="{{ old('engine_number') }}">@error('engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror" value="{{ old('chassis_number') }}">@error('chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" class="form-control @error('mfg_year') is-invalid @enderror" value="{{ old('mfg_year') }}">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
@@ -523,7 +541,7 @@
                         <div class="row">
                             <div class="col-md-4" id="old_loan_close_div">
                                 <div class="form-group">
-                                    <label>Old Loan Close Amount <span class="text-danger">*</span></label>
+                                    <label>Old Loan Close Amount</label>
                                     <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount') }}">
                                     @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
@@ -549,7 +567,7 @@
                 <div id="rto_section" style="display:none;">
                     <h5>RTO Details</h5>
                     <div class="row">
-                        <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control @error('rto_rc_number') is-invalid @enderror" value="{{ old('rto_rc_number') }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rto_rc_number" class="form-control @error('rto_rc_number') is-invalid @enderror" value="{{ old('rto_rc_number') }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control @error('rto_engine_number') is-invalid @enderror" value="{{ old('rto_engine_number') }}">@error('rto_engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control @error('rto_chassis_number') is-invalid @enderror" value="{{ old('rto_chassis_number') }}">@error('rto_chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="rto_mfg_year" class="form-control @error('rto_mfg_year') is-invalid @enderror" value="{{ old('rto_mfg_year') }}">@error('rto_mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
@@ -642,7 +660,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Manufacturer <span class="text-danger">*</span></label>
+                                <label>Manufacturer</label>
                                 <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
                                     <option value="">Select Manufacturer</option>
                                     @foreach($manufactures as $mfg)
@@ -654,7 +672,7 @@
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label>Model Name <span class="text-danger">*</span></label>
+                                <label>Model Name</label>
                                 <select name="ins_model_name" class="form-control vehicle-name-select @error('ins_model_name') is-invalid @enderror">
                                     <option value="">Select Manufacturer First</option>
                                 </select>
@@ -723,73 +741,12 @@
             $('#createLeadForm').validate({
                 rules: {
                     customer_name: { required: true },
-                    father_name: { required: true },
                     contact_number: { required: true, number: true, minlength: 10, maxlength: 10 },
                     email: { required: false, email: true },
-                    firm_id: { required: true },
-                    residence_type: { required: true },
-                    current_address_line: { required: true },
-                    permanent_address_line: { required: true },
-                    lead_type: { required: true },
-                    other_company_name: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan';
-                        }
-                    },
-                    designation: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan';
-                        }
-                    },
-                    // Loan Specific
-                    loan_type: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan';
-                        }
-                    },
-                    vehicle_loan_type: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan';
-                        }
-                    },
-                    vehicle_purchase_type: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan';
-                        }
-                    },
-                    manufacture_id: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan' && $("#vehicle_purchase_type").val() === 'New Purchase';
-                        }
-                    },
-                    rc_number: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && $("#loan_type").val() === 'Vehicle Loan' && ['Repurchase', 'Refinance', 'Balance Transfer'].includes($("#vehicle_purchase_type").val());
-                        }
-                    },
-                    old_loan_close_amount: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && $("#vehicle_purchase_type").val() !== 'New Purchase';
-                        },
-                        number: true,
-                        min: 0
-                    },
-                    // RTO Specific
-                    rto_rc_number: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'RTO';
-                        }
-                    },
-                    // Insurance Specific
-                    ins_model_name: {
-                        required: function(element) {
-                            return $("#lead_type").val() === 'Insurance';
-                        }
-                    }
+                    // All other fields are optional
                 },
                 messages: {
                     customer_name: "Please enter the customer's name",
-                    father_name: "Please enter the father's name",
                     contact_number: {
                         required: "Please enter a mobile number",
                         number: "Please enter a valid number",
@@ -798,26 +755,7 @@
                     },
                     email: {
                         email: "Please enter a valid email address"
-                    },
-                    firm_id: "Please select a firm",
-                    residence_type: "Please select a residence type",
-                    current_address_line: "Please enter the current address",
-                    permanent_address_line: "Please enter the permanent address",
-                    lead_type: "Please select a lead type",
-                    other_company_name: "Please enter the company name",
-                    designation: "Please enter the designation",
-                    loan_type: "Please select a loan type",
-                    vehicle_loan_type: "Please select a vehicle loan type",
-                    vehicle_purchase_type: "Please select a purchase type",
-                    manufacture_id: "Please select a manufacturer",
-                    rc_number: "Please enter the RC number",
-                    old_loan_close_amount: {
-                        required: "Please enter the old loan close amount",
-                        number: "Please enter a valid number",
-                        min: "Amount cannot be negative"
-                    },
-                    rto_rc_number: "Please enter the RC number",
-                    ins_model_name: "Please enter the model name"
+                    }
                 }
             });
 

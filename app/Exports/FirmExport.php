@@ -4,7 +4,7 @@ namespace App\Exports;
 
 use App\Models\Firm;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FirmExport
 {
@@ -17,7 +17,7 @@ class FirmExport
 
     public function download()
     {
-        $query = Firm::query();
+        $query = Firm::with(['state', 'city']);
 
         if ($this->request->has('name') && $this->request->name != '') {
             $query->where('name', 'like', '%' . $this->request->name . '%');
@@ -37,7 +37,7 @@ class FirmExport
             "Expires" => "0"
         ];
 
-        $columns = ['ID', 'Name', 'Address', 'Status', 'Created At'];
+        $columns = ['ID', 'Name', 'Address', 'City', 'State', 'Pincode', 'Status', 'Created At'];
 
         $callback = function() use ($firms, $columns) {
             $file = fopen('php://output', 'w');
@@ -47,7 +47,10 @@ class FirmExport
                 $row = [
                     $firm->id,
                     $firm->name,
-                    $firm->address,
+                    $firm->address_line,
+                    $firm->city->name ?? '',
+                    $firm->state->name ?? '',
+                    $firm->pincode,
                     $firm->is_active ? 'Active' : 'Blocked',
                     $firm->created_at
                 ];
@@ -56,6 +59,6 @@ class FirmExport
             fclose($file);
         };
 
-        return Response::stream($callback, 200, $headers);
+        return new StreamedResponse($callback, 200, $headers);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Lead;
 use App\Models\Bank;
 use App\Models\RtoAgent;
 use App\Models\Insurance;
+use App\Models\VehicleManufacture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -79,7 +80,9 @@ class RtoController extends Controller
 
     public function create()
     {
-        return view('rto.create');
+        $manufactures = VehicleManufacture::where('is_active', true)->get();
+        $insurances = Insurance::where('is_active', true)->get();
+        return view('rto.create', compact('manufactures', 'insurances'));
     }
 
     public function store(Request $request)
@@ -92,20 +95,41 @@ class RtoController extends Controller
             'residence_type' => 'required|string',
             'current_address_line' => 'required|string',
             'permanent_address_line' => 'required|string',
-            'rto_address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'proof_id_type' => 'nullable|string|max:255',
+            'current_address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'aadhar_number' => 'nullable|string|max:20',
+            'rto_rc_number' => 'required|string|max:255',
         ]);
 
-        $data = $request->except('rto_address_proof');
+        $data = $request->except('current_address_proof');
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead'; // Treat as an active lead
         $data['rto_stage'] = 'New';
         $data['lead_type'] = 'RTO'; // Ensure lead type is set
         $data['rto_new_at'] = now(); // Start aging
 
-        if ($request->hasFile('rto_address_proof')) {
-            $data['rto_address_proof_path'] = $request->file('rto_address_proof')->store('rto_docs', 'public');
+        if ($request->hasFile('current_address_proof')) {
+            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
+
+        // Map RTO specific fields
+        $data['rc_number'] = $request->rto_rc_number;
+        $data['engine_number'] = $request->rto_engine_number;
+        $data['chassis_number'] = $request->rto_chassis_number;
+        $data['mfg_year'] = $request->rto_mfg_year;
+        $data['mfg_name'] = $request->rto_mfg_name;
+        $data['model_name'] = $request->rto_model_name;
+        $data['variant'] = $request->rto_variant;
+        $data['owner_serial_number'] = $request->rto_owner_serial_number;
+        $data['hypothecation_status'] = $request->rto_hypothecation_status;
+        $data['old_financer'] = $request->rto_old_financer;
+        $data['close_amount'] = $request->rto_close_amount;
+        $data['emi_paid_count'] = $request->rto_emi_paid_count;
+        $data['insurance_available'] = $request->insurance_available;
+        $data['insurance_id'] = $request->insurance_id;
+        $data['insurance_start_date'] = $request->insurance_start_date;
+        $data['insurance_end_date'] = $request->insurance_end_date;
+        $data['insurance_amount'] = $request->insurance_amount;
 
         Lead::create($data);
 

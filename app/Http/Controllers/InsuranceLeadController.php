@@ -37,8 +37,17 @@ class InsuranceLeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
-            'insurance_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'insurance_address_proof' => 'required|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
+            'current_address_line' => 'nullable|string',
+            'current_address_pincode' => 'nullable|string',
+            'current_address_state' => 'nullable|exists:states,id',
+            'current_address_city' => 'nullable|exists:cities,id',
+            'permanent_address_line' => 'nullable|string',
+            'permanent_address_pincode' => 'nullable|string',
+            'permanent_address_state' => 'nullable|exists:states,id',
+            'permanent_address_city' => 'nullable|exists:cities,id',
+            'insurance_address_proof_type' => 'nullable|string',
         ]);
 
         $data = $request->except('insurance_address_proof');

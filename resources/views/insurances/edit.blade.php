@@ -141,6 +141,22 @@
                 },
                 unhighlight: function (element, errorClass, validClass) {
                     $(element).removeClass('is-invalid');
+                },
+                rules: {
+                    company_name: { required: true },
+                    agent_name: { required: true },
+                    address_line: { required: true },
+                    pincode: { required: true },
+                    state_id: { required: true },
+                    city_id: { required: true }
+                },
+                messages: {
+                    company_name: "Please enter the company name",
+                    agent_name: "Please enter the agent name",
+                    address_line: "Please enter the address line",
+                    pincode: "Please enter the pincode",
+                    state_id: "Please select a state",
+                    city_id: "Please select a city"
                 }
             });
 

@@ -47,21 +47,21 @@
                 <h5>Address Details</h5>
                 <div class="form-group">
                     <label>Address Line <span class="text-danger">*</span></label>
-                    <input type="text" name="address_line" id="address_line" class="form-control @error('address_line') is-invalid @enderror" value="{{ old('address_line') }}" required>
+                    <input type="text" name="address_line" id="address_line" class="form-control @error('address_line') is-invalid @enderror" value="{{ old('address_line') }}">
                     @error('address_line') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Pin Code <span class="text-danger">*</span></label>
-                            <input type="text" name="pincode" id="pincode" class="form-control pincode-input @error('pincode') is-invalid @enderror" value="{{ old('pincode') }}" required>
+                            <input type="text" name="pincode" id="pincode" class="form-control pincode-input @error('pincode') is-invalid @enderror" value="{{ old('pincode') }}">
                             @error('pincode') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>State <span class="text-danger">*</span></label>
-                            <select name="state_id" id="state_id" class="form-control state-select @error('state_id') is-invalid @enderror" required>
+                            <select name="state_id" id="state_id" class="form-control state-select @error('state_id') is-invalid @enderror">
                                 <option value="">Select State</option>
                             </select>
                             @error('state_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -70,7 +70,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>City <span class="text-danger">*</span></label>
-                            <select name="city_id" id="city_id" class="form-control city-select @error('city_id') is-invalid @enderror" required>
+                            <select name="city_id" id="city_id" class="form-control city-select @error('city_id') is-invalid @enderror">
                                 <option value="">Select State First</option>
                             </select>
                             @error('city_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -107,6 +107,23 @@
                 },
                 unhighlight: function (element, errorClass, validClass) {
                     $(element).removeClass('is-invalid');
+                },
+                rules: {
+                    company_name: { required: true },
+                    agent_name: { required: true },
+                    pincode : { required : true},
+                    address_line : { required:true },
+                    state_id : { required:true },
+                    city_id   : { required:true }
+
+                },
+                messages: {
+                    company_name: "Please enter the company name",
+                    agent_name: "Please enter the agent name",
+                    pincode : "Please enter Pincode",
+                    address_line : "Please enter address",
+                    state_id : "Please select state",
+                    city_id : "Please select city"
                 }
             });
 

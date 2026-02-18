@@ -244,15 +244,16 @@
                 <hr>
                 <h5>Official Details</h5>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
-                            <label>Assign Individual Permissions</label>
-                            <select name="permissions[]" id="permissions" class="form-control select2" multiple="multiple">
-                                @foreach($permissions as $permission)
-                                    <option value="{{ $permission->name }}" {{ in_array($permission->name, old('permissions', [])) ? 'selected' : '' }}>{{ $permission->name }}</option>
-                                @endforeach
-                            </select>
-                            <small class="form-text text-muted">These permissions will be assigned directly to the user in addition to their role's permissions.</small>
+                            <label class="font-weight-bold">Permissions</label>
+                            <p class="text-muted small">
+                                <i class="fas fa-info-circle"></i> Permissions inherited from the selected Role are marked with a <span class="badge badge-info">Role</span> badge.
+                                Unchecking a role permission will deny it for this user. Checking a non-role permission will grant it directly.
+                            </p>
+                            <div class="row" id="permissions-container">
+                                {{-- Permissions will be populated by JS based on role --}}
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -272,26 +273,25 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Bank Name</label>
-                            <select name="bank_id" id="bank_id" class="form-control">
-                                <option value="">Select Bank</option>
-                                @foreach($banks as $bank)
-                                    <option value="{{ $bank->id }}" {{ old('bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="bank_name" id="bank_name" class="form-control" value="{{ old('bank_name') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Branch Name</label>
-                            <select name="bank_branch_id" id="bank_branch_id" class="form-control">
-                                <option value="">Select Branch</option>
-                            </select>
+                            <input type="text" name="bank_branch_name" id="bank_branch_name" class="form-control" value="{{ old('bank_branch_name') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Account Holder Name</label>
                             <input type="text" name="account_holder_name" id="account_holder_name" class="form-control" value="{{ old('account_holder_name') }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Account Number</label>
+                            <input type="text" name="account_number" id="account_number" class="form-control" value="{{ old('account_number') }}">
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -403,21 +403,18 @@
             }
 
             $('#role').change(function() {
+                renderPermissions($(this).val());
                 populateManagers($(this).val());
             });
 
             // Initial population on page load (e.g., if validation failed)
             let initialRole = $('#role').val();
             if (initialRole) {
+                renderPermissions(initialRole);
                 populateManagers(initialRole);
             }
 
             // --- Existing Scripts ---
-            $('.select2').select2({
-                placeholder: "Select Permissions",
-                allowClear: true
-            });
-
             $('#createEmployeeForm').validate({
                 errorElement: 'span',
                 errorPlacement: function (error, element) {
@@ -441,19 +438,14 @@
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
                     address_proof: { required: true },
-                    bank_id: {
-                        required: function(element) {
-                            return $("#account_holder_name").val().length > 0 || $("#ifsc_code").val().length > 0;
-                        }
-                    },
                     account_holder_name: {
                         required: function(element) {
-                            return $("#bank_id").val().length > 0 || $("#ifsc_code").val().length > 0;
+                            return $("#ifsc_code").val().length > 0;
                         }
                     },
                     ifsc_code: {
                         required: function(element) {
-                            return $("#bank_id").val().length > 0 || $("#account_holder_name").val().length > 0;
+                            return $("#account_holder_name").val().length > 0;
                         }
                     }
                 },
@@ -482,7 +474,6 @@
                     current_address_line: "Please provide the current address",
                     permanent_address_line: "Please provide the permanent address",
                     address_proof: "Please upload an address proof",
-                    bank_id: "Please select a bank",
                     account_holder_name: "Please enter the account holder's name",
                     ifsc_code: "Please enter the IFSC code"
                 }
@@ -537,33 +528,6 @@
             $(document).on('click', '.remove-education', function() {
                 $(this).closest('.education-card').remove();
             });
-
-            function fetchBranches(bankId, selectedBranchId = null) {
-                let branchSelect = $('#bank_branch_id');
-                branchSelect.empty().append('<option value="">Select Branch</option>');
-
-                if (bankId) {
-                    $.ajax({
-                        url: '{{ route("admin.get-branches", ["bank" => ":bankId"]) }}'.replace(':bankId', bankId),
-                        type: 'GET',
-                        success: function(data) {
-                            $.each(data, function(key, branch) {
-                                let selected = selectedBranchId == branch.id ? 'selected' : '';
-                                branchSelect.append('<option value="' + branch.id + '" ' + selected + '>' + branch.name + '</option>');
-                            });
-                        }
-                    });
-                }
-            }
-
-            $('#bank_id').change(function() {
-                fetchBranches($(this).val());
-            });
-
-            let initialBankId = $('#bank_id').val();
-            if (initialBankId) {
-                fetchBranches(initialBankId, {{ old('bank_branch_id') ?? 'null' }});
-            }
 
             // --- Location Scripts ---
             function populateStates(selector) {

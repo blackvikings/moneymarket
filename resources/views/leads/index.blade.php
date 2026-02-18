@@ -245,7 +245,7 @@
                             <td>{{ $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned' }}</td>
                             <td>
                                 @if($lead->follow_up_date)
-                                    {{ $lead->follow_up_date->format('d-m-Y') }} {{ $lead->follow_up_time }}
+                                    {{ \Carbon\Carbon::parse($lead->follow_up_date)->format('d-m-Y') }} {{ $lead->follow_up_time }}
                                 @else
                                     -
                                 @endif
@@ -333,6 +333,10 @@
                                                                     <label>Remark <span class="text-danger">*</span></label>
                                                                     <textarea name="remark" class="form-control" rows="3"></textarea>
                                                                 </div>
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" name="not_active" value="1" id="not_active_new_{{ $lead->id }}">
+                                                                    <label class="form-check-label" for="not_active_new_{{ $lead->id }}">Mark as Not Active</label>
+                                                                </div>
                                                             </div>
 
                                                         @elseif($lead->status == 'Prospect')
@@ -363,6 +367,10 @@
                                                                 <div class="form-group">
                                                                     <label>Remark <span class="text-danger">*</span></label>
                                                                     <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" name="not_active" value="1" id="not_active_prospect_{{ $lead->id }}">
+                                                                    <label class="form-check-label" for="not_active_prospect_{{ $lead->id }}">Mark as Not Active</label>
                                                                 </div>
                                                             </div>
 

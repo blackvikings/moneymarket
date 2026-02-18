@@ -11,18 +11,17 @@
             <p><strong>Name:</strong> {{ $employee->name }}</p>
             <p><strong>Email:</strong> {{ $employee->email }}</p>
             <p><strong>Contact:</strong> {{ $employee->contact_number }}</p>
-            <p><strong>DOB:</strong> {{ $employee->dob ? $employee->dob->format('d-m-Y') : '-' }}</p>
+            <p><strong>DOB:</strong> {{ $employee->dob ? \Carbon\Carbon::parse($employee->dob)->format('d-m-Y') : '-' }}</p>
             <p><strong>Blood Group:</strong> {{ $employee->blood_group ?? '-' }}</p>
             <p><strong>Status:</strong> <span class="badge badge-{{ $employee->status == 'Active' ? 'success' : 'danger' }}">{{ $employee->status }}</span></p>
         </div>
         <div class="col-md-6">
             <h6><strong>Official Details</strong></h6>
             <p><strong>Employee ID:</strong> {{ $employee->employee_id }}</p>
-            <p><strong>Type:</strong> {{ $employee->employee_type }}</p>
+            <p><strong>Type:</strong> {{ $employee->roles->first()->name ?? '-' }}</p>
             <p><strong>Joined Firm:</strong> {{ $employee->firm ? $employee->firm->name : '-' }}</p>
             <p><strong>Reporting Manager:</strong> {{ $employee->reportingManager ? $employee->reportingManager->name : '-' }}</p>
             <p><strong>Proof ID Type:</strong> {{ $employee->proof_id_type ?? '-' }}</p>
-            <p><strong>Proof ID Number:</strong> {{ $employee->proof_id_number ?? '-' }}</p>
             @if($employee->address_proof_path)
                 <p><a href="{{ asset('storage/' . $employee->address_proof_path) }}" target="_blank" class="btn btn-xs btn-info">View Address Proof</a></p>
             @endif
@@ -34,36 +33,40 @@
         <div class="col-md-6">
             <h6><strong>Current Address</strong></h6>
             <p>{{ $employee->current_address_line }}</p>
+            <p>{{ $employee->current_address_city }}, {{ $employee->current_address_state }} - {{ $employee->current_address_pincode }}</p>
         </div>
         <div class="col-md-6">
             <h6><strong>Permanent Address</strong></h6>
             <p>{{ $employee->permanent_address_line }}</p>
+            <p>{{ $employee->permanent_address_city }}, {{ $employee->permanent_address_state }} - {{ $employee->permanent_address_pincode }}</p>
         </div>
     </div>
 
     @if($employee->education->count() > 0)
         <hr>
         <h6><strong>Education Details</strong></h6>
-        <table class="table table-sm table-bordered">
-            <thead>
-                <tr>
-                    <th>Degree</th>
-                    <th>Institution</th>
-                    <th>Passing Year</th>
-                    <th>Percentage</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($employee->education as $edu)
+        <div class="table-responsive">
+            <table class="table table-sm table-bordered">
+                <thead>
                     <tr>
-                        <td>{{ $edu->degree }}</td>
-                        <td>{{ $edu->institution }}</td>
-                        <td>{{ $edu->passing_year }}</td>
-                        <td>{{ $edu->percentage ?? '-' }}</td>
+                        <th>Degree</th>
+                        <th>Institution</th>
+                        <th>Passing Year</th>
+                        <th>Percentage</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach($employee->education as $edu)
+                        <tr>
+                            <td>{{ $edu->degree }}</td>
+                            <td>{{ $edu->institution }}</td>
+                            <td>{{ $edu->passing_year }}</td>
+                            <td>{{ $edu->percentage ?? '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     @endif
 
     <hr>
