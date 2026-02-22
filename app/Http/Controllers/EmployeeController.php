@@ -146,7 +146,7 @@ class EmployeeController extends Controller
 
     public function show(User $employee)
     {
-        $employee->load('education', 'firm', 'reportingManager', 'bank', 'bankBranch');
+        $employee->load('education', 'firm', 'reportingManager');
         return view('employees.show-modal', compact('employee'))->render();
     }
 

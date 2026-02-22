@@ -73,8 +73,8 @@
     <h6><strong>Account Details</strong></h6>
     <div class="row">
         <div class="col-md-6">
-            <p><strong>Bank:</strong> {{ $employee->bank ? $employee->bank->name : '-' }}</p>
-            <p><strong>Branch:</strong> {{ $employee->bankBranch ? $employee->bankBranch->name : '-' }}</p>
+            <p><strong>Bank:</strong> {{ $employee->bank_name ?? '-' }}</p>
+            <p><strong>Branch:</strong> {{ $employee->bank_branch_name ?? '-' }}</p>
         </div>
         <div class="col-md-6">
             <p><strong>A/C Holder:</strong> {{ $employee->account_holder_name ?? '-' }}</p>
