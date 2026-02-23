@@ -225,10 +225,11 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-6">
                         <div class="form-group">
                             <label>Address Proof (File) <span class="text-danger">*</span></label>
                             <input type="file" name="address_proof" class="form-control-file @error('address_proof') is-invalid @enderror" required>
+                            <small class="form-text text-muted">Allowed types: PDF, JPG, JPEG, PNG. Max size: 2MB.</small>
                             @error('address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
