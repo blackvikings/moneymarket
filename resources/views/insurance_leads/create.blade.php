@@ -2,6 +2,42 @@
 
 @section('title', 'Add New Insurance Lead')
 
+@section('css')
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <style>
+        .dropzone {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            background: #f8f9fa;
+            min-height: 150px;
+            padding: 20px;
+        }
+        .dropzone .dz-message {
+            font-weight: 400;
+        }
+        .dropzone .dz-message .note {
+            font-size: 0.8em;
+            font-weight: 200;
+            display: block;
+            margin-top: 1.4rem;
+        }
+        .dropzone .dz-preview .dz-remove {
+            color: #fff;
+            background: #dc3545;
+            padding: 2px 5px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .dropzone .dz-preview .dz-remove:hover {
+            background: #a71d2a;
+            color: #fff;
+        }
+    </style>
+@stop
+
 @section('content_header')
     <h1>Add New Insurance Lead</h1>
 @stop
@@ -9,8 +45,12 @@
 @section('content')
     <div class="card">
         <div class="card-body">
-            <form action="{{ route(get_route_prefix() . 'insurance-leads.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route(get_route_prefix() . 'insurance-leads.store') }}" method="POST" enctype="multipart/form-data" id="insuranceLeadForm">
                 @csrf
+                {{-- Hidden Fields --}}
+                <input type="hidden" name="lead_type" value="Insurance">
+                <input type="hidden" name="vehicle_name_id" id="vehicle_name_id">
+
                 <h5>Customer Details</h5>
                 <div class="row">
                     <div class="col-md-4">
@@ -47,10 +87,44 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label>Residence Type</label>
-                            <select name="residence_type" class="form-control">
-                                <option value="Rented">Rented</option>
-                                <option value="Own">Own</option>
+                            <label>Enquire At (Firm)</label>
+                            <select name="firm_id" class="form-control">
+                                <option value="">Select Firm</option>
+                                @foreach($firms as $firm)
+                                    <option value="{{ $firm->id }}">{{ $firm->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Vehicle Details</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Manufacturer</label>
+                            <select name="manufacture_id" id="manufacture_id" class="form-control manufacture-select">
+                                <option value="">Select Manufacturer</option>
+                                @foreach($manufactures as $mfg)
+                                    <option value="{{ $mfg->id }}">{{ $mfg->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Model Name</label>
+                            <select name="model_name" id="model_name" class="form-control vehicle-name-select">
+                                <option value="">Select Manufacturer First</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Variant</label>
+                            <select name="variant" id="variant" class="form-control variant-select">
+                                <option value="">Select Model First</option>
                             </select>
                         </div>
                     </div>
@@ -128,29 +202,138 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Address Proof Upload <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small> <span class="text-danger">*</span></label>
-                            <input type="file" name="insurance_address_proof" class="form-control-file" required>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <div class="form-group">
                             <label>Address Proof Type <span class="text-danger">*</span></label>
-                            <input type="text" name="insurance_address_proof_type" class="form-control" placeholder="e.g., Aadhar, Voter ID" required>
+                            <select name="insurance_address_proof_type" class="form-control" required>
+                                <option value="">Select Type</option>
+                                <option value="Aadhar">Aadhar</option>
+                                <option value="Voter Id">Voter Id</option>
+                                <option value="Driving Licence">Driving Licence</option>
+                                <option value="Pancard">Pancard</option>
+                                <option value="Passport">Passport</option>
+                                <option value="Electricity Bill">Electricity Bill</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Address Proof Upload <small class="text-muted">(Max 5MB per file, JPG, PNG, PDF)</small> <span class="text-danger">*</span></label>
+                            <div id="addressProofDropzone" class="dropzone">
+                                <div class="dz-message">
+                                    <h3>Drop files here or click to upload.</h3>
+                                    <span class="note">Multiple files allowed. Previews will be shown below.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary mt-3">Add Insurance Lead</button>
+                <button type="button" id="submitBtn" class="btn btn-primary mt-3">Add Insurance Lead</button>
             </form>
         </div>
     </div>
 @stop
 
 @section('js')
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script>
+        Dropzone.autoDiscover = false;
+
         $(document).ready(function() {
+            // --- Dropzone Initialization ---
+            var myDropzone = new Dropzone("#addressProofDropzone", {
+                url: "{{ route(get_route_prefix() . 'insurance-leads.store') }}",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 10,
+                maxFiles: 10,
+                paramName: "insurance_address_proof",
+                addRemoveLinks: true,
+                dictRemoveFile: "Remove File",
+                acceptedFiles: "image/*,application/pdf",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                init: function() {
+                    var dz = this;
+
+                    $("#submitBtn").click(function(e) {
+                        e.preventDefault();
+                        if ($("#insuranceLeadForm")[0].checkValidity()) {
+                            if (dz.getQueuedFiles().length > 0) {
+                                dz.processQueue();
+                            } else {
+                                alert("Please upload at least one address proof.");
+                            }
+                        } else {
+                            $("#insuranceLeadForm")[0].reportValidity();
+                        }
+                    });
+
+                    this.on("sendingmultiple", function(data, xhr, formData) {
+                        var formArray = $("#insuranceLeadForm").serializeArray();
+                        $.each(formArray, function(i, field) {
+                            formData.append(field.name, field.value);
+                        });
+                    });
+
+                    this.on("successmultiple", function(files, response) {
+                        window.location.href = "{{ route(get_route_prefix() . 'insurance-leads.index') }}";
+                    });
+                }
+            });
+
+            // --- Vehicle Logic ---
+            $('#manufacture_id').change(function() {
+                let mfgId = $(this).val();
+                let modelSelect = $('#model_name');
+                modelSelect.empty().append('<option value="">Loading...</option>');
+
+                if (mfgId) {
+                    $.ajax({
+                        url: '{{ url("get-vehicle-names") }}/' + mfgId,
+                        type: 'GET',
+                        success: function(data) {
+                            modelSelect.empty().append('<option value="">Select Model</option>');
+                            $.each(data, function(key, name) {
+                                modelSelect.append('<option value="' + name + '">' + name + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    modelSelect.empty().append('<option value="">Select Manufacturer First</option>');
+                }
+            });
+
+            $('#model_name').change(function() {
+                let modelName = $(this).val();
+                let mfgId = $('#manufacture_id').val();
+                let variantSelect = $('#variant');
+                variantSelect.empty().append('<option value="">Loading...</option>');
+
+                if (mfgId && modelName) {
+                    $.ajax({
+                        url: '{{ route("get-variants") }}',
+                        type: 'GET',
+                        data: { manufactureId: mfgId, vehicleName: modelName },
+                        success: function(data) {
+                            variantSelect.empty().append('<option value="">Select Variant</option>');
+                            $.each(data, function(key, item) {
+                                variantSelect.append('<option value="' + item.variant + '" data-id="' + item.id + '">' + item.variant + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    variantSelect.empty().append('<option value="">Select Model First</option>');
+                }
+            });
+
+            $('#variant').change(function() {
+                let selectedId = $(this).find(':selected').data('id');
+                $('#vehicle_name_id').val(selectedId);
+            });
+
             // --- Location Scripts ---
             function populateStates(selector) {
                 $.ajax({
@@ -195,10 +378,8 @@
                 }
             }
 
-            // Initial population
             populateStates('.state-select');
 
-            // Event Handlers
             $('.state-select').change(function() {
                 let citySelect = $(this).closest('.row').find('.city-select');
                 let pincodeInput = $(this).closest('.row').find('.pincode-input');
@@ -241,8 +422,6 @@
                     $('#permanent_pincode').val($('#current_pincode').val());
                     let currentStateVal = $('#current_state').val();
                     $('#permanent_state').val(currentStateVal);
-
-                    // Explicitly populate cities for permanent address
                     populateCities('#permanent_state', '#permanent_city', '#permanent_pincode', $('#current_city').val());
                 } else {
                     $('#permanent_address_line, #permanent_pincode, #permanent_state, #permanent_city').val('');

@@ -94,6 +94,11 @@ class Lead extends Model
         return $this->hasMany(LeadStatusLog::class);
     }
 
+    public function documents()
+    {
+        return $this->hasMany(LeadDocument::class);
+    }
+
     // Address Relationships
     public function currentCity()
     {

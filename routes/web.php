@@ -135,6 +135,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');
     Route::get('insurance-leads/{lead}', [InsuranceLeadController::class, 'show'])->name('insurance-leads.show');
     Route::post('insurance-leads/{lead}/update-details', [InsuranceLeadController::class, 'updateDetails'])->name('insurance-leads.update-details');
+    Route::delete('insurance-leads/document/{document}', [InsuranceLeadController::class, 'deleteDocument'])->name('insurance-leads.delete-document');
 });
 
 // Employee Routes
@@ -195,6 +196,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');
     Route::get('insurance-leads/{lead}', [InsuranceLeadController::class, 'show'])->name('insurance-leads.show');
     Route::post('insurance-leads/{lead}/update-details', [InsuranceLeadController::class, 'updateDetails'])->name('insurance-leads.update-details');
+    Route::delete('insurance-leads/document/{document}', [InsuranceLeadController::class, 'deleteDocument'])->name('insurance-leads.delete-document');
 
     // Employees need access to get branches for dropdowns
     Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');
