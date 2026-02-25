@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Lead extends Model
+class Lead extends Model implements HasMedia
 {
-    use HasFactory;
+    use HasFactory, InteractsWithMedia;
 
     protected $guarded = ['id'];
 
@@ -33,6 +35,17 @@ class Lead extends Model
         'rto_new_at' => 'datetime',
         'rto_done_at' => 'datetime',
     ];
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('insurance_address_proof');
+        $this->addMediaCollection('insurance_pan_card')->singleFile();
+        $this->addMediaCollection('insurance_rc')->singleFile();
+
+        // Future Collections
+        $this->addMediaCollection('loan_documents');
+        $this->addMediaCollection('rto_documents');
+    }
 
     public function assignedTo()
     {
@@ -92,11 +105,6 @@ class Lead extends Model
     public function statusLogs()
     {
         return $this->hasMany(LeadStatusLog::class);
-    }
-
-    public function documents()
-    {
-        return $this->hasMany(LeadDocument::class);
     }
 
     // Address Relationships

@@ -15,6 +15,7 @@ use App\Http\Controllers\CrmController;
 use App\Http\Controllers\RtoController;
 use App\Http\Controllers\InsuranceLeadController;
 use App\Http\Controllers\LocationController;
+use App\Http\Controllers\ReferralLogController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\EmployeeLoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -136,6 +137,10 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::get('insurance-leads/{lead}', [InsuranceLeadController::class, 'show'])->name('insurance-leads.show');
     Route::post('insurance-leads/{lead}/update-details', [InsuranceLeadController::class, 'updateDetails'])->name('insurance-leads.update-details');
     Route::delete('insurance-leads/document/{document}', [InsuranceLeadController::class, 'deleteDocument'])->name('insurance-leads.delete-document');
+
+    // Referral Log Module
+    Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
+    Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
 });
 
 // Employee Routes
@@ -231,6 +236,10 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     // Roles and Permissions for Employees (if they have permission)
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
+
+    // Referral Log Module
+    Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
+    Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
 });
 
 // Location Routes (Shared)
@@ -239,6 +248,7 @@ Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->nam
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
 Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');
+Route::get('/get-employees-by-firm/{firm}', [EmployeeController::class, 'getEmployeesByFirm'])->name('get-employees-by-firm');
 
 Route::get('logs', function () {
     $logFile = storage_path('logs/laravel.log');

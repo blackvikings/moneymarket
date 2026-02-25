@@ -99,6 +99,7 @@ class UserSeeder extends Seeder
             'create insurance lead' => 'CRM',
             'edit insurance lead' => 'CRM',
             'export insurance lead' => 'CRM',
+            'view referral log' => 'CRM',
         ];
 
         foreach ($permissions as $permissionName => $module) {
@@ -120,6 +121,7 @@ class UserSeeder extends Seeder
             'show crm option', 'view crm', 'edit crm', 'export crm',
             'view rto', 'create rto', 'edit rto', 'export rto',
             'view insurance lead', 'create insurance lead', 'edit insurance lead', 'export insurance lead',
+            'view referral log',
         ]);
 
         $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);

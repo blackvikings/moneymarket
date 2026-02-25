@@ -28,6 +28,7 @@
                         <th>Customer Name</th>
                         <th>Contact</th>
                         <th>Expiry Date</th>
+                        <th>City</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -44,6 +45,7 @@
                                     <span class="text-muted">-</span>
                                 @endif
                             </td>
+                            <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-insurance-lead-btn" data-id="{{ $lead->id }}">View</button>
                                 <a href="{{ route(get_route_prefix() . 'insurance-leads.show', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>

@@ -87,18 +87,29 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
+                            <label>Gender <span class="text-danger">*</span></label>
+                            <select name="gender" class="form-control" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male" {{ old('gender', $employee->gender) == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('gender', $employee->gender) == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ old('gender', $employee->gender) == 'Other' ? 'selected' : '' }}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
                             <label>DOB</label>
                             <input type="date" name="dob" class="form-control" value="{{ old('dob', $employee->dob ? $employee->dob->format('Y-m-d') : '') }}">
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Blood Group</label>
                             <input type="text" name="blood_group" class="form-control" value="{{ old('blood_group', $employee->blood_group) }}">
                         </div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Joined Firm <span class="text-danger">*</span></label>

@@ -101,19 +101,31 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
+                            <label>Gender <span class="text-danger">*</span></label>
+                            <select name="gender" class="form-control @error('gender') is-invalid @enderror" required>
+                                <option value="">Select Gender</option>
+                                <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+                                <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+                                <option value="Other" {{ old('gender') == 'Other' ? 'selected' : '' }}>Other</option>
+                            </select>
+                            @error('gender') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
                             <label>Password <span class="text-danger">*</span></label>
                             <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror" required>
                             @error('password') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Confirm Password <span class="text-danger">*</span></label>
                             <input type="password" name="password_confirmation" class="form-control" required>
                         </div>
                     </div>
-                </div>
-                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>DOB</label>
@@ -128,6 +140,8 @@
                             @error('blood_group') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                </div>
+                <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Joined Firm <span class="text-danger">*</span></label>
@@ -433,6 +447,7 @@
                     name: { required: true },
                     contact_number: { required: true, number: true, minlength: 10, maxlength: 10 },
                     email: { required: true, email: true },
+                    gender: { required: true },
                     password: { required: true, minlength: 8 },
                     password_confirmation: { required: true, equalTo: "#password" },
                     firm_id: { required: true },
@@ -463,6 +478,7 @@
                         required: "Please enter an email address",
                         email: "Please enter a valid email address"
                     },
+                    gender: "Please select a gender",
                     password: {
                         required: "Please provide a password",
                         minlength: "Your password must be at least 8 characters long"

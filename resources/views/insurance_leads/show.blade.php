@@ -59,6 +59,11 @@
                     <p><strong>Contact:</strong> {{ $lead->contact_number }}</p>
                     <p><strong>Email:</strong> {{ $lead->email }}</p>
                     <p><strong>Firm:</strong> {{ $lead->firm ? $lead->firm->name : '-' }}</p>
+                    <p><strong>Lead Source:</strong> {{ $lead->lead_source ?? '-' }}
+                        @if($lead->lead_source == 'Any person' && $lead->lead_source_person_name)
+                            ({{ $lead->lead_source_person_name }})
+                        @endif
+                    </p>
                     <p><strong>Aadhar Number:</strong> {{ $lead->aadhar_number }}</p>
                     <p><strong>PAN Number:</strong> {{ $lead->pan_card_number ?? '-' }}</p>
 
@@ -68,13 +73,13 @@
 
                     <h6>Address Proofs:</h6>
                     <div class="row" id="existing-docs">
-                        @forelse($lead->documents->where('document_type', 'address_proof') as $doc)
+                        @forelse($lead->getMedia('insurance_address_proof') as $doc)
                             <div class="col-md-4 mb-3 document-item" id="doc-{{ $doc->id }}">
                                 <div class="document-container">
                                     <span class="delete-doc" data-id="{{ $doc->id }}" title="Delete">&times;</span>
-                                    <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank">
-                                        @if(Str::endsWith($doc->file_path, ['.jpg', '.jpeg', '.png']))
-                                            <img src="{{ asset('storage/' . $doc->file_path) }}" class="img-thumbnail" style="height: 80px; width: 100px; object-fit: cover;">
+                                    <a href="{{ $doc->getUrl() }}" target="_blank">
+                                        @if(Str::endsWith($doc->file_name, ['.jpg', '.jpeg', '.png']))
+                                            <img src="{{ $doc->getUrl() }}" class="img-thumbnail" style="height: 80px; width: 100px; object-fit: cover;">
                                         @else
                                             <div class="bg-light d-flex align-items-center justify-content-center border" style="height: 80px; width: 100px;">
                                                 <i class="fas fa-file-pdf fa-2x text-danger"></i>
@@ -99,7 +104,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <p><strong>RC Number:</strong> {{ $lead->rc_number ?? '-' }}</p>
-                            @if($lead->rc_document_path)
+                            @if($lead->getFirstMediaUrl('insurance_rc'))
+                                <a href="{{ $lead->getFirstMediaUrl('insurance_rc') }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
+                                    <i class="fas fa-file-alt"></i> View RC Document
+                                </a>
+                            @elseif($lead->rc_document_path)
                                 <a href="{{ asset('storage/' . $lead->rc_document_path) }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
                                     <i class="fas fa-file-alt"></i> View RC Document
                                 </a>
@@ -107,7 +116,11 @@
                         </div>
                         <div class="col-md-6">
                             <p><strong>PAN Card:</strong> {{ $lead->pan_card_number ?? '-' }}</p>
-                            @if($lead->pan_card_document_path)
+                            @if($lead->getFirstMediaUrl('insurance_pan_card'))
+                                <a href="{{ $lead->getFirstMediaUrl('insurance_pan_card') }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
+                                    <i class="fas fa-id-card"></i> View PAN Document
+                                </a>
+                            @elseif($lead->pan_card_document_path)
                                 <a href="{{ asset('storage/' . $lead->pan_card_document_path) }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
                                     <i class="fas fa-id-card"></i> View PAN Document
                                 </a>
@@ -115,13 +128,12 @@
                         </div>
                     </div>
                     <hr>
-                    <p><strong>Loan Type:</strong> {{ $lead->loan_type }}</p>
-                    @if($lead->loan_type == 'Vehicle Loan')
-                        <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type }}</p>
-                        <p><strong>Purchase Type:</strong> {{ $lead->vehicle_purchase_type }}</p>
-                        <p><strong>Mfg Name:</strong> {{ $lead->mfg_name }}</p>
-                        <p><strong>Model Name:</strong> {{ $lead->model_name }}</p>
-                        <p><strong>Variant:</strong> {{ $lead->variant }}</p>
+
+                    @if($lead->lead_type == 'Insurance' || $lead->loan_type == 'Vehicle Loan')
+                        <p><strong>Vehicle Details:</strong></p>
+                        <p><strong>Manufacturer:</strong> {{ $lead->manufacture ? $lead->manufacture->name : ($lead->mfg_name ?? '-') }}</p>
+                        <p><strong>Model:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : ($lead->model_name ?? '-') }}</p>
+                        <p><strong>Variant:</strong> {{ $lead->vehicleName ? $lead->vehicleName->variant : ($lead->variant ?? '-') }}</p>
                     @endif
                 </div>
             </div>
@@ -136,7 +148,7 @@
             <form action="{{ route(get_route_prefix() . 'insurance-leads.update-details', $lead->id) }}" method="POST" enctype="multipart/form-data" id="updateInsuranceForm">
                 @csrf
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Select Insurance Company</label>
                             <select name="insurance_id" class="form-control" required>
@@ -147,13 +159,30 @@
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Lead Source</label>
+                            <select name="lead_source" id="lead_source" class="form-control">
+                                <option value="">Select Source</option>
+                                <option value="Self" {{ old('lead_source', $lead->lead_source) == 'Self' ? 'selected' : '' }}>Self</option>
+                                <option value="Social media" {{ old('lead_source', $lead->lead_source) == 'Social media' ? 'selected' : '' }}>Social media</option>
+                                <option value="Any person" {{ old('lead_source', $lead->lead_source) == 'Any person' ? 'selected' : '' }}>Any person</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
+                        <div class="form-group">
+                            <label>Person Name</label>
+                            <input type="text" name="lead_source_person_name" class="form-control" value="{{ old('lead_source_person_name', $lead->lead_source_person_name) }}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance Start Date</label>
                             <input type="date" name="insurance_start_date" class="form-control" value="{{ $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '' }}" required>
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance End Date</label>
                             <input type="date" name="insurance_end_date" class="form-control" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '' }}" required>
@@ -327,6 +356,15 @@
                     });
                 }
             });
+
+            // --- Lead Source Person Name Logic ---
+            $('#lead_source').change(function() {
+                if ($(this).val() === 'Any person') {
+                    $('#lead_source_person_name_div').show();
+                } else {
+                    $('#lead_source_person_name_div').hide();
+                }
+            }).trigger('change');
         });
     </script>
 @stop

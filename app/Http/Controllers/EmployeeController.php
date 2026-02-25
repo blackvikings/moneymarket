@@ -73,6 +73,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
+            'gender' => 'required|in:Male,Female,Other',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|exists:roles,name',
             'contact_number' => 'required|string',
@@ -178,6 +179,7 @@ class EmployeeController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $employee->id,
+            'gender' => 'required|in:Male,Female,Other',
             'role' => 'required|exists:roles,name',
             'contact_number' => 'required|string',
             'dob' => 'nullable|date',
@@ -269,5 +271,15 @@ class EmployeeController extends Controller
     public function getBranches(Bank $bank)
     {
         return response()->json($bank->branches);
+    }
+
+    public function getEmployeesByFirm(Firm $firm)
+    {
+        $employees = User::role('Tele Caller')
+                        ->where('firm_id', $firm->id)
+                        ->where('status', 'Active')
+                        ->select('id', 'name')
+                        ->get();
+        return response()->json($employees);
     }
 }

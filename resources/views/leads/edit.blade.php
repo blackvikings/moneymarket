@@ -2,11 +2,8 @@
 
 @section('title', 'Edit Lead')
 
-@section('content_header')
-    <h1>Edit Lead</h1>
-@stop
-
-@section('content')
+@section('css')
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <style>
         .error {
             color: red;
@@ -15,7 +12,69 @@
         input.error, select.error, textarea.error {
             border: 1px solid red;
         }
+        .dropzone {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            background: #f8f9fa;
+            min-height: 150px;
+            padding: 20px;
+        }
+        .dropzone .dz-message {
+            font-weight: 400;
+        }
+        .dropzone .dz-message .note {
+            font-size: 0.8em;
+            font-weight: 200;
+            display: block;
+            margin-top: 1.4rem;
+        }
+        .dropzone .dz-preview .dz-remove {
+            color: #fff;
+            background: #dc3545;
+            padding: 2px 5px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .dropzone .dz-preview .dz-remove:hover {
+            background: #a71d2a;
+            color: #fff;
+        }
+        .document-container {
+            position: relative;
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .delete-doc {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 18px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid white;
+            z-index: 10;
+        }
     </style>
+@stop
+
+@section('content_header')
+    <h1>Edit Lead</h1>
+@stop
+
+@section('content')
+    <div id="alert-container"></div>
+
     <div class="card">
         <div class="card-body">
             @if(session('error'))
@@ -59,7 +118,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Enquire At (Firm) <span class="text-danger">*</span></label>
-                            <select name="firm_id" class="form-control @error('firm_id') is-invalid @enderror" required>
+                            <select name="firm_id" id="firm_id" class="form-control @error('firm_id') is-invalid @enderror" required>
                                 <option value="">Select Firm</option>
                                 @foreach($firms as $firm)
                                     <option value="{{ $firm->id }}" {{ old('firm_id', $lead->firm_id) == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
@@ -93,7 +152,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Residence Type <span class="text-danger">*</span></label>
                             <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror" required>
@@ -104,7 +163,7 @@
                             @error('residence_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Lead Type <span class="text-danger">*</span></label>
                             <select name="lead_type" id="lead_type" class="form-control @error('lead_type') is-invalid @enderror" required>
@@ -116,7 +175,26 @@
                             @error('lead_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Lead Source</label>
+                            <select name="lead_source" id="lead_source" class="form-control @error('lead_source') is-invalid @enderror">
+                                <option value="">Select Source</option>
+                                <option value="Self" {{ old('lead_source', $lead->lead_source) == 'Self' ? 'selected' : '' }}>Self</option>
+                                <option value="Social media" {{ old('lead_source', $lead->lead_source) == 'Social media' ? 'selected' : '' }}>Social media</option>
+                                <option value="Any person" {{ old('lead_source', $lead->lead_source) == 'Any person' ? 'selected' : '' }}>Any person</option>
+                            </select>
+                            @error('lead_source') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
+                        <div class="form-group">
+                            <label>Person Name</label>
+                            <input type="text" name="lead_source_person_name" class="form-control @error('lead_source_person_name') is-invalid @enderror" value="{{ old('lead_source_person_name', $lead->lead_source_person_name) }}">
+                            @error('lead_source_person_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Profile Picture <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
                             <input type="file" name="profile_picture" class="form-control-file @error('profile_picture') is-invalid @enderror">
@@ -207,7 +285,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
                 <div class="row">
@@ -228,13 +305,38 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
-                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                            @if($lead->current_address_proof_path)
-                                <small><a href="{{ asset('storage/' . $lead->current_address_proof_path) }}" target="_blank">View Current Proof</a></small>
-                            @endif
+                            <label>Address Proof Upload <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
+                            <div id="addressProofDropzone" class="dropzone">
+                                <div class="dz-message">
+                                    <h3>Drop files here or click to upload.</h3>
+                                    <span class="note">Multiple files allowed. Previews will be shown below.</span>
+                                </div>
+                            </div>
                         </div>
+                        {{-- Existing Documents --}}
+                        @if($lead->getMedia('loan_documents')->count() > 0)
+                            <div class="mt-2">
+                                <h6>Existing Address Proofs:</h6>
+                                <div class="row" id="existing-docs">
+                                    @foreach($lead->getMedia('loan_documents') as $doc)
+                                        <div class="col-md-4 mb-3 document-item" id="doc-{{ $doc->id }}">
+                                            <div class="document-container">
+                                                <span class="delete-doc" data-id="{{ $doc->id }}" title="Delete">&times;</span>
+                                                <a href="{{ $doc->getUrl() }}" target="_blank">
+                                                    @if(Str::endsWith($doc->file_name, ['.jpg', '.jpeg', '.png']))
+                                                        <img src="{{ $doc->getUrl() }}" class="img-thumbnail" style="height: 80px; width: 100px; object-fit: cover;">
+                                                    @else
+                                                        <div class="bg-light d-flex align-items-center justify-content-center border" style="height: 80px; width: 100px;">
+                                                            <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                                        </div>
+                                                    @endif
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <hr>
@@ -663,15 +765,15 @@
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
                                 <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
-                                    <option value="0" {{ old('hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
-                                    <option value="1" {{ old('hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
+                                    <option value="0" {{ old('rto_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('rto_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
                                 @error('rto_hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
                             <div class="row">
-                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer', $lead->old_financer) }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('close_amount', $lead->close_amount) }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             </div>
@@ -762,7 +864,6 @@
                         <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="guarantor_relation" class="form-control @error('guarantor_relation') is-invalid @enderror" value="{{ old('guarantor_relation', $lead->guarantor_relation) }}">@error('guarantor_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                 </div>
-
                 <hr>
                 @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('Team Lead'))
                 <div class="row">
@@ -783,7 +884,7 @@
                     <input type="hidden" name="assigned_to" value="{{ $lead->assigned_to }}">
                 @endif
 
-                <button type="submit" class="btn btn-primary mt-3">{{ old('bank_id') ? 'Save & Qualify' : 'Save Lead' }}</button>
+                <button type="button" id="submitBtn" class="btn btn-primary mt-3">{{ old('bank_id') ? 'Save & Qualify' : 'Save Lead' }}</button>
             </form>
         </div>
     </div>
@@ -791,8 +892,106 @@
 
 @section('js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script>
+        Dropzone.autoDiscover = false;
+
         $(document).ready(function() {
+            // --- Dropzone Initialization ---
+            var myDropzone = new Dropzone("#addressProofDropzone", {
+                url: "{{ route(get_route_prefix() . 'leads.update', $lead->id) }}",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 10,
+                maxFiles: 10,
+                paramName: "current_address_proof",
+                addRemoveLinks: true,
+                dictRemoveFile: "Remove File",
+                acceptedFiles: "image/*,application/pdf",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                init: function() {
+                    var dz = this;
+
+                    $("#submitBtn").click(function(e) {
+                        e.preventDefault();
+                        if ($("#editLeadForm").valid()) {
+                            if (dz.getQueuedFiles().length > 0) {
+                                dz.processQueue();
+                            } else {
+                                // If no new files, submit form normally via AJAX
+                                var formData = new FormData($("#editLeadForm")[0]);
+                                $.ajax({
+                                    url: $("#editLeadForm").attr('action'),
+                                    type: 'POST',
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(response) {
+                                        window.location.href = "{{ route(get_route_prefix() . 'leads.index') }}";
+                                    },
+                                    error: function(err) {
+                                        alert("Error updating lead.");
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    this.on("sendingmultiple", function(data, xhr, formData) {
+                        var formArray = $("#editLeadForm").serializeArray();
+                        $.each(formArray, function(i, field) {
+                            formData.append(field.name, field.value);
+                        });
+                        // Append other file inputs
+                        var profilePic = $('input[name="profile_picture"]')[0].files[0];
+                        if(profilePic) formData.append('profile_picture', profilePic);
+
+                        var itrDoc = $('input[name="itr_document"]')[0].files[0];
+                        if(itrDoc) formData.append('itr_document', itrDoc);
+
+                        var businessProof = $('input[name="business_proof_document"]')[0].files[0];
+                        if(businessProof) formData.append('business_proof_document', businessProof);
+                    });
+
+                    this.on("successmultiple", function(files, response) {
+                        window.location.href = "{{ route(get_route_prefix() . 'leads.index') }}";
+                    });
+
+                    this.on("errormultiple", function(files, response) {
+                        alert("Error uploading files. Please check form data.");
+                    });
+                }
+            });
+
+            // --- Delete Document Logic ---
+            $('.delete-doc').click(function() {
+                if(confirm('Are you sure you want to delete this document?')) {
+                    var docId = $(this).data('id');
+                    // We need a generic delete route or reuse the insurance one if it's generic enough
+                    // Since we created a specific route for insurance, we should probably create one for leads too
+                    // For now, I'll assume we need to add a route for this.
+                    // Let's use the insurance route for now as it deletes Media model which is generic
+                    var url = "{{ route(get_route_prefix() . 'insurance-leads.delete-document', ':id') }}".replace(':id', docId);
+
+                    $.ajax({
+                        url: url,
+                        type: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                        success: function(response) {
+                            $('#doc-' + docId).remove();
+                            $('#alert-container').html('<div class="alert alert-success">Document deleted successfully.</div>');
+                        },
+                        error: function() {
+                            alert('Error deleting document.');
+                        }
+                    });
+                }
+            });
+
             // --- Validation ---
             $('#editLeadForm').validate({
                 rules: {
@@ -935,6 +1134,31 @@
                     rc_number: "Please enter the RC number",
                     rto_rc_number: "Please enter the RC number",
                     ins_model_name: "Please enter the model name"
+                }
+            });
+
+            // --- Firm to Employee Logic ---
+            $('#firm_id').change(function() {
+                let firmId = $(this).val();
+                let assignedToSelect = $('#assigned_to');
+
+                if (assignedToSelect.length > 0) { // Only if the dropdown exists (Admin/Team Lead)
+                    assignedToSelect.empty().append('<option value="">Loading...</option>');
+
+                    if (firmId) {
+                        $.ajax({
+                            url: '{{ url("get-employees-by-firm") }}/' + firmId,
+                            type: 'GET',
+                            success: function(data) {
+                                assignedToSelect.empty().append('<option value="">Select User</option>');
+                                $.each(data, function(key, user) {
+                                    assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
+                                });
+                            }
+                        });
+                    } else {
+                        assignedToSelect.empty().append('<option value="">Select Firm First</option>');
+                    }
                 }
             });
 
@@ -1114,7 +1338,13 @@
             }
 
             $(document).on('change', '.manufacture-select', function() {
-                let mfgId = $(this).find(':selected').data('id') || $(this).val();
+                let selectedOption = $(this).find('option:selected');
+                let mfgId = selectedOption.attr('data-id'); // Try getting data-id attribute
+
+                if (!mfgId) {
+                    mfgId = $(this).val(); // Fallback to value (for New Purchase)
+                }
+
                 let container = $(this).closest('.row');
                 populateVehicleNames(mfgId, container);
             });
@@ -1123,12 +1353,13 @@
                 let vehicleName = $(this).val();
                 let container = $(this).closest('.row');
 
-                // Get manufacture ID from the same container
                 let mfgSelect = container.find('.manufacture-select');
-                let mfgId = mfgSelect.find(':selected').data('id') || mfgSelect.val();
+                let selectedOption = mfgSelect.find('option:selected');
+                let mfgId = selectedOption.attr('data-id');
+                if (!mfgId) {
+                    mfgId = mfgSelect.val();
+                }
 
-                // For New Purchase, we need the ID for variants if we use the ID-based API,
-                // but since we're using get-variants by name, this is fine.
                 let variantToSelect = container.find('.variant-select').data('selected');
                 populateVariants(mfgId, vehicleName, container, variantToSelect);
             });
@@ -1264,6 +1495,15 @@
                 $('html, body').animate({scrollTop : 0}, 800);
                 return false;
             });
+
+            // --- Lead Source Person Name Logic ---
+            $('#lead_source').change(function() {
+                if ($(this).val() === 'Any person') {
+                    $('#lead_source_person_name_div').show();
+                } else {
+                    $('#lead_source_person_name_div').hide();
+                }
+            }).trigger('change');
         });
     </script>
 @stop

@@ -7,6 +7,7 @@ use App\Models\Bank;
 use App\Models\RtoAgent;
 use App\Models\Insurance;
 use App\Models\VehicleManufacture;
+use App\Models\Firm;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -82,7 +83,8 @@ class RtoController extends Controller
     {
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
-        return view('rto.create', compact('manufactures', 'insurances'));
+        $firms = Firm::where('is_active', true)->get();
+        return view('rto.create', compact('manufactures', 'insurances', 'firms'));
     }
 
     public function store(Request $request)
@@ -91,26 +93,22 @@ class RtoController extends Controller
             'customer_name' => 'required|string|max:255',
             'father_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
-            'email' => 'required|email|max:255',
-            'residence_type' => 'required|string',
-            'current_address_line' => 'required|string',
-            'permanent_address_line' => 'required|string',
+            'email' => 'nullable|email|max:255',
+            'firm_id' => 'nullable|exists:firms,id',
+            'current_address_line' => 'nullable|string',
+            'permanent_address_line' => 'nullable|string',
             'proof_id_type' => 'nullable|string|max:255',
-            'current_address_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
             'rto_rc_number' => 'required|string|max:255',
         ]);
 
-        $data = $request->except('current_address_proof');
+        $data = $request->except(['current_address_proof', 'residence_type']);
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead'; // Treat as an active lead
         $data['rto_stage'] = 'New';
         $data['lead_type'] = 'RTO'; // Ensure lead type is set
         $data['rto_new_at'] = now(); // Start aging
-
-        if ($request->hasFile('current_address_proof')) {
-            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
-        }
 
         // Map RTO specific fields
         $data['rc_number'] = $request->rto_rc_number;
@@ -131,14 +129,27 @@ class RtoController extends Controller
         $data['insurance_end_date'] = $request->insurance_end_date;
         $data['insurance_amount'] = $request->insurance_amount;
 
-        Lead::create($data);
+        $lead = Lead::create($data);
+
+        // Handle multiple address proofs via Spatie Media Library
+        if ($request->hasFile('current_address_proof')) {
+            foreach ($request->file('current_address_proof') as $file) {
+                $lead->addMedia($file)
+                     ->usingName($request->proof_id_type ?? 'Address Proof')
+                     ->toMediaCollection('rto_documents');
+            }
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'New RTO Lead added successfully.']);
+        }
 
         return redirect()->route(get_route_prefix() . 'rto.index')->with('success', 'New RTO Lead added successfully.');
     }
 
     public function show(Lead $lead)
     {
-        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState']);
+        $lead->load(['bank', 'rtoAgent', 'rtoCloserDeposits', 'rtoChallans', 'insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState', 'media']);
         $stages = $this->stages;
         // Handle null rto_stage as 'New'
         $currentStage = $lead->rto_stage ?? 'New';

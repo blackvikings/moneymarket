@@ -219,6 +219,7 @@
                         <th>Status</th>
                         <th>Assigned To</th>
                         <th>Follow Up</th>
+                        <th>City</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -250,6 +251,7 @@
                                     -
                                 @endif
                             </td>
+                            <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-lead-btn" data-id="{{ $lead->id }}">View</button>
                                 @can('edit lead')

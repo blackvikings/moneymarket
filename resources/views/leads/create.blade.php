@@ -2,11 +2,8 @@
 
 @section('title', 'Create Lead')
 
-@section('content_header')
-    <h1>Create Lead</h1>
-@stop
-
-@section('content')
+@section('css')
+    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <style>
         .error {
             color: red;
@@ -15,7 +12,44 @@
         input.error, select.error, textarea.error {
             border: 1px solid red;
         }
+        .dropzone {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            background: #f8f9fa;
+            min-height: 150px;
+            padding: 20px;
+        }
+        .dropzone .dz-message {
+            font-weight: 400;
+        }
+        .dropzone .dz-message .note {
+            font-size: 0.8em;
+            font-weight: 200;
+            display: block;
+            margin-top: 1.4rem;
+        }
+        .dropzone .dz-preview .dz-remove {
+            color: #fff;
+            background: #dc3545;
+            padding: 2px 5px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        .dropzone .dz-preview .dz-remove:hover {
+            background: #a71d2a;
+            color: #fff;
+        }
     </style>
+@stop
+
+@section('content_header')
+    <h1>Create Lead</h1>
+@stop
+
+@section('content')
     <div class="card">
         <div class="card-body">
             <form action="{{ route(get_route_prefix() . 'leads.store') }}" method="POST" enctype="multipart/form-data" id="createLeadForm">
@@ -44,7 +78,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Enquire At (Firm)</label>
-                            <select name="firm_id" class="form-control @error('firm_id') is-invalid @enderror">
+                            <select name="firm_id" id="firm_id" class="form-control @error('firm_id') is-invalid @enderror">
                                 <option value="">Select Firm</option>
                                 @foreach($firms as $firm)
                                     <option value="{{ $firm->id }}" {{ old('firm_id') == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
@@ -78,7 +112,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Residence Type</label>
                             <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror">
@@ -89,7 +123,7 @@
                             @error('residence_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Lead Type</label>
                             <select name="lead_type" id="lead_type" class="form-control @error('lead_type') is-invalid @enderror">
@@ -101,7 +135,26 @@
                             @error('lead_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Lead Source</label>
+                            <select name="lead_source" id="lead_source" class="form-control @error('lead_source') is-invalid @enderror">
+                                <option value="">Select Source</option>
+                                <option value="Self" {{ old('lead_source') == 'Self' ? 'selected' : '' }}>Self</option>
+                                <option value="Social media" {{ old('lead_source') == 'Social media' ? 'selected' : '' }}>Social media</option>
+                                <option value="Any person" {{ old('lead_source') == 'Any person' ? 'selected' : '' }}>Any person</option>
+                            </select>
+                            @error('lead_source') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
+                        <div class="form-group">
+                            <label>Person Name</label>
+                            <input type="text" name="lead_source_person_name" class="form-control @error('lead_source_person_name') is-invalid @enderror" value="{{ old('lead_source_person_name') }}">
+                            @error('lead_source_person_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
                         <div class="form-group">
                             <label>Profile Picture</label>
                             <input type="file" name="profile_picture" class="form-control-file @error('profile_picture') is-invalid @enderror">
@@ -187,7 +240,6 @@
                                 </div>
                             </div>
                         </div>
-                        {{-- Removed: Permanent Address Proof File Input --}}
                     </div>
                 </div>
                 <div class="row">
@@ -208,9 +260,13 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Address Proof <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
-                            <input type="file" name="current_address_proof" class="form-control-file @error('current_address_proof') is-invalid @enderror">
-                            @error('current_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            <label>Address Proof Upload <small class="text-muted">(Max 5MB per file, JPG, PNG, PDF)</small></label>
+                            <div id="addressProofDropzone" class="dropzone">
+                                <div class="dz-message">
+                                    <h3>Drop files here or click to upload.</h3>
+                                    <span class="note">Multiple files allowed. Previews will be shown below.</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -722,7 +778,7 @@
                     <input type="hidden" name="assigned_to" value="{{ auth()->id() }}">
                 @endif
 
-                <button type="submit" class="btn btn-primary mt-3">Save</button>
+                <button type="button" id="submitBtn" class="btn btn-primary mt-3">Save</button>
             </form>
         </div>
     </div>
@@ -735,8 +791,73 @@
 
 @section('js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script>
+        Dropzone.autoDiscover = false;
+
         $(document).ready(function() {
+            // --- Dropzone Initialization ---
+            var myDropzone = new Dropzone("#addressProofDropzone", {
+                url: "{{ route(get_route_prefix() . 'leads.store') }}",
+                autoProcessQueue: false,
+                uploadMultiple: true,
+                parallelUploads: 10,
+                maxFiles: 10,
+                paramName: "current_address_proof",
+                addRemoveLinks: true,
+                dictRemoveFile: "Remove File",
+                acceptedFiles: "image/*,application/pdf",
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
+                init: function() {
+                    var dz = this;
+
+                    $("#submitBtn").click(function(e) {
+                        e.preventDefault();
+                        if ($("#createLeadForm").valid()) {
+                            if (dz.getQueuedFiles().length > 0) {
+                                dz.processQueue();
+                            } else {
+                                // If no files, submit form normally via AJAX
+                                var formData = new FormData($("#createLeadForm")[0]);
+                                $.ajax({
+                                    url: $("#createLeadForm").attr('action'),
+                                    type: 'POST',
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    success: function(response) {
+                                        window.location.href = "{{ route(get_route_prefix() . 'leads.index') }}";
+                                    },
+                                    error: function(err) {
+                                        alert("Error creating lead.");
+                                    }
+                                });
+                            }
+                        }
+                    });
+
+                    this.on("sendingmultiple", function(data, xhr, formData) {
+                        var formArray = $("#createLeadForm").serializeArray();
+                        $.each(formArray, function(i, field) {
+                            formData.append(field.name, field.value);
+                        });
+                        // Append profile picture if selected
+                        var profilePic = $('input[name="profile_picture"]')[0].files[0];
+                        if(profilePic) formData.append('profile_picture', profilePic);
+                    });
+
+                    this.on("successmultiple", function(files, response) {
+                        window.location.href = "{{ route(get_route_prefix() . 'leads.index') }}";
+                    });
+
+                    this.on("errormultiple", function(files, response) {
+                        alert("Error uploading files. Please check form data.");
+                    });
+                }
+            });
+
             // Initialize validation
             $('#createLeadForm').validate({
                 rules: {
@@ -755,6 +876,31 @@
                     },
                     email: {
                         email: "Please enter a valid email address"
+                    }
+                }
+            });
+
+            // --- Firm to Employee Logic ---
+            $('#firm_id').change(function() {
+                let firmId = $(this).val();
+                let assignedToSelect = $('#assigned_to');
+
+                if (assignedToSelect.length > 0) { // Only if the dropdown exists (Admin/Team Lead)
+                    assignedToSelect.empty().append('<option value="">Loading...</option>');
+
+                    if (firmId) {
+                        $.ajax({
+                            url: '{{ url("get-employees-by-firm") }}/' + firmId,
+                            type: 'GET',
+                            success: function(data) {
+                                assignedToSelect.empty().append('<option value="">Select User</option>');
+                                $.each(data, function(key, user) {
+                                    assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
+                                });
+                            }
+                        });
+                    } else {
+                        assignedToSelect.empty().append('<option value="">Select Firm First</option>');
                     }
                 }
             });
@@ -1054,6 +1200,15 @@
                 $('html, body').animate({scrollTop : 0}, 800);
                 return false;
             });
+
+            // --- Lead Source Person Name Logic ---
+            $('#lead_source').change(function() {
+                if ($(this).val() === 'Any person') {
+                    $('#lead_source_person_name_div').show();
+                } else {
+                    $('#lead_source_person_name_div').hide();
+                }
+            }).trigger('change');
         });
     </script>
 @stop

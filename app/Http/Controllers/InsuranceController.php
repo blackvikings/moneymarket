@@ -47,36 +47,19 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name',
             'agent_name' => 'required',
-            'address_line' => 'required|string',
-            'pincode' => 'required|string|max:10',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
             'types' => 'nullable|array',
             'types.*.name' => 'required_with:types|string',
-            'types.*.sub_types' => 'nullable|array',
-            'types.*.sub_types.*' => 'nullable|string',
         ]);
 
         $insurance = Insurance::create([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
-            'address_line' => $request->address_line,
-            'pincode' => $request->pincode,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
         ]);
 
         if ($request->has('types') && is_array($request->types)) {
             foreach ($request->types as $typeData) {
                 if (!empty($typeData['name'])) {
-                    $type = $insurance->types()->create(['name' => $typeData['name']]);
-                    if (isset($typeData['sub_types'])) {
-                        foreach ($typeData['sub_types'] as $subTypeName) {
-                            if (!empty($subTypeName)) {
-                                $type->subTypes()->create(['name' => $subTypeName]);
-                            }
-                        }
-                    }
+                    $insurance->types()->create(['name' => $typeData['name']]);
                 }
             }
         }
@@ -101,23 +84,13 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name,' . $insurance->id,
             'agent_name' => 'required',
-            'address_line' => 'required|string',
-            'pincode' => 'required|string|max:10',
-            'state_id' => 'required|exists:states,id',
-            'city_id' => 'required|exists:cities,id',
             'types' => 'nullable|array',
             'types.*.name' => 'required_with:types|string',
-            'types.*.sub_types' => 'nullable|array',
-            'types.*.sub_types.*' => 'nullable|string',
         ]);
 
         $insurance->update([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
-            'address_line' => $request->address_line,
-            'pincode' => $request->pincode,
-            'state_id' => $request->state_id,
-            'city_id' => $request->city_id,
         ]);
 
         // Delete existing types and recreate
@@ -126,14 +99,7 @@ class InsuranceController extends Controller
         if ($request->has('types') && is_array($request->types)) {
             foreach ($request->types as $typeData) {
                 if (!empty($typeData['name'])) {
-                    $type = $insurance->types()->create(['name' => $typeData['name']]);
-                    if (isset($typeData['sub_types'])) {
-                        foreach ($typeData['sub_types'] as $subTypeName) {
-                            if (!empty($subTypeName)) {
-                                $type->subTypes()->create(['name' => $subTypeName]);
-                            }
-                        }
-                    }
+                    $insurance->types()->create(['name' => $typeData['name']]);
                 }
             }
         }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
+use App\Models\ReferralLog;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
@@ -171,6 +172,16 @@ class CrmController extends Controller
         }
 
         $lead->update($data);
+
+        // Create Referral Log if applicable
+        if ($lead->referral_amount > 0) {
+            ReferralLog::create([
+                'lead_id' => $lead->id,
+                'amount' => $lead->referral_amount,
+                'status' => 'Pending',
+            ]);
+            $messages[] = 'Referral payment logged.';
+        }
 
         return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', implode(' ', $messages));
     }

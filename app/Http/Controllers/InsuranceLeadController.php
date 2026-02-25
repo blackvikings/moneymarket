@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Lead;
 use App\Models\Insurance;
 use App\Models\Firm;
-use App\Models\LeadDocument;
 use App\Models\VehicleManufacture;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use App\Exports\InsuranceLeadExport;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class InsuranceLeadController extends Controller
 {
@@ -44,6 +43,8 @@ class InsuranceLeadController extends Controller
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
             'firm_id' => 'nullable|exists:firms,id',
+            'lead_source' => 'nullable|string|max:255',
+            'lead_source_person_name' => 'nullable|string|max:255',
             'insurance_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
             'current_address_line' => 'nullable|string',
@@ -60,6 +61,12 @@ class InsuranceLeadController extends Controller
         ]);
 
         $data = $request->except(['insurance_address_proof', 'residence_type']);
+
+        // Unset lead_source_person_name if lead_source is not 'Any Person'
+        if ($request->input('lead_source') !== 'Any Person') {
+            $data['lead_source_person_name'] = null;
+        }
+
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead';
         $data['rto_stage'] = 'RTO Done';
@@ -72,7 +79,6 @@ class InsuranceLeadController extends Controller
             $data['mfg_name'] = $mfg ? $mfg->name : null;
         }
 
-        // Model and Variant names are usually handled by the AJAX/Frontend but let's ensure they are set
         $data['model_name'] = $request->model_name ?? $data['model_name'] ?? null;
         $data['variant'] = $request->variant ?? $data['variant'] ?? null;
 
@@ -80,12 +86,9 @@ class InsuranceLeadController extends Controller
 
         if ($request->hasFile('insurance_address_proof')) {
             foreach ($request->file('insurance_address_proof') as $file) {
-                $path = $file->store('insurance_docs', 'public');
-                LeadDocument::create([
-                    'lead_id' => $lead->id,
-                    'file_path' => $path,
-                    'document_type' => 'address_proof'
-                ]);
+                $lead->addMedia($file)
+                     ->usingName($request->insurance_address_proof_type ?? 'Address Proof')
+                     ->toMediaCollection('insurance_address_proof');
             }
         }
 
@@ -102,7 +105,8 @@ class InsuranceLeadController extends Controller
             return redirect()->back()->with('error', 'This lead is not in the Insurance module.');
         }
 
-        $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState', 'firm', 'documents']);
+        // Removed 'documents' from load, added 'media'
+        $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState', 'firm', 'media']);
         $insurances = Insurance::where('is_active', true)->get();
 
         if ($request->ajax()) {
@@ -126,6 +130,8 @@ class InsuranceLeadController extends Controller
             'rc_number' => 'nullable|string|max:100',
             'rc_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'insurance_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'lead_source' => 'nullable|string|max:255',
+            'lead_source_person_name' => 'nullable|string|max:255',
         ]);
 
         $data = [
@@ -137,20 +143,21 @@ class InsuranceLeadController extends Controller
             'insurance_idv_amount' => $request->insurance_idv_amount,
             'pan_card_number' => $request->pan_card_number,
             'rc_number' => $request->rc_number,
+            'lead_source' => $request->lead_source,
+            'lead_source_person_name' => $request->lead_source_person_name,
         ];
 
+        // Unset lead_source_person_name if lead_source is not 'Any Person'
+        if ($request->input('lead_source') !== 'Any Person') {
+            $data['lead_source_person_name'] = null;
+        }
+
         if ($request->hasFile('pan_card_document')) {
-            if ($lead->pan_card_document_path) {
-                Storage::disk('public')->delete($lead->pan_card_document_path);
-            }
-            $data['pan_card_document_path'] = $request->file('pan_card_document')->store('pan_docs', 'public');
+            $lead->addMediaFromRequest('pan_card_document')->toMediaCollection('insurance_pan_card');
         }
 
         if ($request->hasFile('rc_document')) {
-            if ($lead->rc_document_path) {
-                Storage::disk('public')->delete($lead->rc_document_path);
-            }
-            $data['rc_document_path'] = $request->file('rc_document')->store('rc_docs', 'public');
+            $lead->addMediaFromRequest('rc_document')->toMediaCollection('insurance_rc');
         }
 
         $lead->update($data);
@@ -158,12 +165,7 @@ class InsuranceLeadController extends Controller
         // Handle new address proofs from Dropzone
         if ($request->hasFile('insurance_address_proof')) {
             foreach ($request->file('insurance_address_proof') as $file) {
-                $path = $file->store('insurance_docs', 'public');
-                LeadDocument::create([
-                    'lead_id' => $lead->id,
-                    'file_path' => $path,
-                    'document_type' => 'address_proof'
-                ]);
+                $lead->addMedia($file)->toMediaCollection('insurance_address_proof');
             }
         }
 
@@ -174,11 +176,9 @@ class InsuranceLeadController extends Controller
         return redirect()->route(get_route_prefix() . 'insurance-leads.index')->with('success', 'Insurance details updated successfully.');
     }
 
-    public function deleteDocument(LeadDocument $document)
+    public function deleteDocument(Media $document)
     {
-        Storage::disk('public')->delete($document->file_path);
         $document->delete();
-
         return response()->json(['success' => true, 'message' => 'Document deleted successfully.']);
     }
 

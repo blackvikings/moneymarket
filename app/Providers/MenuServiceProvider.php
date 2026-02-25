@@ -65,6 +65,16 @@ class MenuServiceProvider extends ServiceProvider
                 ]);
             }
 
+            // Add Referral Log Menu (Admin Only)
+            if ($user->hasRole('admin')) {
+                $event->menu->add([
+                    'text' => 'Referral Log',
+                    'icon' => 'fas fa-fw fa-money-check-alt',
+                    'route' => $prefix . 'referral-logs.index',
+                    'can' => 'view referral log',
+                ]);
+            }
+
             // Add Employees Menu (Admin or Users with permissions)
             if ($user->hasRole('admin') || $user->can('show employee option')) {
                 $event->menu->add([

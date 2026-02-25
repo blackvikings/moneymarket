@@ -136,15 +136,22 @@ class LeadController extends Controller
             'current_address_line' => 'nullable|string',
             'permanent_address_line' => 'nullable|string',
             'lead_type' => 'nullable|in:Loan,RTO,Insurance',
+            'lead_source' => 'nullable|string|max:255',
+            'lead_source_person_name' => 'nullable|string|max:255',
             'assigned_to' => 'nullable|exists:users,id',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'proof_id_type' => 'nullable|string|max:255',
-            'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
-            // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
+            'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
         ]);
 
         $data = $request->all();
+
+        // Unset lead_source_person_name if lead_source is not 'Any Person'
+        if ($request->input('lead_source') !== 'Any Person') {
+            $data['lead_source_person_name'] = null;
+        }
+
         $data = $this->mapLeadTypeData($data);
 
         $data['created_by'] = Auth::id();
@@ -159,13 +166,18 @@ class LeadController extends Controller
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
-        if ($request->hasFile('current_address_proof')) {
-            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
-        }
-
-        // Removed permanent address proof handling
+        // Removed old single file upload logic for current_address_proof
 
         $lead = Lead::create($data);
+
+        // Handle multiple address proofs via Spatie Media Library
+        if ($request->hasFile('current_address_proof')) {
+            foreach ($request->file('current_address_proof') as $file) {
+                $lead->addMedia($file)
+                     ->usingName($request->proof_id_type ?? 'Address Proof')
+                     ->toMediaCollection('loan_documents');
+            }
+        }
 
         // Log initial status
         $lead->statusLogs()->create([
@@ -174,12 +186,16 @@ class LeadController extends Controller
             'created_by' => Auth::id(),
         ]);
 
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Lead created successfully.']);
+        }
+
         return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead created successfully.');
     }
 
     public function show(Lead $lead)
     {
-        $lead->load(['assignedTo', 'createdBy', 'bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'insurance', 'statusLogs.user']);
+        $lead->load(['assignedTo', 'createdBy', 'bank', 'bankBranch', 'firm', 'manufacture', 'vehicleName', 'insurance', 'statusLogs.user', 'media']);
         $branches = [];
         if ($lead->bank_id) {
             $bank = Bank::find($lead->bank_id);
@@ -209,16 +225,23 @@ class LeadController extends Controller
             'contact_number' => 'required|string|max:20',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'proof_id_type' => 'nullable|string|max:255',
-            'current_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
-            // 'permanent_address_proof' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120', // Removed
+            'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
+            'lead_source' => 'nullable|string|max:255',
+            'lead_source_person_name' => 'nullable|string|max:255',
             // ... all other detailed validation rules
         ]);
 
         // Ensure numeric fields are properly handled if they are empty strings
         $data = $request->all();
+
+        // Unset lead_source_person_name if lead_source is not 'Any Person'
+        if ($request->input('lead_source') !== 'Any Person') {
+            $data['lead_source_person_name'] = null;
+        }
+
         $data = $this->mapLeadTypeData($data);
 
         $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income'];
@@ -251,14 +274,14 @@ class LeadController extends Controller
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
+        // Handle multiple address proofs via Spatie Media Library
         if ($request->hasFile('current_address_proof')) {
-            if ($lead->current_address_proof_path) {
-                Storage::disk('public')->delete($lead->current_address_proof_path);
+            foreach ($request->file('current_address_proof') as $file) {
+                $lead->addMedia($file)
+                     ->usingName($request->proof_id_type ?? 'Address Proof')
+                     ->toMediaCollection('loan_documents');
             }
-            $data['current_address_proof_path'] = $request->file('current_address_proof')->store('address_proofs', 'public');
         }
-
-        // Removed permanent address proof handling
 
         if ($request->hasFile('itr_document')) {
             if ($lead->itr_document_path) {
@@ -295,7 +318,14 @@ class LeadController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
+            if ($request->ajax()) {
+                return response()->json(['success' => true, 'message' => 'Lead details updated and qualified successfully!']);
+            }
             return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead details updated and qualified successfully!');
+        }
+
+        if ($request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Lead updated successfully.']);
         }
 
         return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead updated successfully.');

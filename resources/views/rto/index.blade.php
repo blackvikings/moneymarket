@@ -167,6 +167,7 @@
                         <th>Contact</th>
                         <th>RTO Stage</th>
                         <th>Aging</th>
+                        <th>City</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -178,6 +179,7 @@
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
                             <td>{{ $lead->rto_aging }}</td>
+                            <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-rto-btn" data-id="{{ $lead->id }}">View</button>
                                 @if($lead->rto_stage !== 'Loan Return')

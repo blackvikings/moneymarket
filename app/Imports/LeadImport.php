@@ -25,10 +25,10 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
             $firmId = $row['firm_id'];
         }
 
-        // Find user to assign to by employee_id
+        // Find user to assign to by unique_id
         $assignedTo = null;
         if (isset($row['employee_id'])) {
-            $user = User::where('employee_id', $row['employee_id'])->first();
+            $user = User::where('unique_id', $row['employee_id'])->first();
             if ($user) {
                 $assignedTo = $user->id;
             }
@@ -54,7 +54,7 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'customer_name' => 'required',
             'contact_number' => 'required',
-            'employee_id' => 'nullable|exists:users,employee_id',
+            'employee_id' => 'nullable|exists:users,unique_id',
         ];
     }
 }

@@ -97,6 +97,25 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Lead Source</label>
+                            <select name="lead_source" id="lead_source" class="form-control">
+                                <option value="">Select Source</option>
+                                <option value="Self">Self</option>
+                                <option value="Social media">Social media</option>
+                                <option value="Any person">Any person</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4" id="lead_source_person_name_div" style="display:none;">
+                        <div class="form-group">
+                            <label>Person Name</label>
+                            <input type="text" name="lead_source_person_name" class="form-control">
+                        </div>
+                    </div>
+                </div>
 
                 <hr>
                 <h5>Vehicle Details</h5>
@@ -428,6 +447,15 @@
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');
                 }
             });
+
+            // --- Lead Source Person Name Logic ---
+            $('#lead_source').change(function() {
+                if ($(this).val() === 'Any person') {
+                    $('#lead_source_person_name_div').show();
+                } else {
+                    $('#lead_source_person_name_div').hide();
+                }
+            }).trigger('change');
         });
     </script>
 @stop

@@ -167,6 +167,7 @@
                         <th>Branch</th>
                         <th>CRM Stage</th>
                         <th>Start Date</th>
+                        <th>City</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -180,6 +181,7 @@
                             <td>{{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</td>
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
                             <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : $lead->created_at->format('d-m-Y') }}</td>
+                            <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
                                 @if($lead->crm_stage !== 'Disbursal')
