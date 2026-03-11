@@ -22,14 +22,13 @@ class LeadSourcePersonController extends Controller
         // 1. Search Employees (Users)
         $employees = User::where('name', 'like', "%$query%")
             ->orWhere('employee_id', 'like', "%$query%")
-            ->orWhere('unique_id', 'like', "%$query%")
             ->limit(10)
-            ->get(['id', 'name', 'employee_id', 'unique_id']);
+            ->get(['id', 'name', 'employee_id']);
 
         foreach ($employees as $emp) {
             $results[] = [
                 'id' => $emp->name, // Using name as ID for the lead_source_person_name field
-                'text' => $emp->name . " (Employee - " . ($emp->employee_id ?? $emp->unique_id) . ")",
+                'text' => $emp->name . " (Employee - " . $emp->employee_id . ")",
                 'type' => 'Employee',
                 'name' => $emp->name
             ];

@@ -141,6 +141,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::delete('insurance-leads/document/{document}', [InsuranceLeadController::class, 'deleteDocument'])->name('insurance-leads.delete-document');
 
     // Referral Log Module
+    Route::get('referral-logs/export', [ReferralLogController::class, 'export'])->name('referral-logs.export');
     Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
     Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
 });
@@ -242,6 +243,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::resource('permissions', PermissionController::class);
 
     // Referral Log Module
+    Route::get('referral-logs/export', [ReferralLogController::class, 'export'])->name('referral-logs.export');
     Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
     Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
 });

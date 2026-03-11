@@ -9,6 +9,7 @@ use App\Models\Firm;
 use App\Models\VehicleManufacture;
 use App\Models\Insurance;
 use App\Models\LeadStatusLog;
+use App\Models\ReferralLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\LeadExport;
@@ -148,7 +149,7 @@ class LeadController extends Controller
         $data = $request->all();
 
         // Unset lead_source_person_name if lead_source is not 'Any Person'
-        if ($request->input('lead_source') !== 'Any Person') {
+        if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;
         }
 
@@ -185,6 +186,15 @@ class LeadController extends Controller
             'remark' => 'Lead created.',
             'created_by' => Auth::id(),
         ]);
+
+        // Create a referral log if the source is 'Any Person'
+        if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
+            ReferralLog::create([
+                'lead_id' => $lead->id,
+                'amount' => 0, // Default amount
+                'status' => 'Pending',
+            ]);
+        }
 
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Lead created successfully.']);
@@ -238,7 +248,7 @@ class LeadController extends Controller
         $data = $request->all();
 
         // Unset lead_source_person_name if lead_source is not 'Any Person'
-        if ($request->input('lead_source') !== 'Any Person') {
+        if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;
         }
 
@@ -298,6 +308,14 @@ class LeadController extends Controller
         }
 
         $lead->update($data);
+
+        // Create or update a referral log if the source is 'Any Person'
+        if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
+            ReferralLog::firstOrCreate(
+                ['lead_id' => $lead->id],
+                ['amount' => 0, 'status' => 'Pending']
+            );
+        }
 
         if ($request->input('qualify_on_save') == 1) {
             $request->validate([

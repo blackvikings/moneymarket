@@ -9,6 +9,8 @@ class ReferralPerson extends Model
 {
     use HasFactory;
 
+    protected $table = 'referral_persons';
+
     protected $fillable = [
         'name',
         'contact_number',
