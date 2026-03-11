@@ -13,7 +13,7 @@ class VehicleManufactureController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view vehicle manufacture', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create vehicle manufacture', ['only' => ['create','store']]);
+        $this->middleware('permission:create vehicle manufacture', ['only' => ['create','store', 'storeAjax']]);
         $this->middleware('permission:edit vehicle manufacture', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete vehicle manufacture', ['only' => ['destroy']]);
         $this->middleware('permission:export vehicle manufacture', ['only' => ['export']]);
@@ -74,6 +74,49 @@ class VehicleManufactureController extends Controller
         }
 
         return redirect()->route('admin.vehicle-manufactures.index')->with('success', 'Vehicle and variants saved successfully');
+    }
+
+    public function storeAjax(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string',
+            'vehicle_name' => 'required|string',
+            'variants' => 'nullable|array',
+            'variants.*' => 'nullable|string',
+        ]);
+
+        // Find or create manufacture
+        $manufacture = VehicleManufacture::firstOrCreate(['name' => $request->name]);
+
+        $variants = $request->input('variants', []);
+        $createdVariants = [];
+
+        if (is_array($variants) && count($variants) > 0) {
+            foreach ($variants as $variant) {
+                if (!empty($variant)) {
+                    $v = $manufacture->vehicleNames()->create([
+                        'name' => $request->vehicle_name,
+                        'variant' => $variant
+                    ]);
+                    $createdVariants[] = $v;
+                }
+            }
+        } else {
+            // Create at least one entry for the vehicle name even if no variants are provided
+            $v = $manufacture->vehicleNames()->create([
+                'name' => $request->vehicle_name,
+                'variant' => null
+            ]);
+            $createdVariants[] = $v;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vehicle and variants saved successfully',
+            'manufacture' => $manufacture,
+            'vehicle_name' => $request->vehicle_name,
+            'variants' => $createdVariants
+        ]);
     }
 
     public function show(VehicleManufacture $vehicleManufacture)

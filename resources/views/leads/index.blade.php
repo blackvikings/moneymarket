@@ -279,12 +279,19 @@
                                                         @csrf
                                                         <div class="form-group">
                                                             <label>Assign Bank <span class="text-danger">*</span></label>
-                                                            <select name="bank_id" class="form-control bank-select" required>
-                                                                <option value="">Select Bank</option>
-                                                                @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                                                    <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                                                                @endforeach
-                                                            </select>
+                                                            <div class="input-group">
+                                                                <select name="bank_id" class="form-control bank-select" required>
+                                                                    <option value="">Select Bank</option>
+                                                                    @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                                        <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                                <div class="input-group-append">
+                                                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
+                                                                        <i class="fas fa-plus"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                         <div class="form-group">
                                                             <label>Assign Branch <span class="text-danger">*</span></label>
@@ -390,12 +397,19 @@
                                                                 <div class="action-fields" id="proceed_to_bank_assign-fields-{{ $lead->id }}">
                                                                     <div class="form-group">
                                                                         <label>Assign Bank <span class="text-danger">*</span></label>
-                                                                        <select name="bank_id" class="form-control bank-select" required>
-                                                                            <option value="">Select Bank</option>
-                                                                            @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                                                                <option value="{{ $bank->id }}">{{ $bank->name }}</option>
-                                                                            @endforeach
-                                                                        </select>
+                                                                        <div class="input-group">
+                                                                            <select name="bank_id" class="form-control bank-select" required>
+                                                                                <option value="">Select Bank</option>
+                                                                                @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                                                    <option value="{{ $bank->id }}">{{ $bank->name }}</option>
+                                                                                @endforeach
+                                                                            </select>
+                                                                            <div class="input-group-append">
+                                                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
+                                                                                    <i class="fas fa-plus"></i>
+                                                                                </button>
+                                                                            </div>
+                                                                        </div>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label>Assign Branch <span class="text-danger">*</span></label>
@@ -465,6 +479,37 @@
         </div>
     </div>
     @endif
+
+    <!-- Add Bank Modal -->
+    <div class="modal fade" id="addBankModal" tabindex="-1" role="dialog" aria-labelledby="addBankModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBankModalLabel">Add New Bank</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addBankForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Bank Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Branch Name <span class="text-danger">*</span></label>
+                            <input type="text" name="branch_name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Bank</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
@@ -532,7 +577,7 @@
 
             // Trigger change when modal is shown to set initial state
             $('.modal').on('shown.bs.modal', function () {
-                if($(this).attr('id') !== 'globalViewModal') {
+                if($(this).attr('id') !== 'globalViewModal' && $(this).attr('id') !== 'addBankModal') {
                     handleRadioChange($(this));
                 }
             });
@@ -576,6 +621,31 @@
                 if (!$(this).prop('checked')) {
                     $('#selectAll').prop('checked', false);
                 }
+            });
+
+            // --- Add Bank AJAX ---
+            $('#addBankForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route(get_route_prefix() . 'banks.store-ajax') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Add to all bank selects on the page
+                            let newOption = `<option value="${response.bank.id}">${response.bank.name}</option>`;
+                            $('.bank-select').append(newOption);
+
+                            $('#addBankModal').modal('hide');
+                            $('#addBankForm')[0].reset();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding bank. Please check inputs.');
+                    }
+                });
             });
         });
     </script>

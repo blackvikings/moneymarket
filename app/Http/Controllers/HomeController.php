@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Lead;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -24,9 +26,25 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $totalLeads = Lead::count();
-        $confirmedLeads = Lead::where('status', 'Lead')->count();
-        $assignedToBank = Lead::whereNotNull('bank_id')->count();
+        $user = Auth::user();
+        $query = Lead::query();
+
+        // --- Hierarchy Logic ---
+        if ($user->hasRole('admin')) {
+            // Admin sees all leads
+        } elseif ($user->hasRole('Team Lead')) {
+            // Team Lead sees own leads + subordinates' leads
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $subordinateIds[] = $user->id; // Include self
+            $query->whereIn('assigned_to', $subordinateIds);
+        } else {
+            // Other users (Tele Caller, etc.) see only their own leads
+            $query->where('assigned_to', $user->id);
+        }
+
+        $totalLeads = $query->clone()->count();
+        $confirmedLeads = $query->clone()->where('status', 'Lead')->count();
+        $assignedToBank = $query->clone()->whereNotNull('bank_id')->count();
 
         return view('home', compact('totalLeads', 'confirmedLeads', 'assignedToBank'));
     }

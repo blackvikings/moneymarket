@@ -16,6 +16,7 @@ use App\Http\Controllers\RtoController;
 use App\Http\Controllers\InsuranceLeadController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\ReferralLogController;
+use App\Http\Controllers\LeadSourcePersonController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\EmployeeLoginController;
 use App\Http\Controllers\Auth\ForgotPasswordController;
@@ -77,6 +78,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
+    Route::post('banks/store-ajax', [BankController::class, 'storeAjax'])->name('banks.store-ajax');
     Route::resource('banks', BankController::class);
 
     Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
@@ -209,8 +211,10 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     // Masters Routes for Employees (if they have permission)
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
+    Route::post('banks/store-ajax', [BankController::class, 'storeAjax'])->name('banks.store-ajax');
     Route::resource('banks', BankController::class);
 
+    // Masters Routes for Employees (if they have permission)
     Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
     Route::post('firms/{firm}/toggle-status', [FirmController::class, 'toggleStatus'])->name('firms.toggle-status');
     Route::resource('firms', FirmController::class);
@@ -249,6 +253,11 @@ Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'ge
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
 Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');
 Route::get('/get-employees-by-firm/{firm}', [EmployeeController::class, 'getEmployeesByFirm'])->name('get-employees-by-firm');
+Route::post('/vehicle-manufactures/store-ajax', [VehicleManufactureController::class, 'storeAjax'])->name('vehicle-manufactures.store-ajax');
+
+// Lead Source Person Routes
+Route::get('/lead-source-persons/search', [LeadSourcePersonController::class, 'search'])->name('lead-source-persons.search');
+Route::post('/lead-source-persons/store', [LeadSourcePersonController::class, 'store'])->name('lead-source-persons.store');
 
 Route::get('logs', function () {
     $logFile = storage_path('logs/laravel.log');

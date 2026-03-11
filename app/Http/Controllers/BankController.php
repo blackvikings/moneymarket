@@ -13,7 +13,7 @@ class BankController extends Controller
     public function __construct()
     {
         $this->middleware('permission:view bank', ['only' => ['index', 'show']]);
-        $this->middleware('permission:create bank', ['only' => ['create','store']]);
+        $this->middleware('permission:create bank', ['only' => ['create','store', 'storeAjax']]);
         $this->middleware('permission:edit bank', ['only' => ['edit','update', 'toggleStatus']]);
         $this->middleware('permission:delete bank', ['only' => ['destroy']]);
         $this->middleware('permission:export bank', ['only' => ['export']]);
@@ -70,6 +70,29 @@ class BankController extends Controller
         }
 
         return redirect()->route('admin.banks.index')->with('success', 'Bank created successfully');
+    }
+
+    public function storeAjax(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|unique:banks,name',
+            'branch_name' => 'required|string',
+        ]);
+
+        $bank = Bank::create([
+            'name' => $request->name,
+        ]);
+
+        $branch = $bank->branches()->create([
+            'name' => $request->branch_name,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Bank and branch created successfully',
+            'bank' => $bank,
+            'branch' => $branch
+        ]);
     }
 
     public function show(Bank $bank)

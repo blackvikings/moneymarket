@@ -4,6 +4,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         .dropzone {
             border: 2px dashed #007bff;
@@ -34,6 +35,12 @@
         .dropzone .dz-preview .dz-remove:hover {
             background: #a71d2a;
             color: #fff;
+        }
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
         }
     </style>
 @stop
@@ -112,7 +119,16 @@
                     <div class="col-md-4" id="lead_source_person_name_div" style="display:none;">
                         <div class="form-group">
                             <label>Person Name</label>
-                            <input type="text" name="lead_source_person_name" class="form-control">
+                            <div class="input-group">
+                                <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2 @error('lead_source_person_name') is-invalid @enderror">
+                                    <option value="">Search for a person...</option>
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -123,12 +139,19 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Manufacturer</label>
-                            <select name="manufacture_id" id="manufacture_id" class="form-control manufacture-select">
-                                <option value="">Select Manufacturer</option>
-                                @foreach($manufactures as $mfg)
-                                    <option value="{{ $mfg->id }}">{{ $mfg->name }}</option>
-                                @endforeach
-                            </select>
+                            <div class="input-group">
+                                <select name="manufacture_id" id="manufacture_id" class="form-control manufacture-select">
+                                    <option value="">Select Manufacturer</option>
+                                    @foreach($manufactures as $mfg)
+                                        <option value="{{ $mfg->id }}">{{ $mfg->name }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -252,14 +275,141 @@
             </form>
         </div>
     </div>
+
+    <!-- Add Manufacture Modal -->
+    <div class="modal fade" id="addManufactureModal" tabindex="-1" role="dialog" aria-labelledby="addManufactureModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addManufactureModalLabel">Add New Vehicle Manufacture</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addManufactureForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Manufacturer Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Model Name <span class="text-danger">*</span></label>
+                            <input type="text" name="vehicle_name" class="form-control" required>
+                        </div>
+                        <div id="variant-container">
+                            <div class="form-group">
+                                <label>Variant(s)</label>
+                                <div class="input-group mb-2">
+                                    <input type="text" name="variants[]" class="form-control" placeholder="Enter variant">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-success add-variant" type="button"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Referral Person Modal -->
+    <div class="modal fade" id="addReferralPersonModal" tabindex="-1" role="dialog" aria-labelledby="addReferralPersonModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReferralPersonModalLabel">Add New Referral Person</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addReferralPersonForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Person</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         Dropzone.autoDiscover = false;
 
         $(document).ready(function() {
+            // --- Select2 for Lead Source Person ---
+            $('#lead_source_person_name').select2({
+                placeholder: 'Search for a person...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('lead-source-persons.search') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // --- Add Referral Person AJAX ---
+            $('#addReferralPersonForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route('lead-source-persons.store') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            let newOption = new Option(response.person.name, response.person.name, true, true);
+                            $('#lead_source_person_name').append(newOption).trigger('change');
+                            $('#addReferralPersonModal').modal('hide');
+                            $('#addReferralPersonForm')[0].reset();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding person. Please check inputs.');
+                    }
+                });
+            });
+
             // --- Dropzone Initialization ---
             var myDropzone = new Dropzone("#addressProofDropzone", {
                 url: "{{ route(get_route_prefix() . 'insurance-leads.store') }}",
@@ -456,6 +606,47 @@
                     $('#lead_source_person_name_div').hide();
                 }
             }).trigger('change');
+
+            // --- Add Manufacture AJAX ---
+            $(document).on('click', '.add-variant', function() {
+                let html = `
+                    <div class="input-group mb-2">
+                        <input type="text" name="variants[]" class="form-control" placeholder="Enter variant">
+                        <div class="input-group-append">
+                            <button class="btn btn-danger remove-variant" type="button"><i class="fas fa-minus"></i></button>
+                        </div>
+                    </div>`;
+                $('#variant-container').append(html);
+            });
+
+            $(document).on('click', '.remove-variant', function() {
+                $(this).closest('.input-group').remove();
+            });
+
+            $('#addManufactureForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route('vehicle-manufactures.store-ajax') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Add to all manufacture selects on the page
+                            let newOption = `<option value="${response.manufacture.id}" data-id="${response.manufacture.id}">${response.manufacture.name}</option>`;
+                            $('.manufacture-select').append(newOption);
+
+                            $('#addManufactureModal').modal('hide');
+                            $('#addManufactureForm')[0].reset();
+                            $('#variant-container').find('.input-group:not(:first)').remove();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding manufacture. Please check inputs.');
+                    }
+                });
+            });
         });
     </script>
 @stop

@@ -4,6 +4,7 @@
 
 @section('css')
     <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         .error {
             color: red;
@@ -64,6 +65,12 @@
             font-weight: bold;
             border: 1px solid white;
             z-index: 10;
+        }
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
         }
     </style>
 @stop
@@ -190,7 +197,18 @@
                     <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
                         <div class="form-group">
                             <label>Person Name</label>
-                            <input type="text" name="lead_source_person_name" class="form-control @error('lead_source_person_name') is-invalid @enderror" value="{{ old('lead_source_person_name', $lead->lead_source_person_name) }}">
+                            <div class="input-group">
+                                <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2 @error('lead_source_person_name') is-invalid @enderror">
+                                    @if($lead->lead_source_person_name)
+                                        <option value="{{ $lead->lead_source_person_name }}" selected>{{ $lead->lead_source_person_name }}</option>
+                                    @endif
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                             @error('lead_source_person_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -518,12 +536,19 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Manufacturer <span class="text-danger">*</span></label>
-                                        <select name="manufacture_id" class="form-control manufacture-select @error('manufacture_id') is-invalid @enderror">
-                                            <option value="">Select Manufacturer</option>
-                                            @foreach($manufactures as $mfg)
-                                                <option value="{{ $mfg->id }}" {{ old('manufacture_id', $lead->manufacture_id) == $mfg->id ? 'selected' : '' }}>{{ $mfg->name }}</option>
-                                            @endforeach
-                                        </select>
+                                        <div class="input-group">
+                                            <select name="manufacture_id" class="form-control manufacture-select @error('manufacture_id') is-invalid @enderror">
+                                                <option value="">Select Manufacturer</option>
+                                                @foreach($manufactures as $mfg)
+                                                    <option value="{{ $mfg->id }}" {{ old('manufacture_id', $lead->manufacture_id) == $mfg->id ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                         @error('manufacture_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
@@ -574,12 +599,19 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Mfg Name</label>
-                                        <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
-                                            <option value="">Select Manufacturer</option>
-                                            @foreach($manufactures as $mfg)
-                                                <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
-                                            @endforeach
-                                        </select>
+                                        <div class="input-group">
+                                            <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
+                                                <option value="">Select Manufacturer</option>
+                                                @foreach($manufactures as $mfg)
+                                                    <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </div>
                                         @error('rto_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
@@ -697,16 +729,23 @@
                         <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control @error('rto_rc_number') is-invalid @enderror" value="{{ old('rc_number', $lead->rc_number) }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control @error('rto_engine_number') is-invalid @enderror" value="{{ old('engine_number', $lead->engine_number) }}">@error('rto_engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control @error('rto_chassis_number') is-invalid @enderror" value="{{ old('chassis_number', $lead->chassis_number) }}">@error('rto_chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="rto_mfg_year" class="form-control @error('rto_mfg_year') is-invalid @enderror" value="{{ old('mfg_year', $lead->mfg_year) }}">@error('rto_mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" class="form-control @error('mfg_year') is-invalid @enderror" value="{{ old('mfg_year', $lead->mfg_year) }}">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Mfg Name</label>
-                                <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
-                                    <option value="">Select Manufacturer</option>
-                                    @foreach($manufactures as $mfg)
-                                        <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group">
+                                    <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
+                                        <option value="">Select Manufacturer</option>
+                                        @foreach($manufactures as $mfg)
+                                            <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
                                 @error('rto_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -765,16 +804,16 @@
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
                                 <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
-                                    <option value="0" {{ old('rto_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
-                                    <option value="1" {{ old('rto_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
+                                    <option value="0" {{ old('rto_hypothecation_status', $lead->rto_hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('rto_hypothecation_status', $lead->rto_hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
                                 @error('rto_hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
                             <div class="row">
-                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer', $lead->old_financer) }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('close_amount', $lead->close_amount) }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount') is-invalid @enderror" value="{{ old('close_amount', $lead->close_amount) }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             </div>
                         </div>
@@ -788,12 +827,19 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Manufacturer <span class="text-danger">*</span></label>
-                                <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
-                                    <option value="">Select Manufacturer</option>
-                                    @foreach($manufactures as $mfg)
-                                        <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
-                                    @endforeach
-                                </select>
+                                <div class="input-group">
+                                    <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
+                                        <option value="">Select Manufacturer</option>
+                                        @foreach($manufactures as $mfg)
+                                            <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                        @endforeach
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
                                 @error('ins_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -888,15 +934,143 @@
             </form>
         </div>
     </div>
+
+    <!-- Add Manufacture Modal -->
+    <div class="modal fade" id="addManufactureModal" tabindex="-1" role="dialog" aria-labelledby="addManufactureModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addManufactureModalLabel">Add New Vehicle Manufacture</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addManufactureForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Manufacturer Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Model Name <span class="text-danger">*</span></label>
+                            <input type="text" name="vehicle_name" class="form-control" required>
+                        </div>
+                        <div id="variant-container">
+                            <div class="form-group">
+                                <label>Variant(s)</label>
+                                <div class="input-group mb-2">
+                                    <input type="text" name="variants[]" class="form-control" placeholder="Enter variant">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-success add-variant" type="button"><i class="fas fa-plus"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Vehicle</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Referral Person Modal -->
+    <div class="modal fade" id="addReferralPersonModal" tabindex="-1" role="dialog" aria-labelledby="addReferralPersonModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReferralPersonModalLabel">Add New Referral Person</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addReferralPersonForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Person</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         Dropzone.autoDiscover = false;
 
         $(document).ready(function() {
+            // --- Select2 for Lead Source Person ---
+            $('#lead_source_person_name').select2({
+                placeholder: 'Search for a person...',
+                minimumInputLength: 2,
+                ajax: {
+                    url: "{{ route('lead-source-persons.search') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return {
+                            q: params.term
+                        };
+                    },
+                    processResults: function (data) {
+                        return {
+                            results: data
+                        };
+                    },
+                    cache: true
+                }
+            });
+
+            // --- Add Referral Person AJAX ---
+            $('#addReferralPersonForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route('lead-source-persons.store') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            let newOption = new Option(response.person.name, response.person.name, true, true);
+                            $('#lead_source_person_name').append(newOption).trigger('change');
+                            $('#addReferralPersonModal').modal('hide');
+                            $('#addReferralPersonForm')[0].reset();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding person. Please check inputs.');
+                    }
+                });
+            });
+
             // --- Dropzone Initialization ---
             var myDropzone = new Dropzone("#addressProofDropzone", {
                 url: "{{ route(get_route_prefix() . 'leads.update', $lead->id) }}",
@@ -1504,6 +1678,51 @@
                     $('#lead_source_person_name_div').hide();
                 }
             }).trigger('change');
+
+            // --- Add Manufacture AJAX ---
+            $(document).on('click', '.add-variant', function() {
+                let html = `
+                    <div class="input-group mb-2">
+                        <input type="text" name="variants[]" class="form-control" placeholder="Enter variant">
+                        <div class="input-group-append">
+                            <button class="btn btn-danger remove-variant" type="button"><i class="fas fa-minus"></i></button>
+                        </div>
+                    </div>`;
+                $('#variant-container').append(html);
+            });
+
+            $(document).on('click', '.remove-variant', function() {
+                $(this).closest('.input-group').remove();
+            });
+
+            $('#addManufactureForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route('vehicle-manufactures.store-ajax') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            // Add to all manufacture selects on the page
+                            let newOption = `<option value="${response.manufacture.id}" data-id="${response.manufacture.id}">${response.manufacture.name}</option>`;
+                            $('.manufacture-select').append(newOption);
+
+                            // Also add to selects that use name as value (like rto_mfg_name)
+                            let newOptionByName = `<option value="${response.manufacture.name}" data-id="${response.manufacture.id}">${response.manufacture.name}</option>`;
+                            $('select[name="rto_mfg_name"], select[name="ins_mfg_name"]').append(newOptionByName);
+
+                            $('#addManufactureModal').modal('hide');
+                            $('#addManufactureForm')[0].reset();
+                            $('#variant-container').find('.input-group:not(:first)').remove();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding manufacture. Please check inputs.');
+                    }
+                });
+            });
         });
     </script>
 @stop
