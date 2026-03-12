@@ -126,10 +126,16 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::get('rto/{lead}', [RtoController::class, 'show'])->name('rto.show');
     Route::post('rto/{lead}/update-stage', [RtoController::class, 'updateStage'])->name('rto.update-stage');
     Route::post('rto/{lead}/update-checklist', [RtoController::class, 'updateChecklist'])->name('rto.update-checklist');
+    Route::post('rto/{lead}/update-work-checklist', [RtoController::class, 'updateWorkChecklist'])->name('rto.update-work-checklist');
+    Route::post('rto/{lead}/assign-agent', [RtoController::class, 'assignAgent'])->name('rto.assign-agent');
+    Route::post('rto/{lead}/update-challan', [RtoController::class, 'updateChallan'])->name('rto.update-challan');
+    Route::post('rto/{lead}/upload-doc', [RtoController::class, 'uploadRtoDoc'])->name('rto.upload-doc');
+    Route::post('rto/{lead}/update-verification', [RtoController::class, 'updateVerification'])->name('rto.update-verification');
+    Route::post('rto/{lead}/update-approval', [RtoController::class, 'updateApproval'])->name('rto.update-approval');
     Route::post('rto/{lead}/update-loan-return', [RtoController::class, 'updateLoanReturn'])->name('rto.update-loan-return');
     Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
     Route::post('rto/{lead}/update-rto-done', [RtoController::class, 'updateRtoDone'])->name('rto.update-rto-done');
-    Route::post('rto/{lead}/reject-lead', [RtoController::class, 'rejectLead'])->name('rto.reject-lead');
+    Route::post('rto/{lead}/reject', [RtoController::class, 'rejectLead'])->name('rto.reject');
 
     // Insurance Lead Module
     Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');
@@ -162,9 +168,6 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
         ]);
     });
 
-    // Log Viewer Route (Restricted to Admin)
-
-
     // Employees typically manage leads
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
     Route::post('leads/import', [LeadController::class, 'import'])->name('leads.import');
@@ -172,10 +175,6 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::resource('leads', LeadController::class);
-
-    // Depending on permissions, they might access CRM/RTO too, or just parts of it.
-    // For now, I'll expose the same modules but under the 'employee' prefix.
-    // Access control inside controllers (via permissions) will still apply.
 
     Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
     Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
@@ -192,10 +191,16 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::get('rto/{lead}', [RtoController::class, 'show'])->name('rto.show');
     Route::post('rto/{lead}/update-stage', [RtoController::class, 'updateStage'])->name('rto.update-stage');
     Route::post('rto/{lead}/update-checklist', [RtoController::class, 'updateChecklist'])->name('rto.update-checklist');
+    Route::post('rto/{lead}/update-work-checklist', [RtoController::class, 'updateWorkChecklist'])->name('rto.update-work-checklist');
+    Route::post('rto/{lead}/assign-agent', [RtoController::class, 'assignAgent'])->name('rto.assign-agent');
+    Route::post('rto/{lead}/update-challan', [RtoController::class, 'updateChallan'])->name('rto.update-challan');
+    Route::post('rto/{lead}/upload-doc', [RtoController::class, 'uploadRtoDoc'])->name('rto.upload-doc');
+    Route::post('rto/{lead}/update-verification', [RtoController::class, 'updateVerification'])->name('rto.update-verification');
+    Route::post('rto/{lead}/update-approval', [RtoController::class, 'updateApproval'])->name('rto.update-approval');
     Route::post('rto/{lead}/update-loan-return', [RtoController::class, 'updateLoanReturn'])->name('rto.update-loan-return');
     Route::post('rto/{lead}/update-vehicle-detail', [RtoController::class, 'updateVehicleDetail'])->name('rto.update-vehicle-detail');
     Route::post('rto/{lead}/update-rto-done', [RtoController::class, 'updateRtoDone'])->name('rto.update-rto-done');
-    Route::post('rto/{lead}/reject-lead', [RtoController::class, 'rejectLead'])->name('rto.reject-lead');
+    Route::post('rto/{lead}/reject', [RtoController::class, 'rejectLead'])->name('rto.reject');
 
     // Insurance Lead Module
     Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');

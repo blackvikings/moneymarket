@@ -31,15 +31,17 @@
             margin-left: 0;
             z-index: 0;
         }
-        /* Ensure stacking context for overlap */
-        .rto-tab-container:nth-child(1) { z-index: 1; }
-        .rto-tab-container:nth-child(2) { z-index: 2; }
-        .rto-tab-container:nth-child(3) { z-index: 3; }
-        .rto-tab-container:nth-child(4) { z-index: 4; }
-        .rto-tab-container:nth-child(5) { z-index: 5; }
-        .rto-tab-container:nth-child(6) { z-index: 6; }
-        .rto-tab-container:nth-child(7) { z-index: 7; }
-        .rto-tab-container:nth-child(8) { z-index: 8; }
+        /* Stacking context */
+        .rto-tab-container:nth-child(1) { z-index: 10; }
+        .rto-tab-container:nth-child(2) { z-index: 9; }
+        .rto-tab-container:nth-child(3) { z-index: 8; }
+        .rto-tab-container:nth-child(4) { z-index: 7; }
+        .rto-tab-container:nth-child(5) { z-index: 6; }
+        .rto-tab-container:nth-child(6) { z-index: 5; }
+        .rto-tab-container:nth-child(7) { z-index: 4; }
+        .rto-tab-container:nth-child(8) { z-index: 3; }
+        .rto-tab-container:nth-child(9) { z-index: 2; }
+        .rto-tab-container:nth-child(10) { z-index: 1; }
 
         .rto-tab-content {
             height: 4rem;
@@ -53,8 +55,8 @@
             text-decoration: none !important;
             color: #4b5563;
             background-color: white;
-            border: 1px solid #d1d5db; /* Added border */
-            border-right: none; /* Remove right border to avoid double borders with overlap */
+            border: 1px solid #d1d5db;
+            border-right: none;
         }
 
         .rto-tab-container:last-child .rto-tab-content {
@@ -71,30 +73,30 @@
             border-color: #2563eb;
         }
 
+        .rto-tab-subtitle {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #9ca3af;
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: block;
+        }
+
         .rto-tab-content.active .rto-tab-subtitle,
         .rto-tab-content.active .rto-tab-title {
             color: white;
         }
 
-        .rto-tab-content.active .rto-tab-subtitle {
-            opacity: 0.8;
-        }
-
-        .rto-tab-subtitle {
-            font-size: 0.85rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #9ca3af;
-        }
-
         .rto-tab-title {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 800;
             color: #1e3a8a;
         }
 
-        /* Clip Path */
         .clip-chevron {
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%, 15px 50%);
         }
@@ -102,10 +104,6 @@
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%);
         }
 
-        .error {
-            color: red;
-            font-size: 0.875em;
-        }
         .upper-line {
             display: block;
             height: 1px;
@@ -128,7 +126,6 @@
     <div class="card">
         <div class="card-body p-2">
             <div class="rto-tabs-wrapper mb-0">
-                {{-- All Tab --}}
                 <div class="rto-tab-container">
                     <a href="{{ route(get_route_prefix() . 'rto.index') }}" class="rto-tab-content clip-chevron {{ request('stage') == '' ? 'active' : '' }}">
                         <span class="rto-tab-subtitle">View</span>
@@ -137,11 +134,12 @@
                     </a>
                 </div>
 
-                {{-- Stages Tabs --}}
                 @foreach($stages as $stage)
                     <div class="rto-tab-container">
-                        <a href="{{ route(get_route_prefix() . 'rto.index', ['stage' => $stage]) }}" class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
-                            <span class="rto-tab-subtitle">{{ $stage }}</span>
+                        <a href="{{ route(get_route_prefix() . 'rto.index', ['stage' => $stage]) }}"
+                           class="rto-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}"
+                           data-toggle="tooltip" title="{{ $stage }}">
+                            <span class="rto-tab-subtitle text-truncate d-block" style="max-width: 80px;">{{ $stage }}</span>
                             <span class="rto-tab-title">{{ $counts[$stage] ?? 0 }}</span>
                             <span class="upper-line"></span>
                         </a>
@@ -178,7 +176,13 @@
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
-                            <td>{{ $lead->rto_aging }}</td>
+                            <td>
+                                @if($lead->rto_agent_assigned_at)
+                                    {{ \Carbon\Carbon::parse($lead->rto_agent_assigned_at)->diffInDays(now()) }} Days
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-rto-btn" data-id="{{ $lead->id }}">View</button>
@@ -217,7 +221,7 @@
                                                         <hr>
                                                         <button type="button" class="btn btn-danger btn-sm" data-toggle="collapse" data-target="#rejectCollapse{{ $lead->id }}">Reject Loan</button>
                                                         <div id="rejectCollapse{{ $lead->id }}" class="collapse mt-2">
-                                                            <form action="{{ route(get_route_prefix() . 'rto.reject-lead', $lead->id) }}" method="POST">
+                                                            <form action="{{ route(get_route_prefix() . 'rto.reject', $lead->id) }}" method="POST">
                                                                 @csrf
                                                                 <div class="form-group">
                                                                     <label>Reason for Rejection</label>
@@ -235,9 +239,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="text-center">No leads found.</td>
-                        </tr>
+                        <tr><td colspan="7" class="text-center">No leads found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -245,28 +247,23 @@
         </div>
     </div>
 
-    <!-- Global View Modal -->
     <div class="modal fade" id="globalViewModal" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content" id="globalViewModalContent">
-                {{-- Content will be loaded via AJAX --}}
-            </div>
+            <div class="modal-content" id="globalViewModalContent"></div>
         </div>
     </div>
 @stop
 
 @section('js')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
         $(document).ready(function() {
-            // --- AJAX View Modal ---
+            $('[data-toggle="tooltip"]').tooltip();
+
             $('.view-rto-btn').click(function() {
                 let leadId = $(this).data('id');
                 let url = '{{ route(get_route_prefix() . "rto.show", ":id") }}'.replace(':id', leadId);
-
-                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i></div>');
                 $('#globalViewModal').modal('show');
-
                 $.ajax({
                     url: url,
                     type: 'GET',

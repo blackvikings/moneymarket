@@ -121,68 +121,6 @@
                 {{-- Basic Details --}}
                 <h5>Basic Details</h5>
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Customer Name <span class="text-danger">*</span></label>
-                            <input type="text" name="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', $lead->customer_name) }}" required>
-                            @error('customer_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Father Name <span class="text-danger">*</span></label>
-                            <input type="text" name="father_name" class="form-control @error('father_name') is-invalid @enderror" value="{{ old('father_name', $lead->father_name) }}" required>
-                            @error('father_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Enquire At (Firm) <span class="text-danger">*</span></label>
-                            <select name="firm_id" id="firm_id" class="form-control @error('firm_id') is-invalid @enderror" required>
-                                <option value="">Select Firm</option>
-                                @foreach($firms as $firm)
-                                    <option value="{{ $firm->id }}" {{ old('firm_id', $lead->firm_id) == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('firm_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Mobile Number <span class="text-danger">*</span></label>
-                            <input type="text" name="contact_number" class="form-control @error('contact_number') is-invalid @enderror" value="{{ old('contact_number', $lead->contact_number) }}" required>
-                            @error('contact_number') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Aadhar Number</label>
-                            <input type="text" name="aadhar_number" class="form-control @error('aadhar_number') is-invalid @enderror" value="{{ old('aadhar_number', $lead->aadhar_number) }}" placeholder="12-digit Aadhar Number">
-                            @error('aadhar_number') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-group">
-                            <label>Email Id</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $lead->email) }}" required>
-                            @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="form-group">
-                            <label>Residence Type <span class="text-danger">*</span></label>
-                            <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror" required>
-                                <option value="">Select Type</option>
-                                <option value="Rented" {{ old('residence_type', $lead->residence_type) == 'Rented' ? 'selected' : '' }}>Rented</option>
-                                <option value="Own" {{ old('residence_type', $lead->residence_type) == 'Own' ? 'selected' : '' }}>Own</option>
-                            </select>
-                            @error('residence_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Lead Type <span class="text-danger">*</span></label>
@@ -197,6 +135,68 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
+                            <label>Customer Name <span class="text-danger">*</span></label>
+                            <input type="text" name="customer_name" class="form-control @error('customer_name') is-invalid @enderror" value="{{ old('customer_name', $lead->customer_name) }}" required>
+                            @error('customer_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Father Name <span class="text-danger">*</span></label>
+                            <input type="text" name="father_name" class="form-control @error('father_name') is-invalid @enderror" value="{{ old('father_name', $lead->father_name) }}" required>
+                            @error('father_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Enquire At (Firm) <span class="text-danger">*</span></label>
+                            <select name="firm_id" id="firm_id" class="form-control @error('firm_id') is-invalid @enderror" required>
+                                <option value="">Select Firm</option>
+                                @foreach($firms as $firm)
+                                    <option value="{{ $firm->id }}" {{ old('firm_id', $lead->firm_id) == $firm->id ? 'selected' : '' }}>{{ $firm->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('firm_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Mobile Number <span class="text-danger">*</span></label>
+                            <input type="text" name="contact_number" class="form-control @error('contact_number') is-invalid @enderror" value="{{ old('contact_number', $lead->contact_number) }}" required>
+                            @error('contact_number') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Aadhar Number</label>
+                            <input type="text" name="aadhar_number" class="form-control @error('aadhar_number') is-invalid @enderror" value="{{ old('aadhar_number', $lead->aadhar_number) }}" placeholder="12-digit Aadhar Number">
+                            @error('aadhar_number') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Email Id</label>
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $lead->email) }}" required>
+                            @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="residence_type_div">
+                        <div class="form-group">
+                            <label>Residence Type <span class="text-danger">*</span></label>
+                            <select name="residence_type" class="form-control @error('residence_type') is-invalid @enderror" required>
+                                <option value="">Select Type</option>
+                                <option value="Rented" {{ old('residence_type', $lead->residence_type) == 'Rented' ? 'selected' : '' }}>Rented</option>
+                                <option value="Own" {{ old('residence_type', $lead->residence_type) == 'Own' ? 'selected' : '' }}>Own</option>
+                            </select>
+                            @error('residence_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4" id="lead_source_div">
+                        <div class="form-group">
                             <label>Lead Source</label>
                             <select name="lead_source" id="lead_source" class="form-control @error('lead_source') is-invalid @enderror">
                                 <option value="">Select Source</option>
@@ -207,7 +207,7 @@
                             @error('lead_source') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
+                    <div class="col-md-4" id="lead_source_person_name_div" style="display:none;">
                         <div class="form-group">
                             <label>Person Name</label>
                             <div class="input-group">
@@ -225,7 +225,7 @@
                             @error('lead_source_person_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="form-group">
                             <label>Profile Picture <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
                             <input type="file" name="profile_picture" class="form-control-file @error('profile_picture') is-invalid @enderror">
@@ -443,7 +443,7 @@
                             <div id="salary_details_div" style="display:none;">
                                 <div class="form-group">
                                     <label>Last Month Salary</label>
-                                    <input type="number" step="0.01" name="last_month_salary" class="form-control @error('last_month_salary', $lead->last_month_salary) }}">
+                                    <input type="number" step="0.01" name="last_month_salary" class="form-control @error('last_month_salary') is-invalid @enderror" value="{{ old('last_month_salary', $lead->last_month_salary) }}">
                                     @error('last_month_salary') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="form-group">
@@ -464,13 +464,13 @@
                             <div id="itr_details_div" style="display:none;">
                                 <div class="form-group">
                                     <label>Last ITR Amount</label>
-                                    <input type="number" step="0.01" name="itr_amount" class="form-control @error('itr_amount', $lead->itr_amount) }}">
+                                    <input type="number" step="0.01" name="itr_amount" class="form-control @error('itr_amount') is-invalid @enderror" value="{{ old('itr_amount', $lead->itr_amount) }}">
                                     @error('itr_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                                 <div id="itr_years_div" style="display:none;">
                                     <div class="form-group">
                                         <label>ITR Year(s)</label>
-                                        <select name="itr_years" class="form-control @error('itr_years', $lead->itr_years) }}">
+                                        <select name="itr_years" class="form-control @error('itr_years') is-invalid @enderror">
                                             <option value="">Select Year</option>
                                             <option value="1" {{ old('itr_years', $lead->itr_years) == 1 ? 'selected' : '' }}>1 Year</option>
                                             <option value="2" {{ old('itr_years', $lead->itr_years) == 2 ? 'selected' : '' }}>2 Year</option>
@@ -489,7 +489,7 @@
                             <div id="approx_income_div">
                                 <div class="form-group">
                                     <label>Approx. Income</label>
-                                    <input type="number" step="0.01" name="approx_income" class="form-control @error('approx_income', $lead->approx_income) }}">
+                                    <input type="number" step="0.01" name="approx_income" class="form-control @error('approx_income') is-invalid @enderror" value="{{ old('approx_income', $lead->approx_income) }}">
                                     @error('approx_income') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -538,7 +538,7 @@
                         <div class="col-md-4" id="sub_loan_type_div" style="display:none;">
                             <div class="form-group">
                                 <label id="sub_loan_type_label">Sub Loan Type</label>
-                                <select name="sub_loan_type" id="sub_loan_type" class="form-control @error('sub_loan_type', $lead->sub_loan_type) }}">
+                                <select name="sub_loan_type" id="sub_loan_type" class="form-control @error('sub_loan_type') is-invalid @enderror">
                                     <option value="">Select Sub Loan Type</option>
                                     {{-- Options populated via JS --}}
                                 </select>
@@ -560,7 +560,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Purchase Type</label>
-                                    <select name="loan_purchase_type" id="loan_purchase_type" class="form-control @error('loan_purchase_type', $lead->loan_purchase_type) == 'New' ? 'selected' : '' }}">
+                                    <select name="loan_purchase_type" id="loan_purchase_type" class="form-control @error('loan_purchase_type') is-invalid @enderror">
                                         <option value="New" {{ old('loan_purchase_type', $lead->loan_purchase_type) == 'New' ? 'selected' : '' }}>New</option>
                                         <option value="Balance Transfer" {{ old('loan_purchase_type', $lead->loan_purchase_type) == 'Balance Transfer' ? 'selected' : '' }}>Balance Transfer (BT)</option>
                                     </select>
@@ -636,21 +636,21 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Old Financer Name</label>
-                                    <input type="text" name="old_financer" class="form-control @error('old_financer', $lead->old_financer) }}">
+                                    <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">
                                     @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Number of EMI Paid</label>
-                                    <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count', $lead->emi_paid_count) }}">
+                                    <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">
                                     @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Old Closer Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount', $lead->old_loan_close_amount) }}">
+                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}">
                                     @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -740,14 +740,14 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Showroom Price</label>
-                                        <input type="number" step="0.01" name="showroom_price" class="form-control @error('showroom_price', $lead->showroom_price) }}">
+                                        <input type="number" step="0.01" name="showroom_price" class="form-control @error('showroom_price') is-invalid @enderror" value="{{ old('showroom_price', $lead->showroom_price) }}">
                                         @error('showroom_price') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>On Road Price</label>
-                                        <input type="number" step="0.01" name="on_road_price" class="form-control @error('on_road_price', $lead->on_road_price) }}">
+                                        <input type="number" step="0.01" name="on_road_price" class="form-control @error('on_road_price') is-invalid @enderror" value="{{ old('on_road_price', $lead->on_road_price) }}">
                                         @error('on_road_price') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
@@ -758,15 +758,15 @@
                         <div id="repurchase_div" style="display:none;">
                             <h6>RC Details</h6>
                             <div class="row">
-                                <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rc_number" class="form-control @error('rc_number', $lead->rc_number) }}">@error('rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control @error('engine_number', $lead->engine_number) }}">@error('engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control @error('chassis_number', $lead->chassis_number) }}">@error('chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" id="mfg_year_datepicker_loan" class="form-control @error('mfg_year', $lead->mfg_year) }}" placeholder="MM-YYYY">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rc_number" class="form-control @error('rc_number') is-invalid @enderror" value="{{ old('rc_number', $lead->rc_number) }}">@error('rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="engine_number" class="form-control @error('engine_number') is-invalid @enderror" value="{{ old('engine_number', $lead->engine_number) }}">@error('engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="chassis_number" class="form-control @error('chassis_number') is-invalid @enderror" value="{{ old('chassis_number', $lead->chassis_number) }}">@error('chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" id="mfg_year_datepicker_loan" class="form-control @error('mfg_year') is-invalid @enderror" value="{{ old('mfg_year', $lead->mfg_year) }}" placeholder="MM-YYYY">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Mfg Name</label>
                                         <div class="input-group">
-                                            <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}">
+                                            <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
                                                 <option value="">Select Manufacturer</option>
                                                 @foreach($manufactures as $mfg)
                                                     <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
@@ -800,7 +800,7 @@
                                         @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="owner_serial_number" class="form-control @error('owner_serial_number', $lead->owner_serial_number) }}">@error('owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="owner_serial_number" class="form-control @error('owner_serial_number') is-invalid @enderror" value="{{ old('owner_serial_number', $lead->owner_serial_number) }}">@error('owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             </div>
 
                             <h6>Insurance</h6>
@@ -808,7 +808,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Insurance Available?</label>
-                                        <select name="insurance_available" id="insurance_available" class="form-control @error('insurance_available', $lead->insurance_available) == 0 ? 'selected' : '' }}">
+                                        <select name="insurance_available" id="insurance_available" class="form-control @error('insurance_available') is-invalid @enderror">
                                             <option value="0" {{ old('insurance_available', $lead->insurance_available) == 0 ? 'selected' : '' }}>No</option>
                                             <option value="1" {{ old('insurance_available', $lead->insurance_available) == 1 ? 'selected' : '' }}>Yes</option>
                                         </select>
@@ -820,7 +820,7 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label>Insurance Company</label>
-                                                <select name="insurance_id" class="form-control @error('insurance_id', $lead->insurance_id) == $ins->id ? 'selected' : '' }}">
+                                                <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                                     <option value="">Select Insurance Company</option>
                                                     @foreach($insurances as $ins)
                                                         <option value="{{ $ins->id }}" {{ old('insurance_id', $lead->insurance_id) == $ins->id ? 'selected' : '' }}>{{ $ins->company_name }}</option>
@@ -829,9 +829,9 @@
                                                 @error('insurance_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                             </div>
                                         </div>
-                                        <div class="col-md-3"><div class="form-group"><label>Start Date</label><input type="date" name="insurance_start_date" class="form-control @error('insurance_start_date', $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '') }}">@error('insurance_start_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                        <div class="col-md-3"><div class="form-group"><label>End Date</label><input type="date" name="insurance_end_date" class="form-control @error('insurance_end_date', $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '') }}">@error('insurance_end_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                        <div class="col-md-2"><div class="form-group"><label>IDV Amount</label><input type="number" step="0.01" name="insurance_amount" class="form-control @error('insurance_amount', $lead->insurance_amount) }}">@error('insurance_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-3"><div class="form-group"><label>Start Date</label><input type="date" name="insurance_start_date" class="form-control @error('insurance_start_date') is-invalid @enderror" value="{{ old('insurance_start_date', $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '') }}">@error('insurance_start_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-3"><div class="form-group"><label>End Date</label><input type="date" name="insurance_end_date" class="form-control @error('insurance_end_date') is-invalid @enderror" value="{{ old('insurance_end_date', $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '') }}">@error('insurance_end_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-2"><div class="form-group"><label>IDV Amount</label><input type="number" step="0.01" name="insurance_amount" class="form-control @error('insurance_amount') is-invalid @enderror" value="{{ old('insurance_amount', $lead->insurance_amount) }}">@error('insurance_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                     </div>
                                 </div>
                             </div>
@@ -841,7 +841,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>HP?</label>
-                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}">
+                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status') is-invalid @enderror">
                                             <option value="0" {{ old('hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
                                             <option value="1" {{ old('hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
                                         </select>
@@ -850,9 +850,8 @@
                                 </div>
                                 <div class="col-md-9" id="hp_details_div" style="display:none;">
                                     <div class="row">
-                                        <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer', $lead->old_financer) }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                        {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount', $lead->close_amount) }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
-                                        <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count', $lead->emi_paid_count) }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                     </div>
                                 </div>
                             </div>
@@ -873,7 +872,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Required Amount (In Hand) <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" name="required_in_hand_amount" id="required_in_hand_amount" class="form-control @error('required_in_hand_amount', $lead->required_in_hand_amount) }}" required>
+                                    <input type="number" step="0.01" name="required_in_hand_amount" id="required_in_hand_amount" class="form-control @error('required_in_hand_amount') is-invalid @enderror" value="{{ old('required_in_hand_amount', $lead->required_in_hand_amount) }}" required>
                                     @error('required_in_hand_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
@@ -891,15 +890,15 @@
                 <div id="rto_section" style="display:none;">
                     <h5>RTO Details</h5>
                     <div class="row">
-                        <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control @error('rc_number', $lead->rc_number) }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control @error('rto_engine_number', $lead->engine_number) }}">@error('rto_engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control @error('rto_chassis_number', $lead->chassis_number) }}">@error('rto_chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" id="mfg_year_datepicker_rto" class="form-control @error('mfg_year', $lead->mfg_year) }}" placeholder="MM-YYYY">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>RC Number <span class="text-danger">*</span></label><input type="text" name="rto_rc_number" class="form-control @error('rto_rc_number') is-invalid @enderror" value="{{ old('rto_rc_number', $lead->rc_number) }}">@error('rto_rc_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control @error('rto_engine_number') is-invalid @enderror" value="{{ old('rto_engine_number', $lead->engine_number) }}">@error('rto_engine_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control @error('rto_chassis_number') is-invalid @enderror" value="{{ old('rto_chassis_number', $lead->chassis_number) }}">@error('rto_chassis_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" id="mfg_year_datepicker_rto" class="form-control @error('mfg_year') is-invalid @enderror" value="{{ old('mfg_year', $lead->mfg_year) }}" placeholder="MM-YYYY">@error('mfg_year') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Mfg Name</label>
                                 <div class="input-group">
-                                    <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}">
+                                    <select name="rto_mfg_name" class="form-control manufacture-select @error('rto_mfg_name') is-invalid @enderror">
                                         <option value="">Select Manufacturer</option>
                                         @foreach($manufactures as $mfg)
                                             <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
@@ -933,13 +932,13 @@
                                 @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control @error('owner_serial_number', $lead->owner_serial_number) }}">@error('rto_owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control @error('rto_owner_serial_number') is-invalid @enderror" value="{{ old('rto_owner_serial_number', $lead->owner_serial_number) }}">@error('rto_owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Insurance Available?</label>
-                                <select name="insurance_available" id="rto_insurance_available" class="form-control @error('insurance_available', $lead->insurance_available) == 0 ? 'selected' : '' }}">
+                                <select name="insurance_available" id="rto_insurance_available" class="form-control @error('insurance_available') is-invalid @enderror">
                                     <option value="0" {{ old('insurance_available', $lead->insurance_available) == 0 ? 'selected' : '' }}>No</option>
                                     <option value="1" {{ old('insurance_available', $lead->insurance_available) == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
@@ -951,7 +950,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Insurance Company</label>
-                                        <select name="insurance_id" class="form-control @error('insurance_id', $lead->insurance_id) == $ins->id ? 'selected' : '' }}">
+                                        <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                             <option value="">Select Insurance Company</option>
                                             @foreach($insurances as $ins)
                                                 <option value="{{ $ins->id }}" {{ old('insurance_id', $lead->insurance_id) == $ins->id ? 'selected' : '' }}>{{ $ins->company_name }}</option>
@@ -960,15 +959,16 @@
                                         @error('insurance_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-3"><div class="form-group"><label>Start Date</label><input type="date" name="insurance_start_date" class="form-control @error('insurance_start_date', $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '') }}">@error('insurance_start_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-3"><div class="form-group"><label>End Date</label><input type="date" name="insurance_end_date" class="form-control @error('insurance_end_date', $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '') }}">@error('insurance_end_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-2"><div class="form-group"><label>IDV Amount</label><input type="number" step="0.01" name="insurance_amount" class="form-control @error('insurance_amount', $lead->insurance_amount) }}">@error('insurance_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>Start Date</label><input type="date" name="insurance_start_date" class="form-control @error('insurance_start_date') is-invalid @enderror" value="{{ old('insurance_start_date', $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '') }}">@error('insurance_start_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4"><div class="form-group"><label>End Date</label><input type="date" name="insurance_end_date" class="form-control @error('insurance_end_date') is-invalid @enderror" value="{{ old('insurance_end_date', $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '') }}">@error('insurance_end_date') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             </div>
                         </div>
+                    </div>
+                    <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
-                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status', $lead->rto_hypothecation_status) == 0 ? 'selected' : '' }}">
+                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
                                     <option value="0" {{ old('rto_hypothecation_status', $lead->rto_hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
                                     <option value="1" {{ old('rto_hypothecation_status', $lead->rto_hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
@@ -977,9 +977,26 @@
                         </div>
                         <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
                             <div class="row">
-                                <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer', $lead->old_financer) }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount', $lead->close_amount) }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
-                                <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count', $lead->emi_paid_count) }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Select Bank</label>
+                                        <select name="rto_bank_id" class="form-control @error('rto_bank_id') is-invalid @enderror">
+                                            <option value="">Select Bank</option>
+                                            @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                <option value="{{ $bank->id }}" {{ old('rto_bank_id', $lead->rto_bank_id) == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>NOC Available?</label>
+                                        <select name="rto_noc_status" class="form-control">
+                                            <option value="No" {{ old('rto_noc_status', $lead->rto_noc_status) == 'No' ? 'selected' : '' }}>No</option>
+                                            <option value="Yes" {{ old('rto_noc_status', $lead->rto_noc_status) == 'Yes' ? 'selected' : '' }}>Yes</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -993,7 +1010,7 @@
                             <div class="form-group">
                                 <label>Manufacturer <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}">
+                                    <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
                                         <option value="">Select Manufacturer</option>
                                         @foreach($manufactures as $mfg)
                                             <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
@@ -1030,7 +1047,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
-                                <select name="ins_hypothecation_status" class="form-control @error('ins_hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}">
+                                <select name="ins_hypothecation_status" class="form-control @error('ins_hypothecation_status') is-invalid @enderror">
                                     <option value="0" {{ old('hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
                                     <option value="1" {{ old('hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
@@ -1045,7 +1062,7 @@
                 <h5>Co-Applicant Details</h5>
                 <div class="form-group">
                     <label>Has Co-Applicant?</label>
-                    <select name="has_co_applicant" id="has_co_applicant" class="form-control @error('has_co_applicant', $lead->has_co_applicant) == 0 ? 'selected' : '' }}" style="width: 200px;">
+                    <select name="has_co_applicant" id="has_co_applicant" class="form-control @error('has_co_applicant') is-invalid @enderror" style="width: 200px;">
                         <option value="0" {{ old('has_co_applicant', $lead->has_co_applicant) == 0 ? 'selected' : '' }}>No</option>
                         <option value="1" {{ old('has_co_applicant', $lead->has_co_applicant) == 1 ? 'selected' : '' }}>Yes</option>
                     </select>
@@ -1053,8 +1070,8 @@
                 </div>
                 <div id="co_applicant_div" style="display:none;">
                     <div class="row">
-                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="co_name" class="form-control @error('co_name', $lead->co_name) }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation', $lead->co_relation) }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="co_name" class="form-control @error('co_name') is-invalid @enderror" value="{{ old('co_name', $lead->co_name) }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation') is-invalid @enderror" value="{{ old('co_relation', $lead->co_relation) }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                 </div>
 
@@ -1063,7 +1080,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Assign To <span class="text-danger">*</span></label>
+                            <label>Assign To employee <span class="text-danger">*</span></label>
                             <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" required>
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
@@ -1302,10 +1319,6 @@
             $('.delete-doc').click(function() {
                 if(confirm('Are you sure you want to delete this document?')) {
                     var docId = $(this).data('id');
-                    // We need a generic delete route or reuse the insurance one if it's generic enough
-                    // Since we created a specific route for insurance, we should probably create one for leads too
-                    // For now, I'll assume we need to add a route for this.
-                    // Let's use the insurance route for now as it deletes Media model which is generic
                     var url = "{{ route(get_route_prefix() . 'insurance-leads.delete-document', ':id') }}".replace(':id', docId);
 
                     $.ajax({
@@ -1328,6 +1341,7 @@
             // --- Validation ---
             $('#editLeadForm').validate({
                 rules: {
+                    customer_name: { required: true },
                     father_name: { required: true },
                     email: { required: false, email: true },
                     firm_id: { required: true },
@@ -1434,6 +1448,7 @@
                     }
                 },
                 messages: {
+                    customer_name: "Please enter customer name",
                     father_name: "Please enter the father's name",
                     email: {
                         email: "Please enter a valid email address"
@@ -1457,9 +1472,6 @@
                     guarantor_name: "Please enter the guarantor's name",
                     guarantor_relation: "Please enter the guarantor's relation",
                     assigned_to: "Please select a user to assign the lead to",
-                    mfg_year: {
-                        digits: "Please enter only digits"
-                    },
                     loan_type: "Please select a loan type",
                     vehicle_loan_type: "Please select a vehicle loan type",
                     vehicle_purchase_type: "Please select a purchase type",
@@ -1726,6 +1738,21 @@
                 // Disable inputs in hidden sections to prevent submission
                 $('#loan_section input, #loan_section select, #rto_section input, #rto_section select, #insurance_section input, #insurance_section select, #job_profile_section input, #job_profile_section select').prop('disabled', true);
 
+                // Residence Type logic: If RTO, don't ask for residence type
+                if (val === 'RTO') {
+                    $('#residence_type_div').hide();
+                    $('select[name="residence_type"]').prop('disabled', true);
+                    $('#lead_source_div').hide();
+                    $('#lead_source').prop('disabled', true);
+                    $('#lead_source_person_name_div').hide();
+                    $('#lead_source_person_name').prop('disabled', true);
+                } else {
+                    $('#residence_type_div').show();
+                    $('select[name="residence_type"]').prop('disabled', false);
+                    $('#lead_source_div').show();
+                    $('#lead_source').prop('disabled', false);
+                }
+
                 if (val === 'Loan') {
                     $('#loan_section, #job_profile_section').show();
                     $('#loan_section input, #loan_section select, #job_profile_section input, #job_profile_section select').prop('disabled', false);
@@ -1874,7 +1901,7 @@
                     $('#bt_details_div input').prop('disabled', false);
                 } else {
                     // Check if other loan types have BT selected
-                    if (['Personal Loan', 'Business Loan'].includes(loanType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
+                    if (['Personal Loan', 'Business Loan'].includes(leadType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
                          $('#bt_details_div').show();
                          $('#bt_details_div input').prop('disabled', false);
                     } else {
