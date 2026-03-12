@@ -257,7 +257,7 @@
                                 @can('edit lead')
                                     <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
-                                @if($lead->status !== 'Rejected' && $lead->status !== 'Not_Active' && $lead->status !== 'Bank Assign')
+                                @if($lead->status !== 'Rejected' && $lead->status !== 'Bank Assign')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
                                     </button>
@@ -343,7 +343,7 @@
                                                                     <textarea name="remark" class="form-control" rows="3"></textarea>
                                                                 </div>
                                                                 <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input" name="not_active" value="1" id="not_active_new_{{ $lead->id }}">
+                                                                    <input type="checkbox" class="form-check-input no-require" name="not_active" value="1" id="not_active_new_{{ $lead->id }}">
                                                                     <label class="form-check-label" for="not_active_new_{{ $lead->id }}">Mark as Not Active</label>
                                                                 </div>
                                                             </div>
@@ -378,7 +378,7 @@
                                                                     <textarea name="remark" class="form-control" rows="3"></textarea>
                                                                 </div>
                                                                 <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input" name="not_active" value="1" id="not_active_prospect_{{ $lead->id }}">
+                                                                    <input type="checkbox" class="form-check-input no-require" name="not_active" value="1" id="not_active_prospect_{{ $lead->id }}">
                                                                     <label class="form-check-label" for="not_active_prospect_{{ $lead->id }}">Mark as Not Active</label>
                                                                 </div>
                                                             </div>
@@ -421,6 +421,28 @@
                                                             @else
                                                                 <p>Are you sure you want to proceed?</p>
                                                             @endif
+                                                        @elseif($lead->status == 'Not_Active')
+                                                            <div class="form-group">
+                                                                <label>Select Action:</label><br>
+                                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                                    <label class="btn btn-outline-success active">
+                                                                        <input type="radio" name="action_radio" value="mark_active" data-lead-id="{{ $lead->id }}" checked> Mark as Active
+                                                                    </label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="action-fields" id="mark_active-fields-{{ $lead->id }}">
+                                                                <div class="form-group">
+                                                                    <label>New Status <span class="text-danger">*</span></label>
+                                                                    <select name="new_status" class="form-control" required>
+                                                                        <option value="New">New</option>
+                                                                        <option value="Prospect">Follow up</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="form-group">
+                                                                    <label>Remark <span class="text-danger">*</span></label>
+                                                                    <textarea name="remark" class="form-control" rows="3"></textarea>
+                                                                </div>
+                                                            </div>
                                                         @endif
 
                                                         <button type="submit" class="btn btn-primary btn-block mt-3">Submit</button>
@@ -548,14 +570,16 @@
                 modal.find('.action-fields input, .action-fields select, .action-fields textarea').prop('required', false).prop('disabled', true);
 
                 // Show the relevant section based on action
-                if (action === 'not_interested' || action === 'follow_up' || action === 'qualify' || action === 'reject') {
+                if (action === 'not_interested' || action === 'follow_up' || action === 'qualify' || action === 'reject' || action === 'mark_active') {
                     let sectionId = '#' + action + '-fields-' + leadId;
                     let sectionToShow = modal.find(sectionId);
 
                     if (sectionToShow.length > 0) {
                         sectionToShow.show();
-                        // Enable inputs in the shown section
-                        sectionToShow.find('input, select, textarea').prop('required', true).prop('disabled', false);
+                        // Enable inputs in the shown section, excluding elements with 'no-require' class
+                        sectionToShow.find('input:not(.no-require), select:not(.no-require), textarea:not(.no-require)').prop('required', true).prop('disabled', false);
+                        // Also enable elements with 'no-require' class but don't set required to true
+                        sectionToShow.find('.no-require').prop('disabled', false);
                     }
                 } else if (action === 'proceed_to_bank_assign') {
                     // Special handling for proceed_to_bank_assign

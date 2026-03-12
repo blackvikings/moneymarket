@@ -300,8 +300,8 @@
                     </div>
                     <div class="col-md-9" id="hp_details_div" style="display:none;">
                         <div class="row">
-                            <div class="col-md-4"><div class="form-group"><label>Old Financer</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer') }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                            <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('rto_close_amount') }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer') }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('rto_close_amount') }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
                             <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('rto_emi_paid_count') }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         </div>
                     </div>
@@ -503,7 +503,7 @@
             // --- Vehicle Logic ---
             $('#manufacture_id').change(function() {
                 let mfgId = $(this).find(':selected').data('id');
-                let modelSelect = $('#model_name');
+                let modelSelect = modelSelect = $('#model_name');
                 modelSelect.empty().append('<option value="">Loading...</option>');
 
                 if (mfgId) {

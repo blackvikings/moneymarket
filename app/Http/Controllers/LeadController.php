@@ -106,9 +106,12 @@ class LeadController extends Controller
 
         // Users for dropdown (Admin sees all, Team Lead sees subordinates)
         if ($user->hasRole('admin')) {
-            $users = User::role('Tele Caller')->get(); // Or all users? Usually Tele Callers are assignees
+            $users = User::all(); // Admin can assign to anyone
         } elseif ($user->hasRole('Team Lead')) {
-             $users = User::where('reporting_manager_id', $user->id)->get();
+             // Team Lead can assign to subordinates AND other Team Leaders
+             $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+             $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
+             $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
         } else {
             $users = collect([]); // Empty for others
         }
@@ -118,7 +121,17 @@ class LeadController extends Controller
 
     public function create()
     {
-        $users = User::role('Tele Caller')->get();
+        $user = Auth::user();
+        if ($user->hasRole('admin')) {
+            $users = User::all();
+        } elseif ($user->hasRole('Team Lead')) {
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
+            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
+        } else {
+            $users = collect([$user]);
+        }
+
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
@@ -144,6 +157,8 @@ class LeadController extends Controller
             'proof_id_type' => 'nullable|string|max:255',
             'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
+            'property_approx_value' => 'nullable|numeric',
+            'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $data = $request->all();
@@ -165,6 +180,10 @@ class LeadController extends Controller
 
         if ($request->hasFile('profile_picture')) {
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        if ($request->hasFile('salary_slip')) {
+            $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
         }
 
         // Removed old single file upload logic for current_address_proof
@@ -218,9 +237,17 @@ class LeadController extends Controller
 
     public function edit(Lead $lead)
     {
-        $lead->load('vehicleName'); // Eager load vehicleName relationship
+        $user = Auth::user();
+        if ($user->hasRole('admin')) {
+            $users = User::all();
+        } elseif ($user->hasRole('Team Lead')) {
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
+            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
+        } else {
+            $users = User::where('id', $lead->assigned_to)->get();
+        }
 
-        $users = User::role('Tele Caller')->get();
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
@@ -241,6 +268,8 @@ class LeadController extends Controller
             'aadhar_number' => 'nullable|string|max:20',
             'lead_source' => 'nullable|string|max:255',
             'lead_source_person_name' => 'nullable|string|max:255',
+            'property_approx_value' => 'nullable|numeric',
+            'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             // ... all other detailed validation rules
         ]);
 
@@ -254,7 +283,7 @@ class LeadController extends Controller
 
         $data = $this->mapLeadTypeData($data);
 
-        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income'];
+        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
 
         foreach ($numericFields as $field) {
             if (isset($data[$field]) && $data[$field] === '') {
@@ -282,6 +311,13 @@ class LeadController extends Controller
                 Storage::disk('public')->delete($lead->profile_picture_path);
             }
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
+        }
+
+        if ($request->hasFile('salary_slip')) {
+            if ($lead->salary_slip_path) {
+                Storage::disk('public')->delete($lead->salary_slip_path);
+            }
+            $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
         }
 
         // Handle multiple address proofs via Spatie Media Library
@@ -433,6 +469,14 @@ class LeadController extends Controller
             $data['remark'] = $request->remark;
             $logData['status'] = 'Rejected';
             $logData['remark'] = $request->remark;
+        } elseif ($action === 'mark_active') {
+            $request->validate([
+                'new_status' => 'required|in:New,Prospect',
+                'remark' => 'required|string'
+            ]);
+            $data['status'] = $request->new_status;
+            $logData['status'] = $request->new_status;
+            $logData['remark'] = 'Lead marked as active. ' . $request->remark;
         } else {
             return redirect()->back()->with('error', 'Invalid action.');
         }

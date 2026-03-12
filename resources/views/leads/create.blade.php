@@ -126,8 +126,7 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label>Email Id</label>
-                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}">
-                            @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}"> @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                 </div>
@@ -292,7 +291,7 @@
                             <label>Address Proof Upload <small class="text-muted">(Max 5MB per file, JPG, PNG, PDF)</small></label>
                             <div id="addressProofDropzone" class="dropzone">
                                 <div class="dz-message">
-                                    <h3>Drop files here or click to upload.</h3>
+                                    <h3>Drop files here or click to upload Document.</h3>
                                     <span class="note">Multiple files allowed. Previews will be shown below.</span>
                                 </div>
                             </div>
@@ -339,6 +338,13 @@
                                 @error('nature_of_work') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        <div class="col-md-4" id="business_stability_div" style="display:none;">
+                            <div class="form-group">
+                                <label>Business Stability</label>
+                                <input type="text" name="business_stability" class="form-control @error('business_stability') is-invalid @enderror" value="{{ old('business_stability') }}">
+                                @error('business_stability') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                         <div class="col-md-4" id="salaried_type_div" style="display:none;">
                             <div class="form-group">
                                 <label>Salaried Type</label>
@@ -362,11 +368,43 @@
                                 </select>
                                 @error('income_proof_available') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
+                            <div id="salary_details_div" style="display:none;">
+                                <div class="form-group">
+                                    <label>Last Month Salary</label>
+                                    <input type="number" step="0.01" name="last_month_salary" class="form-control @error('last_month_salary') is-invalid @enderror" value="{{ old('last_month_salary') }}">
+                                    @error('last_month_salary') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                                <div class="form-group">
+                                    <label>Salary Slip</label>
+                                    <input type="file" name="salary_slip" class="form-control-file @error('salary_slip') is-invalid @enderror">
+                                    @error('salary_slip') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>ITR Available?</label>
+                                <select name="has_itr" id="has_itr" class="form-control @error('has_itr') is-invalid @enderror">
+                                    <option value="0" {{ old('has_itr') == 0 ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('has_itr') == 1 ? 'selected' : '' }}>Yes</option>
+                                </select>
+                                @error('has_itr') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
                             <div id="itr_details_div" style="display:none;">
                                 <div class="form-group">
                                     <label>Last ITR Amount</label>
                                     <input type="number" step="0.01" name="itr_amount" class="form-control @error('itr_amount') is-invalid @enderror" value="{{ old('itr_amount') }}">
                                     @error('itr_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                                <div id="itr_years_div" style="display:none;">
+                                    <div class="form-group">
+                                        <label>ITR Year(s)</label>
+                                        <select name="itr_years" class="form-control @error('itr_years') is-invalid @enderror">
+                                            <option value="">Select Year</option>
+                                            <option value="1" {{ old('itr_years') == 1 ? 'selected' : '' }}>1 Year</option>
+                                            <option value="2" {{ old('itr_years') == 2 ? 'selected' : '' }}>2 Year</option>
+                                            <option value="3" {{ old('itr_years') == 3 ? 'selected' : '' }}>3 Year</option>
+                                        </select>
+                                        @error('itr_years') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label>ITR Document</label>
@@ -410,7 +448,7 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Loan Type Required</label>
-                                <select name="loan_type" id="loan_type" class="form-control @error('loan_type') is-invalid @enderror">
+                                <select name="loan_type" id="loan_type_select" class="form-control @error('loan_type') is-invalid @enderror">
                                     <option value="">Select Type</option>
                                     <option value="Vehicle Loan" {{ old('loan_type') == 'Vehicle Loan' ? 'selected' : '' }}>Vehicle Loan</option>
                                     <option value="Housing Loan" {{ old('loan_type') == 'Housing Loan' ? 'selected' : '' }}>Housing Loan</option>
@@ -422,11 +460,124 @@
                                 @error('loan_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
+                        <div class="col-md-4" id="sub_loan_type_div" style="display:none;">
+                            <div class="form-group">
+                                <label id="sub_loan_type_label">Sub Loan Type</label>
+                                <select name="sub_loan_type" id="sub_loan_type" class="form-control @error('sub_loan_type') is-invalid @enderror">
+                                    <option value="">Select Sub Loan Type</option>
+                                    {{-- Options will be populated dynamically via JS --}}
+                                </select>
+                                @error('sub_loan_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
                         <div class="col-md-4" id="other_loan_name_div" style="display:none;">
                             <div class="form-group">
                                 <label>Other Loan Name</label>
                                 <input type="text" name="other_loan_name" class="form-control @error('other_loan_name') is-invalid @enderror" value="{{ old('other_loan_name') }}">
                                 @error('other_loan_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Purchase Type for Personal/Business Loan --}}
+                    <div id="loan_purchase_type_div" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Purchase Type</label>
+                                    <select name="loan_purchase_type" id="loan_purchase_type" class="form-control @error('loan_purchase_type') is-invalid @enderror">
+                                        <option value="New" {{ old('loan_purchase_type') == 'New' ? 'selected' : '' }}>New</option>
+                                        <option value="Balance Transfer" {{ old('loan_purchase_type') == 'Balance Transfer' ? 'selected' : '' }}>Balance Transfer (BT)</option>
+                                    </select>
+                                    @error('loan_purchase_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Property Details (for Housing Loan/LAP) --}}
+                    <div id="property_details_div" style="display:none;">
+                        <h6>Property Details</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Property Location</label>
+                                    <input type="text" name="property_location" class="form-control @error('property_location') is-invalid @enderror" value="{{ old('property_location') }}">
+                                    @error('property_location') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Property Area</label>
+                                    <input type="text" name="property_area" class="form-control @error('property_area') is-invalid @enderror" value="{{ old('property_area') }}">
+                                    @error('property_area') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Property Approx. Value</label>
+                                    <input type="number" step="0.01" name="property_approx_value" class="form-control @error('property_approx_value') is-invalid @enderror" value="{{ old('property_approx_value') }}">
+                                    @error('property_approx_value') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Property Type</label>
+                                    <select name="property_type" class="form-control @error('property_type') is-invalid @enderror">
+                                        <option value="">Select Type</option>
+                                        <option value="Diverted" {{ old('property_type') == 'Diverted' ? 'selected' : '' }}>Diverted</option>
+                                        <option value="Non Diverted" {{ old('property_type') == 'Non Diverted' ? 'selected' : '' }}>Non Diverted</option>
+                                        <option value="Agri Land" {{ old('property_type') == 'Agri Land' ? 'selected' : '' }}>Agri Land</option>
+                                        <option value="other" {{ old('property_type') == 'other' ? 'selected' : '' }}>other</option>
+                                    </select>
+                                    @error('property_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Land Type</label>
+                                    <select name="land_type" class="form-control @error('land_type') is-invalid @enderror">
+                                        <option value="">Select Land Type</option>
+                                        <option value="Farming Land" {{ old('land_type') == 'Farming Land' ? 'selected' : '' }}>Farming Land</option>
+                                        <option value="Plot" {{ old('land_type') == 'Plot' ? 'selected' : '' }}>Plot</option>
+                                        <option value="House" {{ old('land_type') == 'House' ? 'selected' : '' }}>House</option>
+                                        <option value="Flat" {{ old('land_type') == 'Flat' ? 'selected' : '' }}>Flat</option>
+                                        <option value="Commercial land" {{ old('land_type') == 'Commercial land' ? 'selected' : '' }}>Commercial land</option>
+                                        <option value="Commercial property" {{ old('land_type', $lead->land_type ?? '') == 'Commercial property' ? 'selected' : '' }}>Commercial property</option>
+                                        <option value="other" {{ old('land_type') == 'other' ? 'selected' : '' }}>other</option>
+                                    </select>
+                                    @error('land_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- BT Specific Fields (for Personal/Business/Vehicle/Housing/LAP) --}}
+                    <div id="bt_details_div" style="display:none;">
+                        <h6>Balance Transfer (BT) Details</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Old Financer Name</label>
+                                    <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">
+                                    @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Number of EMI Paid</label>
+                                    <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">
+                                    @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Old Closer Amount</label>
+                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount') }}">
+                                    @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -528,7 +679,7 @@
                             </div>
                         </div>
 
-                        {{-- Repurchase/Refinance/BT --}}
+                        {{-- Repurchase/Refinance/BT Details (RC Details) --}}
                         <div id="repurchase_div" style="display:none;">
                             <h6>RC Details</h6>
                             <div class="row">
@@ -625,7 +776,7 @@
                                 <div class="col-md-9" id="hp_details_div" style="display:none;">
                                     <div class="row">
                                         <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                        <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount') is-invalid @enderror" value="{{ old('close_amount') }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount') is-invalid @enderror" value="{{ old('close_amount') }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
                                         <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                     </div>
                                 </div>
@@ -641,20 +792,19 @@
                             <div class="col-md-4" id="old_loan_close_div">
                                 <div class="form-group">
                                     <label>Old Loan Close Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount') }}">
-                                    @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    <input type="number" step="0.01" name="old_loan_close_amount_display" id="old_loan_close_amount_display" class="form-control" disabled>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Required In Hand</label>
+                                    <label>Required Amount (In Hand)</label>
                                     <input type="number" step="0.01" name="required_in_hand_amount" id="required_in_hand_amount" class="form-control @error('required_in_hand_amount') is-invalid @enderror" value="{{ old('required_in_hand_amount') }}">
                                     @error('required_in_hand_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Total Amount</label>
+                                    <label>Total Loan Required</label>
                                     <input type="text" id="total_loan_amount" class="form-control" disabled>
                                 </div>
                             </div>
@@ -708,7 +858,7 @@
                                 @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
-                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control @error('rto_owner_serial_number') is-invalid @enderror" value="{{ old('rto_owner_serial_number') }}">@error('rto_owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-3"><div class="form-group"><label>Owner Srl No</label><input type="text" name="rto_owner_serial_number" class="form-control @error('rto_owner_serial_number') is-invalid @enderror" value="{{ old('owner_serial_number') }}">@error('rto_owner_serial_number') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                     <div class="row">
                         <div class="col-md-3">
@@ -753,7 +903,7 @@
                         <div class="col-md-9" id="rto_hp_details_div" style="display:none;">
                             <div class="row">
                                 <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount') is-invalid @enderror" value="{{ old('close_amount') }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="close_amount" class="form-control @error('close_amount') is-invalid @enderror" value="{{ old('close_amount') }}">@error('close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
                                 <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             </div>
                         </div>
@@ -816,7 +966,6 @@
                 </div>
 
                 <hr>
-                @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('Team Lead'))
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
@@ -824,16 +973,13 @@
                             <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror">
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
-                                    <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
+                                    <option value="{{ $user->id }}" {{ old('assigned_to') == $user->id ? 'selected' : '' }}>{{ $user->name }} ({{ $user->getRoleNames()->first() ?? 'No Role' }})</option>
                                 @endforeach
                             </select>
                             @error('assigned_to') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                 </div>
-                @else
-                    <input type="hidden" name="assigned_to" value="{{ auth()->id() }}">
-                @endif
 
                 <button type="button" id="submitBtn" class="btn btn-primary mt-3">Save</button>
             </form>
@@ -1038,9 +1184,15 @@
                         $.each(formArray, function(i, field) {
                             formData.append(field.name, field.value);
                         });
-                        // Append profile picture if selected
+                        // Append file inputs
                         var profilePic = $('input[name="profile_picture"]')[0].files[0];
                         if(profilePic) formData.append('profile_picture', profilePic);
+
+                        var salarySlip = $('input[name="salary_slip"]')[0].files[0];
+                        if(salarySlip) formData.append('salary_slip', salarySlip);
+
+                        var itrDoc = $('input[name="itr_document"]')[0].files[0];
+                        if(itrDoc) formData.append('itr_document', itrDoc);
                     });
 
                     this.on("successmultiple", function(files, response) {
@@ -1077,27 +1229,7 @@
 
             // --- Firm to Employee Logic ---
             $('#firm_id').change(function() {
-                let firmId = $(this).val();
-                let assignedToSelect = $('#assigned_to');
-
-                if (assignedToSelect.length > 0) { // Only if the dropdown exists (Admin/Team Lead)
-                    assignedToSelect.empty().append('<option value="">Loading...</option>');
-
-                    if (firmId) {
-                        $.ajax({
-                            url: '{{ url("get-employees-by-firm") }}/' + firmId,
-                            type: 'GET',
-                            success: function(data) {
-                                assignedToSelect.empty().append('<option value="">Select User</option>');
-                                $.each(data, function(key, user) {
-                                    assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
-                                });
-                            }
-                        });
-                    } else {
-                        assignedToSelect.empty().append('<option value="">Select Firm First</option>');
-                    }
-                }
+                // Firm filtering logic removed as requested: "Assign to not relate to firm"
             });
 
             // --- Location Scripts ---
@@ -1310,7 +1442,7 @@
             // --- Other Form Logic ---
             $('#job_profile_type').change(function() {
                 let val = $(this).val();
-                $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div').hide();
+                $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div, #business_stability_div, #salary_details_div').hide();
 
                 if (val === 'Farmer') {
                     $('#company_name_div, #designation_div').hide();
@@ -1319,25 +1451,99 @@
                 }
 
                 if (val === 'Self Employed') {
-                    $('#nature_of_work_div, #business_proof_main_div').show();
+                    $('#nature_of_work_div, #business_proof_main_div, #business_stability_div').show();
                 } else if (val === 'Salaried') {
                     $('#salaried_type_div').show();
+                    if ($('#income_proof_available').val() == '1') {
+                        $('#salary_details_div').show();
+                    }
                 }
             }).trigger('change');
 
             $('#income_proof_available').change(function() {
-                $('#itr_details_div').toggle($(this).val() == '1');
+                let profileType = $('#job_profile_type').val();
+                if (profileType === 'Salaried' && $(this).val() == '1') {
+                    $('#salary_details_div').show();
+                } else {
+                    $('#salary_details_div').hide();
+                }
                 $('#approx_income_div').toggle($(this).val() == '0');
+            }).trigger('change');
+
+            $('#has_itr').change(function() {
+                $('#itr_details_div').toggle($(this).val() == '1');
+                $('#itr_years_div').toggle($(this).val() == '1');
             }).trigger('change');
 
             $('#business_proof_available').change(function() {
                 $('#business_proof_doc_div').toggle($(this).val() == '1');
             }).trigger('change');
 
-            $('#loan_type').change(function() {
-                $('#other_loan_name_div').toggle($(this).val() === 'Other');
-                $('#vehicle_loan_details_div').toggle($(this).val() === 'Vehicle Loan');
+            $('#loan_type_select').change(function() {
+                let val = $(this).val();
+                $('#other_loan_name_div').toggle(val === 'Other');
+                $('#vehicle_loan_details_div').toggle(val === 'Vehicle Loan');
+                $('#property_details_div').toggle(val === 'Housing Loan' || val === 'LAP');
+
+                let subLoanTypeDiv = $('#sub_loan_type_div');
+                let subLoanTypeSelect = $('#sub_loan_type');
+                let subLoanTypeLabel = $('#sub_loan_type_label');
+
+                subLoanTypeSelect.empty().append('<option value="">Select Sub Loan Type</option>');
+
+                if (val === 'Housing Loan') {
+                    subLoanTypeDiv.show();
+                    subLoanTypeLabel.text('Sub Housing Loan Type');
+                    subLoanTypeSelect.append('<option value="Lap">Lap</option><option value="Hl">Hl</option><option value="Construction">Construction</option><option value="P+C">P+C</option><option value="Top-up">Top-up</option><option value="BT+Top-up">BT+Top-up</option>');
+                } else if (val === 'Business Loan') {
+                    subLoanTypeDiv.show();
+                    subLoanTypeLabel.text('Sub Business Loan Type');
+                    subLoanTypeSelect.append('<option value="Fresh Loan">Fresh Loan</option><option value="BT Top-up">BT Top-up</option>');
+                } else if (val === 'Personal Loan') {
+                    subLoanTypeDiv.show();
+                    subLoanTypeLabel.text('Sub Personal Loan Type');
+                    subLoanTypeSelect.append('<option value="Fresh Loan">Fresh Loan</option><option value="BT Top-up">BT Top-up</option>');
+                } else {
+                    subLoanTypeDiv.hide();
+                }
+
+                // For Personal or Business Loan, show Loan Purchase Type (New/BT)
+                $('#loan_purchase_type_div').toggle(val === 'Personal Loan' || val === 'Business Loan');
+                if (val !== 'Personal Loan' && val !== 'Business Loan') {
+                    $('#loan_purchase_type').val('New').trigger('change');
+                }
             }).trigger('change');
+
+            $('#loan_purchase_type').change(function() {
+                let val = $(this).val();
+                let loanType = $('#loan_type_select').val();
+
+                // Show BT details if Balance Transfer is selected
+                if (val === 'Balance Transfer') {
+                    $('#bt_details_div').show();
+                    $('#bt_details_div input').prop('disabled', false);
+                } else {
+                    // Also check for vehicle loan BT
+                    if (loanType === 'Vehicle Loan' && $('#vehicle_purchase_type').val() === 'Balance Transfer') {
+                         $('#bt_details_div').show();
+                         $('#bt_details_div input').prop('disabled', false);
+                    } else {
+                        $('#bt_details_div').hide();
+                        $('#bt_details_div input').prop('disabled', true);
+                    }
+                }
+                calculateTotal();
+            });
+
+            $('#sub_loan_type').change(function() {
+                let val = $(this).val();
+                let loanType = $('#loan_type_select').val();
+                if ((loanType === 'Business Loan' || loanType === 'Personal Loan') && val === 'BT Top-up') {
+                    $('#loan_purchase_type').val('Balance Transfer').trigger('change');
+                } else if ((loanType === 'Business Loan' || loanType === 'Personal Loan') && val === 'Fresh Loan') {
+                    $('#loan_purchase_type').val('New').trigger('change');
+                }
+            });
 
             $('#vehicle_loan_type').change(function() {
                 $('#other_vehicle_loan_name_div').toggle($(this).val() === 'Other');
@@ -1345,16 +1551,28 @@
 
             $('#vehicle_purchase_type').change(function() {
                 let val = $(this).val();
+                let loanType = $('#loan_type_select').val();
+
                 $('#new_purchase_div').toggle(val === 'New Purchase');
                 $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
 
-                // Hide Old Loan Close Amount if New Purchase
-                $('#old_loan_close_div').toggle(val !== 'New Purchase');
-                if(val === 'New Purchase') {
-                    $('#old_loan_close_amount').val(0).prop('disabled', true);
+                // Show BT Details for Vehicle BT
+                if (loanType === 'Vehicle Loan' && val === 'Balance Transfer') {
+                    $('#bt_details_div').show();
+                    $('#bt_details_div input').prop('disabled', false);
                 } else {
-                    $('#old_loan_close_amount').prop('disabled', false);
+                    // Check if other loan types have BT selected
+                    if (['Personal Loan', 'Business Loan'].includes(loanType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
+                         $('#bt_details_div').show();
+                         $('#bt_details_div input').prop('disabled', false);
+                    } else {
+                        if($('#bt_details_div').is(':visible')) {
+                            $('#bt_details_div').hide();
+                            $('#bt_details_div input').prop('disabled', true);
+                        }
+                    }
                 }
+
                 calculateTotal();
             }).trigger('change');
 
@@ -1395,6 +1613,8 @@
             function calculateTotal() {
                 let oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
                 let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
+
+                $('#old_loan_close_amount_display').val(oldLoan.toFixed(2));
                 $('#total_loan_amount').val((oldLoan + inHand).toFixed(2));
             }
 

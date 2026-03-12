@@ -29,7 +29,7 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
-                    <label>Old Financer</label>
+                    <label>Financer Name</label>
                     <input type="text" name="old_financer" class="form-control" value="{{ $lead->old_financer }}">
                 </div>
             </div>

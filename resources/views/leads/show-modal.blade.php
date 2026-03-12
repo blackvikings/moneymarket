@@ -50,14 +50,25 @@
 
         @if($lead->job_profile_type == 'Self Employed')
             <p><strong>Nature of Work:</strong> {{ $lead->nature_of_work }}</p>
+            <p><strong>Business Stability:</strong> {{ $lead->business_stability ?? '-' }}</p>
         @elseif($lead->job_profile_type == 'Salaried')
             <p><strong>Salaried Type:</strong> {{ $lead->salaried_type }}</p>
+            <p><strong>Last Month Salary:</strong> {{ $lead->last_month_salary ?? '-' }}</p>
+            @if($lead->salary_slip_path)
+                <p><strong>Salary Slip:</strong> <a href="{{ asset('storage/' . $lead->salary_slip_path) }}" target="_blank" class="btn btn-xs btn-info">View Salary Slip</a></p>
+            @endif
         @endif
 
         <p><strong>Income Proof:</strong> {{ $lead->income_proof_available ? 'Yes' : 'No' }}</p>
-        @if($lead->income_proof_available)
+        @if($lead->has_itr)
+            <p><strong>ITR Available:</strong> Yes</p>
             <p><strong>ITR Amount:</strong> {{ $lead->itr_amount }}</p>
+            <p><strong>ITR Years:</strong> {{ $lead->itr_years ?? '-' }}</p>
+            @if($lead->itr_document_path)
+                <p><strong>ITR Document:</strong> <a href="{{ asset('storage/' . $lead->itr_document_path) }}" target="_blank" class="btn btn-xs btn-info">View ITR Document</a></p>
+            @endif
         @else
+            <p><strong>ITR Available:</strong> No</p>
             <p><strong>Approx Income:</strong> {{ $lead->approx_income }}</p>
         @endif
     @endif
@@ -66,6 +77,37 @@
     <h6><strong>{{ $lead->lead_type }} Details</strong></h6>
     @if($lead->lead_type == 'Loan')
         <p><strong>Loan Type:</strong> {{ $lead->loan_type }} {{ $lead->loan_type == 'Other' ? '('.$lead->other_loan_name.')' : '' }}</p>
+        @if($lead->sub_loan_type)
+            <p><strong>Sub Loan Type:</strong> {{ $lead->sub_loan_type }}</p>
+        @endif
+
+        @if(in_array($lead->loan_type, ['Personal Loan', 'Business Loan']))
+            <p><strong>Purchase Type:</strong> {{ $lead->loan_purchase_type ?? 'New' }}</p>
+        @endif
+
+        @if($lead->loan_purchase_type == 'Balance Transfer' || (isset($lead->vehicle_purchase_type) && $lead->vehicle_purchase_type == 'Balance Transfer'))
+            <div class="bg-light p-2 border rounded mb-3">
+                <h6><strong>Balance Transfer Details:</strong></h6>
+                <p><strong>Old Financer:</strong> {{ $lead->old_financer ?? '-' }}</p>
+                <p><strong>EMI Paid:</strong> {{ $lead->emi_paid_count ?? '-' }}</p>
+                <p><strong>Old Closer Amount:</strong> {{ $lead->old_loan_close_amount ?? '-' }}</p>
+            </div>
+        @endif
+
+        <p><strong>Required Amount (In Hand):</strong> {{ $lead->required_in_hand_amount ?? '-' }}</p>
+        <p><strong>Total Loan Required:</strong> {{ $lead->total_loan_amount ?? '-' }}</p>
+
+        @if($lead->loan_type == 'Housing Loan' || $lead->loan_type == 'LAP')
+            <div class="bg-light p-2 border rounded">
+                <h6><strong>Property Details:</strong></h6>
+                <p><strong>Property Location:</strong> {{ $lead->property_location ?? '-' }}</p>
+                <p><strong>Property Area:</strong> {{ $lead->property_area ?? '-' }}</p>
+                <p><strong>Property Approx. Value:</strong> {{ $lead->property_approx_value ?? '-' }}</p>
+                <p><strong>Property Type:</strong> {{ $lead->property_type ?? '-' }}</p>
+                <p><strong>Land Type:</strong> {{ $lead->land_type ?? '-' }}</p>
+            </div>
+        @endif
+
         @if($lead->loan_type == 'Vehicle Loan')
             <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type }}</p>
             <p><strong>Purchase Type:</strong> {{ $lead->vehicle_purchase_type }}</p>
