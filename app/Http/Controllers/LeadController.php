@@ -18,6 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class LeadController extends Controller
 {
@@ -32,64 +33,41 @@ class LeadController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::with(['assignedTo', 'bank']);
         $statuses = ['New', 'Follow up', 'Lead', 'Bank Assign', 'Rejected', 'Not_Active'];
         $currentStatus = $request->input('status');
         $user = Auth::user();
 
-        // --- Hierarchy Logic ---
-        if ($user->hasRole('admin')) {
-            // Admin sees all leads (No filter needed)
-        } elseif ($user->hasRole('Team Lead')) {
-            // Team Lead sees own leads + subordinates' leads
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $subordinateIds[] = $user->id; // Include self
-            $query->whereIn('assigned_to', $subordinateIds);
-        } else {
-            // Other users (Tele Caller, etc.) see only their own leads
-            $query->where('assigned_to', $user->id);
-        }
-        // -----------------------
+        // 1. Define Base Query
+        $query = Lead::query();
 
-        // Base query for filtering (apply same hierarchy logic to base query for counts)
-        $baseQuery = Lead::query();
-        if ($user->hasRole('admin')) {
-             // No filter
-        } elseif ($user->hasRole('Team Lead')) {
+        // 2. Hierarchy Logic
+        if ($user->hasRole('Team Lead')) {
             $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
             $subordinateIds[] = $user->id;
-            $baseQuery->whereIn('assigned_to', $subordinateIds);
-        } else {
-            $baseQuery->where('assigned_to', $user->id);
+            $query->whereIn('assigned_to', $subordinateIds);
+        } elseif (!$user->hasRole('admin')) {
+            $query->where('assigned_to', $user->id);
         }
 
-
-        if ($request->has('start_date') && $request->start_date != '') {
-            $baseQuery->whereDate('created_at', '>=', $request->start_date);
-            $query->whereDate('created_at', '>=', $request->start_date); // Apply to main query too
+        // 3. Apply Date Filters (Common)
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
         }
-        if ($request->has('end_date') && $request->end_date != '') {
-            $baseQuery->whereDate('created_at', '<=', $request->end_date);
-            $query->whereDate('created_at', '<=', $request->end_date); // Apply to main query too
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
         }
 
-        // Calculate counts based on the filtered query
-        $counts = [];
-        $counts['All'] = $baseQuery->clone()->count();
-        foreach ($statuses as $status) {
-            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $status;
-            $counts[$status] = $baseQuery->clone()->where('status', $dbStatus)->count();
+        // Clone for counts
+        $countQuery = clone $query;
+
+        // 4. Apply Specific Filters
+        if ($currentStatus && in_array($currentStatus, $statuses)) {
+            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $currentStatus;
+            if ($currentStatus === 'Follow up') $dbStatus = 'Prospect';
+            $query->where('status', $dbStatus);
         }
 
-        if ($currentStatus) {
-            if (in_array($currentStatus, $statuses)) {
-                $dbStatus = ($currentStatus === 'Follow up') ? 'Prospect' : $currentStatus;
-                $query->where('status', $dbStatus);
-            }
-        }
-
-        // Filter by Assignment Status (Select Tag)
-        if ($request->has('assignment_status') && $request->assignment_status != '') {
+        if ($request->filled('assignment_status')) {
             if ($request->assignment_status === 'Assigned') {
                 $query->whereNotNull('assigned_to');
             } elseif ($request->assignment_status === 'Unassigned') {
@@ -97,23 +75,32 @@ class LeadController extends Controller
             }
         }
 
-        if ($request->has('assigned_to') && $request->assigned_to != '') {
+        if ($request->filled('assigned_to')) {
             $query->where('assigned_to', $request->assigned_to);
         }
 
-        // Sort by unassigned first (assigned_to IS NULL), then by ID descending
-        $leads = $query->orderByRaw('assigned_to IS NULL DESC, id DESC')->paginate(10)->appends($request->except('page'));
+        // 5. Calculate Counts
+        $counts = ['All' => $countQuery->count()];
+        foreach ($statuses as $status) {
+            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $status;
+            $counts[$status] = (clone $countQuery)->where('status', $dbStatus)->count();
+        }
 
-        // Users for dropdown (Admin sees all, Team Lead sees subordinates)
+        // 6. Get Results
+        $leads = $query->with(['assignedTo', 'bank', 'currentCity'])
+            ->orderByRaw('assigned_to IS NULL DESC, id DESC')
+            ->paginate(10)
+            ->appends($request->except('page'));
+
+        // 7. Users for dropdown
         if ($user->hasRole('admin')) {
-            $users = User::all(); // Admin can assign to anyone
+            $users = User::all();
         } elseif ($user->hasRole('Team Lead')) {
-             // Team Lead can assign to subordinates AND other Team Leaders
              $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
              $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
              $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
         } else {
-            $users = collect([]); // Empty for others
+            $users = collect([]);
         }
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
@@ -163,8 +150,7 @@ class LeadController extends Controller
 
         $data = $request->all();
 
-        // Unset lead_source_person_name if lead_source is not 'Any Person'
-        if ($request->input('lead_source') !== 'Any person') {
+        if (($data['lead_source'] ?? '') !== 'Any person') {
             $data['lead_source_person_name'] = null;
         }
 
@@ -173,7 +159,6 @@ class LeadController extends Controller
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
 
-        // Initialize insurance_lead_stage if lead type is Insurance
         if (isset($data['lead_type']) && $data['lead_type'] === 'Insurance') {
             $data['insurance_lead_stage'] = 'New';
         }
@@ -186,11 +171,8 @@ class LeadController extends Controller
             $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
         }
 
-        // Removed old single file upload logic for current_address_proof
-
         $lead = Lead::create($data);
 
-        // Handle multiple address proofs via Spatie Media Library
         if ($request->hasFile('current_address_proof')) {
             foreach ($request->file('current_address_proof') as $file) {
                 $lead->addMedia($file)
@@ -199,18 +181,16 @@ class LeadController extends Controller
             }
         }
 
-        // Log initial status
         $lead->statusLogs()->create([
             'status' => 'New',
             'remark' => 'Lead created.',
             'created_by' => Auth::id(),
         ]);
 
-        // Create a referral log if the source is 'Any Person'
         if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
             ReferralLog::create([
                 'lead_id' => $lead->id,
-                'amount' => 0, // Default amount
+                'amount' => 0,
                 'status' => 'Pending',
             ]);
         }
@@ -270,20 +250,17 @@ class LeadController extends Controller
             'lead_source_person_name' => 'nullable|string|max:255',
             'property_approx_value' => 'nullable|numeric',
             'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
-            // ... all other detailed validation rules
         ]);
 
-        // Ensure numeric fields are properly handled if they are empty strings
         $data = $request->all();
 
-        // Unset lead_source_person_name if lead_source is not 'Any Person'
-        if ($request->input('lead_source') !== 'Any person') {
+        if (($data['lead_source'] ?? '') !== 'Any person') {
             $data['lead_source_person_name'] = null;
         }
 
         $data = $this->mapLeadTypeData($data);
 
-        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'close_amount', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
+        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'old_loan_close_amount_display', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
 
         foreach ($numericFields as $field) {
             if (isset($data[$field]) && $data[$field] === '') {
@@ -291,36 +268,38 @@ class LeadController extends Controller
             }
         }
 
-        // Calculate total_loan_amount if not provided but components are
-        if (isset($data['old_loan_close_amount']) && isset($data['required_in_hand_amount'])) {
-             $data['total_loan_amount'] = (float)$data['old_loan_close_amount'] + (float)$data['required_in_hand_amount'];
+        if (isset($data['old_loan_close_amount_display']) && isset($data['required_in_hand_amount'])) {
+             $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
         }
 
-        // Automatically promote Follow up to Lead on update if requested
         if ($lead->status == 'Prospect') {
             $data['status'] = 'Lead';
         }
 
-        // Ensure insurance_lead_stage is set if lead type is Insurance (for updates)
         if (isset($data['lead_type']) && $data['lead_type'] === 'Insurance' && !$lead->insurance_lead_stage) {
             $data['insurance_lead_stage'] = 'New';
         }
 
         if ($request->hasFile('profile_picture')) {
-            if ($lead->profile_picture_path) {
-                Storage::disk('public')->delete($lead->profile_picture_path);
-            }
+            if ($lead->profile_picture_path) Storage::disk('public')->delete($lead->profile_picture_path);
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
         if ($request->hasFile('salary_slip')) {
-            if ($lead->salary_slip_path) {
-                Storage::disk('public')->delete($lead->salary_slip_path);
-            }
+            if ($lead->salary_slip_path) Storage::disk('public')->delete($lead->salary_slip_path);
             $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
         }
 
-        // Handle multiple address proofs via Spatie Media Library
+        if ($request->hasFile('itr_document')) {
+            if ($lead->itr_document_path) Storage::disk('public')->delete($lead->itr_document_path);
+            $data['itr_document_path'] = $request->file('itr_document')->store('itr_docs', 'public');
+        }
+
+        if ($request->hasFile('business_proof_document')) {
+            if ($lead->business_proof_document_path) Storage::disk('public')->delete($lead->business_proof_document_path);
+            $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
+        }
+
         if ($request->hasFile('current_address_proof')) {
             foreach ($request->file('current_address_proof') as $file) {
                 $lead->addMedia($file)
@@ -329,23 +308,26 @@ class LeadController extends Controller
             }
         }
 
-        if ($request->hasFile('itr_document')) {
-            if ($lead->itr_document_path) {
-                Storage::disk('public')->delete($lead->itr_document_path);
-            }
-            $data['itr_document_path'] = $request->file('itr_document')->store('itr_docs', 'public');
-        }
+        if ($request->input('qualify_on_save') == 1) {
+            $request->validate([
+                'bank_id' => 'required|exists:banks,id',
+                'bank_branch_id' => 'required|exists:bank_branches,id',
+            ]);
 
-        if ($request->hasFile('business_proof_document')) {
-            if ($lead->business_proof_document_path) {
-                Storage::disk('public')->delete($lead->business_proof_document_path);
-            }
-            $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
+            $data['status'] = 'Lead';
+            $data['bank_id'] = $request->bank_id;
+            $data['bank_branch_id'] = $request->bank_branch_id;
+            $data['converted_at'] = now();
+
+            $lead->statusLogs()->create([
+                'status' => 'Lead',
+                'remark' => 'Lead qualified after data update.',
+                'created_by' => Auth::id(),
+            ]);
         }
 
         $lead->update($data);
 
-        // Create or update a referral log if the source is 'Any Person'
         if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
             ReferralLog::firstOrCreate(
                 ['lead_id' => $lead->id],
@@ -353,36 +335,18 @@ class LeadController extends Controller
             );
         }
 
-        if ($request->input('qualify_on_save') == 1) {
-            $request->validate([
-                'bank_id' => 'required|exists:banks,id',
-                'bank_branch_id' => 'required|exists:bank_branches,id',
-            ]);
-
-            $lead->update([
-                'status' => 'Lead',
-                'bank_id' => $request->bank_id,
-                'bank_branch_id' => $request->bank_branch_id,
-                'converted_at' => now(),
-            ]);
-
-            $lead->statusLogs()->create([
-                'status' => 'Lead',
-                'remark' => 'Lead qualified after data update.',
-                'created_by' => Auth::id(),
-            ]);
-
-            if ($request->ajax()) {
-                return response()->json(['success' => true, 'message' => 'Lead details updated and qualified successfully!']);
-            }
-            return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead details updated and qualified successfully!');
-        }
-
         if ($request->ajax()) {
             return response()->json(['success' => true, 'message' => 'Lead updated successfully.']);
         }
 
         return redirect()->route(get_route_prefix() . 'leads.index')->with('success', 'Lead updated successfully.');
+    }
+
+    public function deleteMedia($mediaId)
+    {
+        $media = Media::findOrFail($mediaId);
+        $media->delete();
+        return response()->json(['success' => true, 'message' => 'Document deleted successfully.']);
     }
 
     public function updateStatus(Request $request, Lead $lead)
@@ -421,10 +385,8 @@ class LeadController extends Controller
                 $logData['status'] = 'Not_Active';
                 $logData['remark'] .= ' (Marked as Not Active)';
             }
-
         } elseif ($action === 'qualify') {
             if (empty($lead->job_profile_type) || empty($lead->loan_type)) {
-                // Pass data via query parameters to ensure it persists to the edit page
                 return redirect()->route(get_route_prefix() . 'leads.edit', [
                     'lead' => $lead->id,
                     'qualify' => 1,
@@ -432,13 +394,10 @@ class LeadController extends Controller
                     'bank_branch_id' => $request->bank_branch_id
                 ])->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.');
             }
-            // Changed: Qualify now moves to 'Lead' status, NOT 'Bank Assign'
             $data['status'] = 'Lead';
             $logData['status'] = 'Lead';
             $logData['remark'] = 'Lead qualified.';
         } elseif ($action === 'proceed_to_bank_assign') {
-            // New Action: Move from 'Lead' to 'Bank Assign'
-            // Logic based on lead_type
             if ($lead->lead_type === 'Loan') {
                 $data['status'] = 'Bank Assign';
                 $logData['status'] = 'Bank Assign';
@@ -446,23 +405,21 @@ class LeadController extends Controller
                 $data['bank_id'] = $request->bank_id;
                 $data['bank_branch_id'] = $request->bank_branch_id;
             } elseif ($lead->lead_type === 'RTO') {
-                $data['status'] = 'Lead'; // Or keep it as Lead, but set RTO stage
-                $data['rto_stage'] = 'New'; // Reverted to New
-                $data['rto_new_at'] = now(); // Set start time for RTO
+                $data['status'] = 'Lead';
+                $data['rto_stage'] = 'New';
+                $data['rto_new_at'] = now();
                 $logData['status'] = 'Lead';
                 $logData['remark'] = 'Moved to RTO Module.';
             } elseif ($lead->lead_type === 'Insurance') {
-                $data['status'] = 'Lead'; // Or keep it as Lead, but set Insurance stage
+                $data['status'] = 'Lead';
                 $data['insurance_lead_stage'] = 'New';
                 $logData['status'] = 'Lead';
                 $logData['remark'] = 'Moved to Insurance Module.';
             } else {
-                // Fallback for old leads or undefined types - default to Bank Assign
                 $data['status'] = 'Bank Assign';
                 $logData['status'] = 'Bank Assign';
                 $logData['remark'] = 'Moved to Bank Assignment stage.';
             }
-
         } elseif ($action === 'reject') {
             $request->validate(['remark' => 'required|string']);
             $data['status'] = 'Rejected';
@@ -495,14 +452,7 @@ class LeadController extends Controller
         ]);
 
         $lead->update([
-            'status' => 'Lead', // Or maybe keep it as 'Bank Assign' or move to a new status like 'CRM'
-            // Actually, usually once bank is assigned, it goes to CRM.
-            // Let's assume it stays as 'Lead' status but enters CRM pipeline.
-            // Wait, if I set it back to 'Lead', it will show up in the 'Lead' tab again.
-            // If the flow is New -> Prospect -> Lead -> Bank Assign -> CRM
-            // Then after Bank Assign, it should probably disappear from this list or go to a 'Completed' status?
-            // Or maybe 'Lead' status implies it's in CRM?
-            // Let's assume for now it stays 'Lead' but with bank details, effectively moving it to CRM module visibility.
+            'status' => 'Lead',
             'bank_id' => $request->bank_id,
             'bank_branch_id' => $request->bank_branch_id,
             'converted_at' => now(),
@@ -535,11 +485,10 @@ class LeadController extends Controller
 
         Lead::whereIn('id', $leadIds)->update(['assigned_to' => $assignedTo]);
 
-        // Log the bulk assignment
         foreach ($leadIds as $leadId) {
             LeadStatusLog::create([
                 'lead_id' => $leadId,
-                'status' => 'Assigned', // Or whatever status is appropriate
+                'status' => 'Assigned',
                 'remark' => 'Bulk assigned to user ID ' . $assignedTo,
                 'created_by' => Auth::id(),
             ]);
@@ -572,25 +521,14 @@ class LeadController extends Controller
         ]);
 
         try {
-            // Store file temporarily to avoid /tmp issues on some servers
             $path = $request->file('file')->store('temp_imports');
-
-            // Import using the stored path
             Excel::import(new LeadImport, $path);
-
-            // Delete the temp file
             Storage::delete($path);
-
             return redirect()->back()->with('success', 'Leads imported successfully.');
         } catch (\Exception $e) {
-            // Attempt to delete if it exists
-            if (isset($path)) {
-                Storage::delete($path);
-            }
-            // Log the error for debugging
+            if (isset($path)) Storage::delete($path);
             Log::error('Import Error: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Import failed. Please ensure the file is a valid Excel or CSV file. Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Import failed. Error: ' . $e->getMessage());
         }
     }
 
@@ -607,12 +545,9 @@ class LeadController extends Controller
             "Expires" => "0"
         ];
 
-        $columns = ['customer_name', 'contact_number', 'father_name', 'email', 'firm_name', 'residence_type', 'current_address_line', 'permanent_address_line', 'employee_id'];
-
-        $callback = function() use ($columns) {
+        $callback = function() {
             $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-            // Add a sample row
+            fputcsv($file, ['customer_name', 'contact_number', 'father_name', 'email', 'firm_name', 'residence_type', 'current_address_line', 'permanent_address_line', 'employee_id']);
             fputcsv($file, ['John Doe', '9876543210', 'Jane Doe', 'john@example.com', 'My Firm', 'Rented', '123 Main St', '456 Second St', 'MM26020601']);
             fclose($file);
         };
@@ -634,13 +569,11 @@ class LeadController extends Controller
                 $data['owner_serial_number'] = $data['rto_owner_serial_number'] ?? $data['owner_serial_number'] ?? null;
                 $data['hypothecation_status'] = $data['rto_hypothecation_status'] ?? $data['hypothecation_status'] ?? null;
 
-                // Map Hypothecation Details for RTO
                 if (isset($data['rto_hypothecation_status']) && $data['rto_hypothecation_status'] == 1) {
                     $data['old_financer'] = $data['rto_old_financer'] ?? $data['old_financer'] ?? null;
-                    $data['close_amount'] = $data['rto_close_amount'] ?? $data['close_amount'] ?? null;
+                    $data['old_loan_close_amount_display'] = $data['rto_close_amount'] ?? $data['old_loan_close_amount_display'] ?? null;
                     $data['emi_paid_count'] = $data['rto_emi_paid_count'] ?? $data['emi_paid_count'] ?? null;
                 }
-
             } elseif ($data['lead_type'] === 'Insurance') {
                 $data['mfg_name'] = $data['ins_mfg_name'] ?? $data['mfg_name'] ?? null;
                 $data['model_name'] = $data['ins_model_name'] ?? $data['model_name'] ?? null;

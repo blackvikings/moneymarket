@@ -109,6 +109,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
+    Route::delete('leads/media/{mediaId}', [LeadController::class, 'deleteMedia'])->name('leads.delete-media');
     Route::resource('leads', LeadController::class);
 
     Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
@@ -175,6 +176,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::get('leads/download-sample', [LeadController::class, 'downloadSample'])->name('leads.download-sample');
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
+    Route::delete('leads/media/{mediaId}', [LeadController::class, 'deleteMedia'])->name('leads.delete-media');
     Route::resource('leads', LeadController::class);
 
     Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');

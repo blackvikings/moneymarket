@@ -866,7 +866,7 @@
                             <div class="col-md-4" id="old_loan_close_div">
                                 <div class="form-group">
                                     <label>Old Loan Close Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount_display" id="old_loan_close_amount_display" class="form-control" disabled>
+                                    <input type="number" step="0.01" name="old_loan_close_amount_display" id="old_loan_close_amount_display" value="{{ old('old_loan_close_amount_display', $lead->old_loan_close_amount_display) }}" class="form-control" disabled>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -1428,7 +1428,7 @@
             $('.delete-doc').click(function() {
                 if(confirm('Are you sure you want to delete this document?')) {
                     var docId = $(this).data('id');
-                    var url = "{{ route(get_route_prefix() . 'insurance-leads.delete-document', ':id') }}".replace(':id', docId);
+                    var url = "{{ route(get_route_prefix() . 'leads.delete-media', ':id') }}".replace(':id', docId);
 
                     $.ajax({
                         url: url,
@@ -2082,16 +2082,28 @@
                 $('#guarantor_div').toggle($(this).val() == '1');
             }).trigger('change');
 
+            // --- Calculation Logic (FIXED) ---
             function calculateTotal() {
-                let oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
-                let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
+                // Value uthao aur check karo ki wo number hai ya nahi
+                let val1 = parseFloat($('#old_loan_close_amount').val()) || 0;
+                let val2 = parseFloat($('#required_in_hand_amount').val()) || 0;
+                let val3 = parseFloat($('#old_loan_close_amount_display').val()) || 0;
 
-                $('#old_loan_close_amount_display').val(oldLoan.toFixed(2));
-                $('#total_loan_amount').val((oldLoan + inHand).toFixed(2));
+                // Calculation logic (Example: Sum kar rahe ho agar)
+                let total = val1 + val2 + val3;
+
+                console.log("Total calculated:", total);
+
+                // Agar kisi total field mein dikhana hai:
+                $('#total_loan_amount').val(total.toFixed(2));
             }
 
-            $('#old_loan_close_amount, #required_in_hand_amount').on('input', calculateTotal);
-            // Trigger calculation on load
+            // Bind calculation to both fields
+            $('#old_loan_close_amount, #required_in_hand_amount, #old_loan_close_amount_display').on('input change keyup', function() {
+                calculateTotal();
+            });
+
+            // Initial calculation on load
             calculateTotal();
 
             $(window).scroll(function() {
