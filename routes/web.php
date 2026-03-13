@@ -139,6 +139,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
 
     // Insurance Lead Module
     Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');
+    Route::get('insurance-leads/expiring', [InsuranceLeadController::class, 'expiring'])->name('insurance-leads.expiring');
     Route::get('insurance-leads', [InsuranceLeadController::class, 'index'])->name('insurance-leads.index');
     Route::get('insurance-leads/create', [InsuranceLeadController::class, 'create'])->name('insurance-leads.create');
     Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');
@@ -204,6 +205,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
 
     // Insurance Lead Module
     Route::get('insurance-leads/export', [InsuranceLeadController::class, 'export'])->name('insurance-leads.export');
+    Route::get('insurance-leads/expiring', [InsuranceLeadController::class, 'expiring'])->name('insurance-leads.expiring');
     Route::get('insurance-leads', [InsuranceLeadController::class, 'index'])->name('insurance-leads.index');
     Route::get('insurance-leads/create', [InsuranceLeadController::class, 'create'])->name('insurance-leads.create');
     Route::post('insurance-leads', [InsuranceLeadController::class, 'store'])->name('insurance-leads.store');

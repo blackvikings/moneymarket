@@ -2,7 +2,6 @@
     $stages = [
         'New',
         'Document checking',
-        'Work checking',
         'Agent Assigned',
         'Challan Done',
         'Document Upload',
@@ -69,10 +68,7 @@
                 </form>
 
             @elseif($currentStage == 'Document checking')
-                @include('rto.partials.checking_form')
-
-            @elseif($currentStage == 'Work checking')
-                @include('rto.partials.work_checking_form')
+                @include('rto.partials.document_checking_form')
 
             @elseif($currentStage == 'Agent Assigned')
                 @include('rto.partials.agent_assign_form')

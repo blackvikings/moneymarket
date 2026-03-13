@@ -41,6 +41,9 @@ class Lead extends Model implements HasMedia
         $this->addMediaCollection('insurance_address_proof');
         $this->addMediaCollection('insurance_pan_card')->singleFile();
         $this->addMediaCollection('insurance_rc')->singleFile();
+        $this->addMediaCollection('aadhar_front')->singleFile();
+        $this->addMediaCollection('aadhar_back')->singleFile();
+        $this->addMediaCollection('final_document')->singleFile();
 
         // Future Collections
         $this->addMediaCollection('loan_documents');

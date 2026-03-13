@@ -18,8 +18,7 @@ class RtoController extends Controller
 {
     protected $stages = [
         'New',
-        'Document checking',
-        'Work checking',
+        'Document checking', // Formerly Work checking
         'Agent Assigned',
         'Challan Done',
         'Document Upload',
@@ -125,6 +124,10 @@ class RtoController extends Controller
 
     public function updateChecklist(Request $request, Lead $lead)
     {
+        // This method was for the OLD Document Checking stage.
+        // It might be unused now, or we can leave it if we want to support legacy calls,
+        // but the new flow uses updateWorkChecklist logic for "Document checking".
+
         $data = [
             'rto_hsrp_status' => $request->rto_hsrp_status,
             'rto_hsrp_remark' => $request->rto_hsrp_remark,
@@ -148,9 +151,11 @@ class RtoController extends Controller
 
         $lead->update($data);
 
+        // If for some reason this is called, jump to Agent Assigned as per new flow?
+        // But better to use the other method.
         if ($request->has('save_and_next')) {
-            $lead->update(['rto_stage' => 'Work checking']);
-            return redirect()->back()->with('success', 'Document checklist updated. Moved to Work checking.');
+            $lead->update(['rto_stage' => 'Agent Assigned']);
+            return redirect()->back()->with('success', 'Document checklist updated.');
         }
 
         return redirect()->back()->with('success', 'Checklist updated successfully.');
@@ -158,9 +163,10 @@ class RtoController extends Controller
 
     public function updateWorkChecklist(Request $request, Lead $lead)
     {
+        // This handles the new "Document checking" stage (formerly Work Checking)
         $data = $request->only(['rto_name_transfer_status', 'rto_seller_name', 'rto_seller_number', 'rto_seller_address', 'rto_hypothecation_add_status', 'rto_hypothecation_add_bank_id']);
 
-        // Also allow updating pending items from Doc checking
+        // Allow updating all checklist items
         $docFields = ['rto_hsrp_status', 'rto_insurance_status', 'rto_fitness_status', 'rto_tax_status', 'rto_puc_status', 'rto_echallan_status', 'rto_ncr_status', 'rto_challan_status', 'rto_permit_status'];
         foreach($docFields as $field) {
             if($request->has($field)) $data[$field] = $request->$field;
@@ -170,7 +176,7 @@ class RtoController extends Controller
 
         if ($request->has('save_and_next')) {
             $lead->update(['rto_stage' => 'Agent Assigned']); // Logic will show Agent Assign form
-            return redirect()->back()->with('success', 'Work checklist updated. Please assign an agent.');
+            return redirect()->back()->with('success', 'Document checklist updated. Please assign an agent.');
         }
 
         return redirect()->back()->with('success', 'Work details updated.');

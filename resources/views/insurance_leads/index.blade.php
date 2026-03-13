@@ -8,7 +8,19 @@
 
 @section('content')
     <div class="row mb-3">
-        <div class="col-md-12 text-right">
+        <div class="col-md-6">
+            <form action="{{ route(get_route_prefix() . 'insurance-leads.index') }}" method="GET" class="form-inline">
+                <div class="form-group mr-2">
+                    <select name="status" class="form-control">
+                        <option value="">All Statuses</option>
+                        <option value="In Progress" {{ request('status') == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                        <option value="Done" {{ request('status') == 'Done' ? 'selected' : '' }}>Done</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Filter</button>
+            </form>
+        </div>
+        <div class="col-md-6 text-right">
             @if(auth()->user()->hasRole('admin') || auth()->user()->can('export insurance lead'))
                 <a href="{{ route(get_route_prefix() . 'insurance-leads.export', request()->all()) }}" class="btn btn-success mr-1">Export</a>
             @endif
@@ -27,6 +39,8 @@
                         <th>ID</th>
                         <th>Customer Name</th>
                         <th>Contact</th>
+                        <th>Type</th>
+                        <th>Status</th>
                         <th>Expiry Date</th>
                         <th>City</th>
                         <th>Actions</th>
@@ -38,6 +52,12 @@
                             <td>{{ $lead->id }}</td>
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
+                            <td>{{ $lead->insurance_type ?? '-' }}</td>
+                            <td>
+                                <span class="badge badge-{{ $lead->insurance_lead_status == 'Done' ? 'success' : 'warning' }}">
+                                    {{ $lead->insurance_lead_status ?? 'In Progress' }}
+                                </span>
+                            </td>
                             <td>
                                 @if($lead->insurance_end_date)
                                     {{ $lead->insurance_end_date->format('d-m-Y') }}
@@ -53,7 +73,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center">No insurance leads found.</td>
+                            <td colspan="8" class="text-center">No insurance leads found.</td>
                         </tr>
                     @endforelse
                 </tbody>

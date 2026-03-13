@@ -3,15 +3,8 @@
 @section('title', 'Insurance Lead Details')
 
 @section('css')
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        .dropzone {
-            border: 2px dashed #007bff;
-            border-radius: 10px;
-            background: #f8f9fa;
-            min-height: 120px;
-            padding: 10px;
-        }
         .document-container {
             position: relative;
             display: inline-block;
@@ -32,6 +25,33 @@
             font-weight: bold;
             border: 1px solid white;
             z-index: 10;
+        }
+        .select2-container .select2-selection--single {
+            height: 38px !important;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px !important;
+        }
+        .select2-selection__rendered {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            padding-right: 20px !important; /* Ensure space for arrow */
+        }
+        .input-group {
+            flex-wrap: nowrap;
+        }
+        .input-group .select2-container {
+            width: auto !important;
+            flex-grow: 1;
+            /* Ensure the container itself doesn't overflow if flex-grow pushes it too far,
+               though usually width: auto handles it in flex.
+               We might need min-width: 0 to allow shrinking in flexbox. */
+            min-width: 0;
+        }
+        .input-group .select2-selection--single {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
         }
     </style>
 @stop
@@ -127,6 +147,28 @@
                             @endif
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Aadhar Front:</strong></p>
+                            @if($lead->getFirstMediaUrl('aadhar_front'))
+                                <a href="{{ $lead->getFirstMediaUrl('aadhar_front') }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
+                                    <i class="fas fa-id-card"></i> View Aadhar Front
+                                </a>
+                            @else
+                                <span class="text-muted">Not Uploaded</span>
+                            @endif
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Aadhar Back:</strong></p>
+                            @if($lead->getFirstMediaUrl('aadhar_back'))
+                                <a href="{{ $lead->getFirstMediaUrl('aadhar_back') }}" target="_blank" class="btn btn-outline-info btn-sm mb-3">
+                                    <i class="fas fa-id-card"></i> View Aadhar Back
+                                </a>
+                            @else
+                                <span class="text-muted">Not Uploaded</span>
+                            @endif
+                        </div>
+                    </div>
                     <hr>
 
                     @if($lead->lead_type == 'Insurance' || $lead->loan_type == 'Vehicle Loan')
@@ -166,14 +208,23 @@
                                 <option value="">Select Source</option>
                                 <option value="Self" {{ old('lead_source', $lead->lead_source) == 'Self' ? 'selected' : '' }}>Self</option>
                                 <option value="Social media" {{ old('lead_source', $lead->lead_source) == 'Social media' ? 'selected' : '' }}>Social media</option>
-                                <option value="Any person" {{ old('lead_source', $lead->lead_source) == 'Any person' ? 'selected' : '' }}>Any person</option>
+                                <option value="Any person" {{ strtolower(old('lead_source', $lead->lead_source)) == 'any person' ? 'selected' : '' }}>Any person</option>
                             </select>
                         </div>
                     </div>
-                    <div class="col-md-3" id="lead_source_person_name_div" style="display:none;">
+                    <div class="col-md-3" id="lead_source_person_name_div" style="{{ strtolower($lead->lead_source) == 'any person' ? '' : 'display:none;' }}">
                         <div class="form-group">
                             <label>Person Name</label>
-                            <input type="text" name="lead_source_person_name" class="form-control" value="{{ old('lead_source_person_name', $lead->lead_source_person_name) }}">
+                            <div class="input-group">
+                                <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2">
+                                    {{-- JS will handle pre-selection --}}
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -251,12 +302,45 @@
                         </div>
                     </div>
                 </div>
+                <div class="row mt-2">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Aadhar Front</label>
+                            <input type="file" name="aadhar_front" class="form-control-file">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Aadhar Back</label>
+                            <input type="file" name="aadhar_back" class="form-control-file">
+                        </div>
+                    </div>
+                </div>
 
                 <hr>
-                <h5>Add More Address Proofs</h5>
-                <div id="addressProofDropzone" class="dropzone mb-3">
-                    <div class="dz-message">
-                        <span>Drop files here or click to upload new address proofs.</span>
+                <h5>Finalize Insurance</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Upload Final Policy Document <small class="text-muted">(PDF, JPG, PNG)</small></label>
+                            <input type="file" name="final_policy_document" class="form-control-file">
+                            @if($lead->getFirstMediaUrl('final_document'))
+                                <div class="mt-2">
+                                    <a href="{{ $lead->getFirstMediaUrl('final_document') }}" target="_blank" class="btn btn-sm btn-success">
+                                        <i class="fas fa-check"></i> View Final Document
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Status</label>
+                            <select name="insurance_lead_status" class="form-control">
+                                <option value="In Progress" {{ $lead->insurance_lead_status == 'In Progress' ? 'selected' : '' }}>In Progress</option>
+                                <option value="Done" {{ $lead->insurance_lead_status == 'Done' ? 'selected' : '' }}>Done</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
@@ -264,73 +348,123 @@
             </form>
         </div>
     </div>
+
+    <!-- Add Referral Person Modal -->
+    <div class="modal fade" id="addReferralPersonModal" tabindex="-1" role="dialog" aria-labelledby="addReferralPersonModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addReferralPersonModalLabel">Add New Referral Person</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addReferralPersonForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <input type="text" name="contact_number" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Person</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
-    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        Dropzone.autoDiscover = false;
-
         $(document).ready(function() {
-            // --- Dropzone Initialization ---
-            var myDropzone = new Dropzone("#addressProofDropzone", {
-                url: "{{ route(get_route_prefix() . 'insurance-leads.update-details', $lead->id) }}",
-                autoProcessQueue: false,
-                uploadMultiple: true,
-                parallelUploads: 10,
-                maxFiles: 10,
-                paramName: "insurance_address_proof",
-                addRemoveLinks: true,
-                acceptedFiles: "image/*,application/pdf",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                init: function() {
-                    var dz = this;
+            // --- Select2 for Lead Source Person ---
+            var leadSourcePersonSelect = $('#lead_source_person_name');
 
-                    $("#submitBtn").click(function(e) {
-                        e.preventDefault();
-                        if ($("#updateInsuranceForm")[0].checkValidity()) {
-                            if (dz.getQueuedFiles().length > 0) {
-                                dz.processQueue();
-                            } else {
-                                // If no new files, submit form normally via AJAX
-                                var formData = new FormData($("#updateInsuranceForm")[0]);
-                                $.ajax({
-                                    url: $("#updateInsuranceForm").attr('action'),
-                                    type: 'POST',
-                                    data: formData,
-                                    processData: false,
-                                    contentType: false,
-                                    success: function(response) {
-                                        window.location.reload();
-                                    },
-                                    error: function(err) {
-                                        alert("Error updating details.");
-                                    }
-                                });
-                            }
-                        } else {
-                            $("#updateInsuranceForm")[0].reportValidity();
+            leadSourcePersonSelect.select2({
+                placeholder: 'Search for a person...',
+                minimumInputLength: 2,
+                width: '100%',
+                ajax: {
+                    url: "{{ route('lead-source-persons.search') }}",
+                    dataType: 'json',
+                    delay: 250,
+                    data: function (params) {
+                        return { q: params.term };
+                    },
+                    processResults: function (data) {
+                        return { results: data };
+                    },
+                    cache: true
+                }
+            });
+
+            // --- Pre-select person name if it exists ---
+            var initialPersonName = "{!! $lead->lead_source_person_name !!}";
+
+            if (initialPersonName) {
+                // Create a DOM Option and append it to the select box
+                var newOption = new Option(initialPersonName, initialPersonName, true, true);
+                leadSourcePersonSelect.append(newOption).trigger('change');
+            }
+
+            // --- Add Referral Person AJAX ---
+            $('#addReferralPersonForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route('lead-source-persons.store') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            let newOption = new Option(response.person.name, response.person.name, true, true);
+                            $('#lead_source_person_name').append(newOption).trigger('change');
+                            $('#addReferralPersonModal').modal('hide');
+                            $('#addReferralPersonForm')[0].reset();
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Error adding person. Please check inputs.');
+                    }
+                });
+            });
+
+            $("#submitBtn").click(function(e) {
+                e.preventDefault();
+                if ($("#updateInsuranceForm")[0].checkValidity()) {
+                    var formData = new FormData($("#updateInsuranceForm")[0]);
+                    $.ajax({
+                        url: $("#updateInsuranceForm").attr('action'),
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        success: function(response) {
+                            window.location.reload();
+                        },
+                        error: function(err) {
+                            alert("Error updating details.");
                         }
                     });
-
-                    this.on("sendingmultiple", function(data, xhr, formData) {
-                        var formArray = $("#updateInsuranceForm").serializeArray();
-                        $.each(formArray, function(i, field) {
-                            formData.append(field.name, field.value);
-                        });
-                        // Add files from regular inputs
-                        var panFile = $('input[name="pan_card_document"]')[0].files[0];
-                        if(panFile) formData.append('pan_card_document', panFile);
-
-                        var rcFile = $('input[name="rc_document"]')[0].files[0];
-                        if(rcFile) formData.append('rc_document', rcFile);
-                    });
-
-                    this.on("successmultiple", function(files, response) {
-                        window.location.reload();
-                    });
+                } else {
+                    $("#updateInsuranceForm")[0].reportValidity();
                 }
             });
 
@@ -359,7 +493,8 @@
 
             // --- Lead Source Person Name Logic ---
             $('#lead_source').change(function() {
-                if ($(this).val() === 'Any person') {
+                var val = $(this).val();
+                if (val && val.toLowerCase() === 'any person') {
                     $('#lead_source_person_name_div').show();
                 } else {
                     $('#lead_source_person_name_div').hide();

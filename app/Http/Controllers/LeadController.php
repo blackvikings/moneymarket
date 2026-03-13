@@ -123,7 +123,7 @@ class LeadController extends Controller
     {
         $user = Auth::user();
         if ($user->hasRole('admin')) {
-            $users = User::all();
+            $users = User::withoutRole('admin')->get();
         } elseif ($user->hasRole('Team Lead')) {
             $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
             $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();

@@ -202,7 +202,7 @@
                                 <option value="">Select Source</option>
                                 <option value="Self" {{ old('lead_source', $lead->lead_source) == 'Self' ? 'selected' : '' }}>Self</option>
                                 <option value="Social media" {{ old('lead_source', $lead->lead_source) == 'Social media' ? 'selected' : '' }}>Social media</option>
-                                <option value="Any person" {{ old('lead_source', $lead->lead_source) == 'Any person' ? 'selected' : '' }}>Any person</option>
+                                <option value="Any person" {{ strtolower(old('lead_source', $lead->lead_source)) == 'any person' ? 'selected' : '' }}>Any person</option>
                             </select>
                             @error('lead_source') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
@@ -413,7 +413,7 @@
                         <div class="col-md-4" id="business_stability_div" style="display:none;">
                             <div class="form-group">
                                 <label>Business Stability</label>
-                                <input type="text" name="business_stability" class="form-control @error('business_stability') is-invalid @enderror" value="{{ old('business_stability', $lead->business_stability) }}">
+                                <input type="text" name="business_stability" id="business_stability_datepicker" class="form-control @error('business_stability') is-invalid @enderror" value="{{ old('business_stability', $lead->business_stability) }}" placeholder="YYYY">
                                 @error('business_stability') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -1006,52 +1006,150 @@
                 <div id="insurance_section" style="display:none;">
                     <h5>Insurance Details</h5>
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="form-group">
-                                <label>Manufacturer <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
-                                        <option value="">Select Manufacturer</option>
-                                        @foreach($manufactures as $mfg)
-                                            <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
-                                        @endforeach
-                                    </select>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
+                                <label>Insurance Type <span class="text-danger">*</span></label>
+                                <select name="insurance_type" id="insurance_type" class="form-control @error('insurance_type') is-invalid @enderror">
+                                    <option value="">Select Type</option>
+                                    <option value="Vehicle" {{ old('insurance_type', $lead->insurance_type) == 'Vehicle' ? 'selected' : '' }}>Vehicle</option>
+                                    <option value="Health" {{ old('insurance_type', $lead->insurance_type) == 'Health' ? 'selected' : '' }}>Health</option>
+                                    <option value="Property" {{ old('insurance_type', $lead->insurance_type) == 'Property' ? 'selected' : '' }}>Property</option>
+                                </select>
+                                @error('insurance_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Vehicle Insurance Fields --}}
+                    <div id="ins_vehicle_div" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Manufacturer <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <select name="ins_mfg_name" class="form-control manufacture-select @error('ins_mfg_name') is-invalid @enderror">
+                                            <option value="">Select Manufacturer</option>
+                                            @foreach($manufactures as $mfg)
+                                                <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
                                     </div>
+                                    @error('ins_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
-                                @error('ins_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Model Name <span class="text-danger">*</span></label>
+                                    <select name="ins_model_name" class="form-control vehicle-name-select @error('ins_model_name') is-invalid @enderror">
+                                        <option value="">Select Manufacturer First</option>
+                                    </select>
+                                    @error('ins_model_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Variant</label>
+                                    <select name="ins_variant" class="form-control variant-select @error('ins_variant') is-invalid @enderror @error('vehicle_name_id') is-invalid @enderror">
+                                        <option value="">Select Vehicle First</option>
+                                    </select>
+                                    @error('ins_variant') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>IDV Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="insurance_amount" class="form-control @error('insurance_amount') is-invalid @enderror" value="{{ old('insurance_amount', $lead->insurance_amount) }}">
+                                    @error('insurance_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Model Name <span class="text-danger">*</span></label>
-                                <select name="ins_model_name" class="form-control vehicle-name-select @error('ins_model_name') is-invalid @enderror">
-                                    <option value="">Select Manufacturer First</option>
-                                </select>
-                                @error('ins_model_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Coverage Type</label>
+                                    <select name="insurance_coverage_type" class="form-control" id="insurance_coverage_type">
+                                        <option value="">Select Type</option>
+                                        <option value="First" {{ old('insurance_coverage_type', $lead->insurance_coverage_type) == 'First' ? 'selected' : '' }}>First Party</option>
+                                        <option value="Third" {{ old('insurance_coverage_type', $lead->insurance_coverage_type) == 'Third' ? 'selected' : '' }}>Third Party</option>
+                                        <option value="Addon" {{ old('insurance_coverage_type', $lead->insurance_coverage_type) == 'Addon' ? 'selected' : '' }}>Addon Policy</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3" id="ins_addon_desc_div" style="display:none;">
+                                <div class="form-group">
+                                    <label>Addon Details</label>
+                                    <input type="text" name="insurance_addon_description" class="form-control" value="{{ old('insurance_addon_description', $lead->insurance_addon_description) }}" placeholder="Specify addon details">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>Variant</label>
-                                <select name="ins_variant" class="form-control variant-select @error('ins_variant') is-invalid @enderror @error('vehicle_name_id') is-invalid @enderror">
-                                    <option value="">Select Vehicle First</option>
-                                </select>
-                                @error('ins_variant') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                @error('vehicle_name_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        <div class="row">
+                             <div class="col-md-3"><div class="form-group"><label>RC Number</label><input type="text" name="rto_rc_number" class="form-control" value="{{ old('rto_rc_number', $lead->rc_number) }}"></div></div>
+                             <div class="col-md-3"><div class="form-group"><label>Engine Number</label><input type="text" name="rto_engine_number" class="form-control" value="{{ old('rto_engine_number', $lead->engine_number) }}"></div></div>
+                             <div class="col-md-3"><div class="form-group"><label>Chassis Number</label><input type="text" name="rto_chassis_number" class="form-control" value="{{ old('rto_chassis_number', $lead->chassis_number) }}"></div></div>
+                             <div class="col-md-3"><div class="form-group"><label>Mfg Year</label><input type="text" name="mfg_year" id="ins_mfg_year_datepicker" class="form-control" value="{{ old('mfg_year', $lead->mfg_year) }}" placeholder="MM-YYYY"></div></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label>Hypothecation (HP)?</label>
+                                    <select name="ins_hypothecation_status" class="form-control">
+                                        <option value="0" {{ old('ins_hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('ins_hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                    </div>
+
+                    {{-- Health Insurance Fields --}}
+                    <div id="ins_health_div" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Policy Type</label>
+                                    <select name="health_policy_type" class="form-control @error('health_policy_type') is-invalid @enderror">
+                                        <option value="">Select Type</option>
+                                        <option value="Individual" {{ old('health_policy_type', $lead->health_policy_type) == 'Individual' ? 'selected' : '' }}>Individual</option>
+                                        <option value="Family Floater" {{ old('health_policy_type', $lead->health_policy_type) == 'Family Floater' ? 'selected' : '' }}>Family Floater</option>
+                                    </select>
+                                    @error('health_policy_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Documents --}}
+                    <hr>
+                    <h6>Insurance Documents</h6>
+                    <div class="row">
+                        <div class="col-md-6">
                             <div class="form-group">
-                                <label>Hypothecation (HP)?</label>
-                                <select name="ins_hypothecation_status" class="form-control @error('ins_hypothecation_status') is-invalid @enderror">
-                                    <option value="0" {{ old('hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
-                                    <option value="1" {{ old('hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
+                                <label>Address Document Type</label>
+                                <select name="insurance_proof_type" class="form-control @error('insurance_proof_type') is-invalid @enderror">
+                                    <option value="">Select Type</option>
+                                    <option value="Aadhar" {{ old('insurance_proof_type', $lead->proof_id_type) == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
+                                    <option value="Voter Id" {{ old('insurance_proof_type', $lead->proof_id_type) == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
+                                    <option value="Driving Licence" {{ old('insurance_proof_type', $lead->proof_id_type) == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
+                                    <option value="Passport" {{ old('insurance_proof_type', $lead->proof_id_type) == 'Passport' ? 'selected' : '' }}>Passport</option>
+                                    <option value="Electricity Bill" {{ old('insurance_proof_type', $lead->proof_id_type) == 'Electricity Bill' ? 'selected' : '' }}>Electricity Bill</option>
                                 </select>
-                                @error('ins_hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                @error('insurance_proof_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Upload Document <small class="text-muted">(JPG, PNG, PDF)</small></label>
+                                <input type="file" name="insurance_address_proof" class="form-control-file @error('insurance_address_proof') is-invalid @enderror">
+                                @error('insurance_address_proof') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                @if($lead->getFirstMediaUrl('insurance_address_proof'))
+                                    <a href="{{ $lead->getFirstMediaUrl('insurance_address_proof') }}" target="_blank">View Current</a>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -1191,10 +1289,18 @@
 
         $(document).ready(function() {
             // --- Month/Year Datepicker ---
-            $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto').datepicker({
+            $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
                 format: "mm-yyyy",
                 startView: "months",
                 minViewMode: "months",
+                autoclose: true
+            });
+
+            // --- Business Stability Year Picker ---
+            $('#business_stability_datepicker').datepicker({
+                format: "yyyy",
+                startView: "years",
+                minViewMode: "years",
                 autoclose: true
             });
 
@@ -1303,6 +1409,9 @@
 
                         var businessProof = $('input[name="business_proof_document"]')[0].files[0];
                         if(businessProof) formData.append('business_proof_document', businessProof);
+
+                        var insAddressProof = $('input[name="insurance_address_proof"]')[0].files[0];
+                        if(insAddressProof) formData.append('insurance_address_proof', insAddressProof);
                     });
 
                     this.on("successmultiple", function(files, response) {
@@ -1738,19 +1847,21 @@
                 // Disable inputs in hidden sections to prevent submission
                 $('#loan_section input, #loan_section select, #rto_section input, #rto_section select, #insurance_section input, #insurance_section select, #job_profile_section input, #job_profile_section select').prop('disabled', true);
 
-                // Residence Type logic: If RTO, don't ask for residence type
-                if (val === 'RTO') {
+                // Residence Type logic
+                if (val === 'RTO' || val === 'Insurance') {
                     $('#residence_type_div').hide();
                     $('select[name="residence_type"]').prop('disabled', true);
                     $('#lead_source_div').hide();
                     $('#lead_source').prop('disabled', true);
                     $('#lead_source_person_name_div').hide();
                     $('#lead_source_person_name').prop('disabled', true);
+                    $('#default_address_proof_div').hide();
                 } else {
                     $('#residence_type_div').show();
                     $('select[name="residence_type"]').prop('disabled', false);
                     $('#lead_source_div').show();
                     $('#lead_source').prop('disabled', false);
+                    $('#default_address_proof_div').show();
                 }
 
                 if (val === 'Loan') {
@@ -1762,6 +1873,26 @@
                 } else if (val === 'Insurance') {
                     $('#insurance_section').show();
                     $('#insurance_section input, #insurance_section select').prop('disabled', false);
+                }
+            }).trigger('change');
+
+            // --- Insurance Type Logic ---
+            $('#insurance_type').change(function() {
+                let val = $(this).val();
+                $('#ins_vehicle_div, #ins_health_div').hide();
+
+                if (val === 'Vehicle') {
+                    $('#ins_vehicle_div').show();
+                } else if (val === 'Health') {
+                    $('#ins_health_div').show();
+                }
+            }).trigger('change');
+
+            $('#insurance_coverage_type').change(function() {
+                if($(this).val() === 'Addon') {
+                    $('#ins_addon_desc_div').show();
+                } else {
+                    $('#ins_addon_desc_div').hide();
                 }
             }).trigger('change');
 
@@ -1901,7 +2032,7 @@
                     $('#bt_details_div input').prop('disabled', false);
                 } else {
                     // Check if other loan types have BT selected
-                    if (['Personal Loan', 'Business Loan'].includes(leadType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
+                    if (['Personal Loan', 'Business Loan'].includes(loanType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
                          $('#bt_details_div').show();
                          $('#bt_details_div input').prop('disabled', false);
                     } else {
@@ -1960,6 +2091,8 @@
             }
 
             $('#old_loan_close_amount, #required_in_hand_amount').on('input', calculateTotal);
+            // Trigger calculation on load
+            calculateTotal();
 
             $(window).scroll(function() {
                 if ($(this).scrollTop() > 100) {
@@ -1976,8 +2109,12 @@
 
             // --- Lead Source Person Name Logic ---
             $('#lead_source').change(function() {
-                if ($(this).val() === 'Any person') {
-                    $('#lead_source_person_name_div').show();
+                if ($(this).val()) {
+                    if ($(this).val().toLowerCase() === 'any person') {
+                        $('#lead_source_person_name_div').show();
+                    } else {
+                        $('#lead_source_person_name_div').hide();
+                    }
                 } else {
                     $('#lead_source_person_name_div').hide();
                 }

@@ -61,6 +61,11 @@ class MenuServiceProvider extends ServiceProvider
                             'route' => $prefix . 'insurance-leads.index',
                             'can' => 'view insurance lead',
                         ],
+                        [
+                            'text' => 'Expiring Insurance',
+                            'route' => $prefix . 'insurance-leads.expiring',
+                            'can' => 'view insurance lead',
+                        ],
                     ],
                 ]);
             }
