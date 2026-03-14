@@ -629,34 +629,6 @@
                         </div>
                     </div>
 
-                    {{-- BT Specific Fields (for Personal/Business/Vehicle/Housing/LAP) --}}
-                    <div id="bt_details_div" style="display:none;">
-                        <h6>Balance Transfer (BT) Details</h6>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Old Financer Name</label>
-                                    <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">
-                                    @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Number of EMI Paid</label>
-                                    <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">
-                                    @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Old Closer Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}">
-                                    @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {{-- Vehicle Loan Specifics --}}
                     <div id="vehicle_loan_details_div" style="display:none;">
                         <div class="row">
@@ -848,12 +820,6 @@
                                         @error('hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
-                                <div class="col-md-9" id="hp_details_div" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                        <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -862,13 +828,35 @@
                     {{-- Loan Amount Breakdown --}}
                     <div id="amount_required_section">
                         <h5>Amount Required</h5>
-                        <div class="row">
-                            <div class="col-md-4" id="old_loan_close_div">
-                                <div class="form-group">
-                                    <label>Old Loan Close Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount_display" id="old_loan_close_amount_display" value="{{ old('old_loan_close_amount_display', $lead->old_loan_close_amount_display) }}" class="form-control" disabled>
+                        {{-- Fields for HP Yes --}}
+                        <div id="hp_related_fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Financer Name</label>
+                                        <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer', $lead->old_financer) }}">
+                                        @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>EMI Paid Count</label>
+                                        <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count', $lead->emi_paid_count) }}">
+                                        @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Old Loan Close Amount</label>
+                                        <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount', $lead->old_loan_close_amount) }}">
+                                        @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        {{-- Fields for both HP Yes and No --}}
+                        <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Required Amount (In Hand) <span class="text-danger">*</span></label>
@@ -876,10 +864,10 @@
                                     @error('required_in_hand_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" id="total_loan_div" style="display: none;">
                                 <div class="form-group">
                                     <label>Total Loan Required</label>
-                                    <input type="text" id="total_loan_amount" class="form-control" disabled>
+                                    <input type="text" id="total_loan_amount" name="total_loan_amount" class="form-control" readonly>
                                 </div>
                             </div>
                         </div>
@@ -1098,7 +1086,7 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Hypothecation (HP)?</label>
-                                    <select name="ins_hypothecation_status" class="form-control">
+                                    <select name="ins_hypothecation_status" id="ins_hypothecation_status" class="form-control">
                                         <option value="0" {{ old('ins_hypothecation_status', $lead->hypothecation_status) == 0 ? 'selected' : '' }}>No</option>
                                         <option value="1" {{ old('ins_hypothecation_status', $lead->hypothecation_status) == 1 ? 'selected' : '' }}>Yes</option>
                                     </select>
@@ -1484,7 +1472,7 @@
                     },
                     old_loan_close_amount: {
                         required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && (($("#loan_type_select").val() === 'Vehicle Loan' && $("#vehicle_purchase_type").val() !== 'New Purchase') || (['Personal Loan', 'Business Loan'].includes($("#loan_type_select").val()) && $("#loan_purchase_type").val() === 'Balance Transfer'));
+                            return $("#hypothecation_status").val() == '1';
                         },
                         number: true,
                         min: 0
@@ -1513,9 +1501,6 @@
                         required: function(element) {
                             return $('#assigned_to').length > 0;
                         }
-                    },
-                    mfg_year: {
-                        digits: true
                     },
                     // Loan Specific
                     loan_type: {
@@ -1874,6 +1859,8 @@
                     $('#insurance_section').show();
                     $('#insurance_section input, #insurance_section select').prop('disabled', false);
                 }
+                // After showing/hiding main sections, re-trigger hypothecation logic
+                $('#hypothecation_status').trigger('change');
             }).trigger('change');
 
             // --- Insurance Type Logic ---
@@ -1986,21 +1973,8 @@
 
             $('#loan_purchase_type').change(function() {
                 let val = $(this).val();
-                let loanType = $('#loan_type_select').val();
-
-                // Show BT details if Balance Transfer is selected
                 if (val === 'Balance Transfer') {
-                    $('#bt_details_div').show();
-                    $('#bt_details_div input').prop('disabled', false);
-                } else {
-                    // Also check for vehicle loan BT
-                    if (loanType === 'Vehicle Loan' && $('#vehicle_purchase_type').val() === 'Balance Transfer') {
-                         $('#bt_details_div').show();
-                         $('#bt_details_div input').prop('disabled', false);
-                    } else {
-                        $('#bt_details_div').hide();
-                        $('#bt_details_div input').prop('disabled', true);
-                    }
+                    $('#hypothecation_status').val('1').trigger('change');
                 }
                 calculateTotal();
             });
@@ -2021,28 +1995,14 @@
 
             $('#vehicle_purchase_type').change(function() {
                 let val = $(this).val();
-                let loanType = $('#loan_type_select').val();
-
                 $('#new_purchase_div').toggle(val === 'New Purchase');
                 $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
 
-                // Show BT Details for Vehicle BT
-                if (loanType === 'Vehicle Loan' && val === 'Balance Transfer') {
-                    $('#bt_details_div').show();
-                    $('#bt_details_div input').prop('disabled', false);
-                } else {
-                    // Check if other loan types have BT selected
-                    if (['Personal Loan', 'Business Loan'].includes(loanType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
-                         $('#bt_details_div').show();
-                         $('#bt_details_div input').prop('disabled', false);
-                    } else {
-                        if($('#bt_details_div').is(':visible')) {
-                            $('#bt_details_div').hide();
-                            $('#bt_details_div input').prop('disabled', true);
-                        }
-                    }
+                if (val === 'Balance Transfer') {
+                    $('#hypothecation_status').val('1').trigger('change');
+                } else if (val === 'New Purchase') {
+                    $('#hypothecation_status').val('0').trigger('change');
                 }
-
                 calculateTotal();
             }).trigger('change');
 
@@ -2056,15 +2016,21 @@
                 }
             });
 
-            @if($lead->insurance_available) $('#insurance_details_div').show(); @endif
             $('#insurance_available').change(function() {
                 $('#insurance_details_div').toggle($(this).val() == '1');
-            });
+            }).trigger('change');
 
-            @if($lead->hypothecation_status) $('#hp_details_div').show(); @endif
             $('#hypothecation_status').change(function() {
-                $('#hp_details_div').toggle($(this).val() == '1');
-            });
+                var isHp = $(this).val() == '1';
+                $('#hp_related_fields, #total_loan_div').toggle(isHp);
+
+                if (isHp) {
+                    $('#hp_related_fields').find('input').prop('disabled', false);
+                } else {
+                    $('#hp_related_fields').find('input').prop('disabled', true).val('');
+                }
+                calculateTotal();
+            }).trigger('change');
 
             $('#rto_insurance_available').change(function() {
                 $('#rto_insurance_details_div').toggle($(this).val() == '1');
@@ -2074,6 +2040,12 @@
                 $('#rto_hp_details_div').toggle($(this).val() == '1');
             }).trigger('change');
 
+            // --- Insurance Specific Bindings (NEW) ---
+            $('#ins_hypothecation_status').val('{{ old('ins_hypothecation_status', $lead->hypothecation_status) }}').change(function() {
+                // You can add logic here if HP section needs to be toggled within Insurance
+            }).trigger('change');
+
+
             $('#has_co_applicant').change(function() {
                 $('#co_applicant_div').toggle($(this).val() == '1');
             }).trigger('change');
@@ -2082,29 +2054,17 @@
                 $('#guarantor_div').toggle($(this).val() == '1');
             }).trigger('change');
 
-            // --- Calculation Logic (FIXED) ---
             function calculateTotal() {
-                // Value uthao aur check karo ki wo number hai ya nahi
-                let val1 = parseFloat($('#old_loan_close_amount').val()) || 0;
-                let val2 = parseFloat($('#required_in_hand_amount').val()) || 0;
-                let val3 = parseFloat($('#old_loan_close_amount_display').val()) || 0;
-
-                // Calculation logic (Example: Sum kar rahe ho agar)
-                let total = val1 + val2 + val3;
-
-                console.log("Total calculated:", total);
-
-                // Agar kisi total field mein dikhana hai:
-                $('#total_loan_amount').val(total.toFixed(2));
+                let oldLoan = 0;
+                if ($('#hypothecation_status').val() == '1') {
+                    oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
+                }
+                let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
+                $('#total_loan_amount').val((oldLoan + inHand).toFixed(2));
             }
 
-            // Bind calculation to both fields
-            $('#old_loan_close_amount, #required_in_hand_amount, #old_loan_close_amount_display').on('input change keyup', function() {
-                calculateTotal();
-            });
-
-            // Initial calculation on load
-            calculateTotal();
+            $('#old_loan_close_amount, #required_in_hand_amount').on('input', calculateTotal);
+            calculateTotal(); // Initial calculation
 
             $(window).scroll(function() {
                 if ($(this).scrollTop() > 100) {
