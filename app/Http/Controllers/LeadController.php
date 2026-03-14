@@ -62,8 +62,7 @@ class LeadController extends Controller
 
         // 4. Apply Specific Filters
         if ($currentStatus && in_array($currentStatus, $statuses)) {
-            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $currentStatus;
-            if ($currentStatus === 'Follow up') $dbStatus = 'Prospect';
+            $dbStatus = ($currentStatus === 'Follow up') ? 'Prospect' : $currentStatus;
             $query->where('status', $dbStatus);
         }
 

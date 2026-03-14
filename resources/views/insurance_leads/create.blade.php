@@ -607,6 +607,19 @@
                 }
             }).trigger('change');
 
+            // --- Auto-calculate Insurance End Date ---
+            $('#insurance_start_date').change(function() {
+                var startDate = $(this).val();
+                if (startDate) {
+                    var start = new Date(startDate);
+                    start.setFullYear(start.getFullYear() + 1);
+                    // Subtract 1 day so it is exactly a 1-year period
+                    start.setDate(start.getDate() - 1);
+                    var endDate = start.toISOString().split('T')[0];
+                    $('#insurance_end_date').val(endDate);
+                }
+            });
+
             // --- Add Manufacture AJAX ---
             $(document).on('click', '.add-variant', function() {
                 let html = `

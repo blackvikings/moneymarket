@@ -223,16 +223,26 @@ class RtoController extends Controller
 
     public function updateRtoDone(Request $request, Lead $lead)
     {
-        $request->validate(['final_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120']);
-        $path = $request->file('final_doc')->store('rto_final_docs', 'public');
-
-        $lead->update([
-            'rto_approved_doc_path' => $path,
-            'rto_work_done_at' => now(),
-            'insurance_lead_stage' => 'New' // Move to Insurance
+        $request->validate([
+            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
-        return redirect()->back()->with('success', 'Final document uploaded. RTO process complete.');
+        $path = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
+
+        $updateData = [
+            'rto_approved_doc_path' => $path,
+            'rto_work_done_at' => now(),
+        ];
+
+        if ($request->input('action_type') === 'move_to_insurance') {
+            $updateData['insurance_lead_stage'] = 'New';
+            $updateData['lead_type'] = 'Insurance'; // Update lead type to Insurance if needed, depending on business logic
+            $lead->update($updateData);
+            return redirect()->back()->with('success', 'Final document uploaded. RTO process complete and moved to Insurance.');
+        } else {
+            $lead->update($updateData);
+            return redirect()->back()->with('success', 'Final document uploaded successfully.');
+        }
     }
 
     public function updateStage(Request $request, Lead $lead)
@@ -247,7 +257,7 @@ class RtoController extends Controller
 
     public function rejectLead(Request $request, Lead $lead)
     {
-        $lead->update(['rto_stage' => 'Loan Return', 'loan_return_reason' => $request->reason, 'loan_return_date' => now()]);
+        $lead->update(['rto_stage' => 'Loan Return', 'loan_return_reason' => $request->rejection_reason, 'loan_return_date' => now()]);
         return redirect()->back();
     }
 }
