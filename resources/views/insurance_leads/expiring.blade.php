@@ -33,7 +33,7 @@
                                 {{ $lead->insurance_end_date->format('d-m-Y') }}
                             </td>
                             <td>
-                                {{ now()->diffInDays($lead->insurance_end_date, false) }} Days
+                                {{ round(max(0, now()->diffInDays($lead->insurance_end_date, false))) }} Days
                             </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>

@@ -122,7 +122,8 @@ class LeadController extends Controller
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
-        return view('leads.create', compact('users', 'firms', 'manufactures', 'insurances'));
+        $banks = Bank::where('is_active', true)->get();
+        return view('leads.create', compact('users', 'firms', 'manufactures', 'insurances', 'banks'));
     }
 
     public function store(Request $request)

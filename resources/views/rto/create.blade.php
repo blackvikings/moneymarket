@@ -557,6 +557,17 @@
             $('#hypothecation_status').change(function() {
                 $('#hp_details_div').toggle($(this).val() == '1');
             });
+
+            $('input[name="insurance_start_date"]').change(function() {
+                var startDate = $(this).val();
+                if (startDate) {
+                    var start = new Date(startDate);
+                    start.setFullYear(start.getFullYear() + 1);
+                    start.setDate(start.getDate() - 1);
+                    var endDate = start.toISOString().split('T')[0];
+                    $('input[name="insurance_end_date"]').val(endDate);
+                }
+            });
         });
     </script>
 @stop

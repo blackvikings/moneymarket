@@ -774,7 +774,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>HP?</label>
-                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status') is-invalid @enderror">
+                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status') is-invalid @enderror" data-target="#hp_details_div">
                                             <option value="0" {{ old('hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                             <option value="1" {{ old('hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                         </select>
@@ -783,7 +783,18 @@
                                 </div>
                                 <div class="col-md-9" id="hp_details_div" style="display:none;">
                                     <div class="row">
-                                        <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">@error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Financer Name</label>
+                                                <select name="old_financer" class="form-control @error('old_financer') is-invalid @enderror">
+                                                    <option value="">Select Financer</option>
+                                                    @foreach($banks as $bank)
+                                                        <option value="{{ $bank->name }}" {{ old('old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                                    @endforeach
+                                                </select>
+                                                @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                            </div>
+                                        </div>
                                         <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                     </div>
                                 </div>
@@ -901,7 +912,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
-                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
+                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror" data-target="#rto_hp_details_div">
                                     <option value="0" {{ old('rto_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                     <option value="1" {{ old('rto_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
@@ -912,13 +923,14 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Select Bank</label>
-                                        <select name="rto_bank_id" class="form-control @error('rto_bank_id') is-invalid @enderror">
-                                            <option value="">Select Bank</option>
-                                            @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
-                                                <option value="{{ $bank->id }}" {{ old('rto_bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                        <label>Financer Name</label>
+                                        <select name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror">
+                                            <option value="">Select Financer</option>
+                                            @foreach($banks as $bank)
+                                                <option value="{{ $bank->name }}" {{ old('rto_old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
                                             @endforeach
                                         </select>
+                                        @error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1031,10 +1043,26 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Hypothecation (HP)?</label>
-                                    <select name="ins_hypothecation_status" class="form-control">
+                                    <select name="ins_hypothecation_status" id="ins_hypothecation_status" class="form-control" data-target="#ins_hp_details_div">
                                         <option value="0" {{ old('ins_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                         <option value="1" {{ old('ins_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                     </select>
+                                </div>
+                            </div>
+                            <div class="col-md-9" id="ins_hp_details_div" style="display:none;">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label>Financer Name</label>
+                                            <select name="ins_old_financer" class="form-control @error('ins_old_financer') is-invalid @enderror">
+                                                <option value="">Select Financer</option>
+                                                @foreach($banks as $bank)
+                                                    <option value="{{ $bank->name }}" {{ old('ins_old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            @error('ins_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1100,6 +1128,23 @@
                     <div class="row">
                         <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="co_name" class="form-control @error('co_name') is-invalid @enderror" value="{{ old('co_name') }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation') is-invalid @enderror" value="{{ old('co_relation') }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                    </div>
+                </div>
+
+                {{-- Guarantor --}}
+                <h5>Guarantor Details</h5>
+                <div class="form-group">
+                    <label>Has Guarantor?</label>
+                    <select name="has_guarantor" id="has_guarantor" class="form-control @error('has_guarantor') is-invalid @enderror" style="width: 200px;">
+                        <option value="0" {{ old('has_guarantor') == 0 ? 'selected' : '' }}>No</option>
+                        <option value="1" {{ old('has_guarantor') == 1 ? 'selected' : '' }}>Yes</option>
+                    </select>
+                    @error('has_guarantor') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                </div>
+                <div id="guarantor_div" style="display:none;">
+                    <div class="row">
+                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="guarantor_name" class="form-control @error('guarantor_name') is-invalid @enderror" value="{{ old('guarantor_name') }}">@error('guarantor_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="guarantor_relation" class="form-control @error('guarantor_relation') is-invalid @enderror" value="{{ old('guarantor_relation') }}">@error('guarantor_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                 </div>
 
@@ -1930,6 +1975,7 @@
                 if (startDate) {
                     var start = new Date(startDate);
                     start.setFullYear(start.getFullYear() + 1);
+                    start.setDate(start.getDate() - 1);
                     var endDate = start.toISOString().split('T')[0];
                     $('input[name="insurance_end_date"]').val(endDate);
                 }
@@ -1939,17 +1985,11 @@
                 $('#insurance_details_div').toggle($(this).val() == '1');
             });
 
-            $('#hypothecation_status').change(function() {
-                $('#hp_details_div').toggle($(this).val() == '1');
-            });
-
-            $('#rto_insurance_available').change(function() {
-                $('#rto_insurance_details_div').toggle($(this).val() == '1');
-            });
-
-            $('#rto_hypothecation_status').change(function() {
-                $('#rto_hp_details_div').toggle($(this).val() == '1');
-            });
+            $('#hypothecation_status, #rto_hypothecation_status, #ins_hypothecation_status').change(function() {
+                let isChecked = $(this).val() == '1';
+                let targetDiv = $($(this).data('target'));
+                targetDiv.toggle(isChecked);
+            }).trigger('change');
 
             $('#has_co_applicant').change(function() {
                 $('#co_applicant_div').toggle($(this).val() == '1');
