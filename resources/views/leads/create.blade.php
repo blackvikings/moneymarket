@@ -562,34 +562,6 @@
                         </div>
                     </div>
 
-                    {{-- BT Specific Fields (for Personal/Business/Vehicle/Housing/LAP) --}}
-                    <div id="bt_details_div" style="display:none;">
-                        <h6>Balance Transfer (BT) Details</h6>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Old Financer Name</label>
-                                    <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">
-                                    @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Number of EMI Paid</label>
-                                    <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">
-                                    @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Old Closer Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount') }}">
-                                    @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     {{-- Vehicle Loan Specifics --}}
                     <div id="vehicle_loan_details_div" style="display:none;">
                         <div class="row">
@@ -774,28 +746,11 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>HP?</label>
-                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status') is-invalid @enderror" data-target="#hp_details_div">
+                                        <select name="hypothecation_status" id="hypothecation_status" class="form-control @error('hypothecation_status') is-invalid @enderror">
                                             <option value="0" {{ old('hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                             <option value="1" {{ old('hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                         </select>
                                         @error('hypothecation_status') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                    </div>
-                                </div>
-                                <div class="col-md-9" id="hp_details_div" style="display:none;">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label>Financer Name</label>
-                                                <select name="old_financer" class="form-control @error('old_financer') is-invalid @enderror">
-                                                    <option value="">Select Financer</option>
-                                                    @foreach($banks as $bank)
-                                                        <option value="{{ $bank->name }}" {{ old('old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                                @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">@error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                                     </div>
                                 </div>
                             </div>
@@ -803,16 +758,39 @@
                     </div>
 
                     <hr>
+
                     {{-- Loan Amount Breakdown --}}
                     <div id="amount_required_section">
                         <h5>Amount Required</h5>
-                        <div class="row">
-                            <div class="col-md-4" id="old_loan_close_div">
-                                <div class="form-group">
-                                    <label>Old Loan Close Amount</label>
-                                    <input type="number" step="0.01" name="old_loan_close_amount_display" id="old_loan_close_amount_display" class="form-control" disabled>
+                        {{-- Fields for HP Yes --}}
+                        <div id="hp_related_fields" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Financer Name</label>
+                                        <input type="text" name="old_financer" class="form-control @error('old_financer') is-invalid @enderror" value="{{ old('old_financer') }}">
+                                        @error('old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>EMI Paid Count</label>
+                                        <input type="number" name="emi_paid_count" class="form-control @error('emi_paid_count') is-invalid @enderror" value="{{ old('emi_paid_count') }}">
+                                        @error('emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Old Loan Close Amount</label>
+                                        <input type="number" step="0.01" name="old_loan_close_amount" id="old_loan_close_amount" class="form-control @error('old_loan_close_amount') is-invalid @enderror" value="{{ old('old_loan_close_amount') }}">
+                                        @error('old_loan_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                    </div>
                                 </div>
                             </div>
+                        </div>
+
+                        {{-- Fields for both HP Yes and No --}}
+                        <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Required Amount (In Hand) <span class="text-danger">*</span></label>
@@ -820,10 +798,10 @@
                                     @error('required_in_hand_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-4" id="total_loan_div" style="display: none;">
                                 <div class="form-group">
                                     <label>Total Loan Required</label>
-                                    <input type="text" id="total_loan_amount" class="form-control" disabled>
+                                    <input type="text" id="total_loan_amount" name="total_loan_amount" class="form-control" readonly>
                                 </div>
                             </div>
                         </div>
@@ -912,7 +890,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Hypothecation (HP)?</label>
-                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror" data-target="#rto_hp_details_div">
+                                <select name="rto_hypothecation_status" id="rto_hypothecation_status" class="form-control @error('rto_hypothecation_status') is-invalid @enderror">
                                     <option value="0" {{ old('rto_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                     <option value="1" {{ old('rto_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                 </select>
@@ -923,14 +901,13 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Financer Name</label>
-                                        <select name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror">
-                                            <option value="">Select Financer</option>
-                                            @foreach($banks as $bank)
-                                                <option value="{{ $bank->name }}" {{ old('rto_old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
+                                        <label>Select Bank</label>
+                                        <select name="rto_bank_id" class="form-control @error('rto_bank_id') is-invalid @enderror">
+                                            <option value="">Select Bank</option>
+                                            @foreach(\App\Models\Bank::where('is_active', true)->get() as $bank)
+                                                <option value="{{ $bank->id }}" {{ old('rto_bank_id') == $bank->id ? 'selected' : '' }}>{{ $bank->name }}</option>
                                             @endforeach
                                         </select>
-                                        @error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
                                 </div>
                                 <div class="col-md-4">
@@ -1043,26 +1020,10 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label>Hypothecation (HP)?</label>
-                                    <select name="ins_hypothecation_status" id="ins_hypothecation_status" class="form-control" data-target="#ins_hp_details_div">
+                                    <select name="ins_hypothecation_status" class="form-control">
                                         <option value="0" {{ old('ins_hypothecation_status') == 0 ? 'selected' : '' }}>No</option>
                                         <option value="1" {{ old('ins_hypothecation_status') == 1 ? 'selected' : '' }}>Yes</option>
                                     </select>
-                                </div>
-                            </div>
-                            <div class="col-md-9" id="ins_hp_details_div" style="display:none;">
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="form-group">
-                                            <label>Financer Name</label>
-                                            <select name="ins_old_financer" class="form-control @error('ins_old_financer') is-invalid @enderror">
-                                                <option value="">Select Financer</option>
-                                                @foreach($banks as $bank)
-                                                    <option value="{{ $bank->name }}" {{ old('ins_old_financer') == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            @error('ins_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1128,23 +1089,6 @@
                     <div class="row">
                         <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="co_name" class="form-control @error('co_name') is-invalid @enderror" value="{{ old('co_name') }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation') is-invalid @enderror" value="{{ old('co_relation') }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                    </div>
-                </div>
-
-                {{-- Guarantor --}}
-                <h5>Guarantor Details</h5>
-                <div class="form-group">
-                    <label>Has Guarantor?</label>
-                    <select name="has_guarantor" id="has_guarantor" class="form-control @error('has_guarantor') is-invalid @enderror" style="width: 200px;">
-                        <option value="0" {{ old('has_guarantor') == 0 ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('has_guarantor') == 1 ? 'selected' : '' }}>Yes</option>
-                    </select>
-                    @error('has_guarantor') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                </div>
-                <div id="guarantor_div" style="display:none;">
-                    <div class="row">
-                        <div class="col-md-4"><div class="form-group"><label>Name</label><input type="text" name="guarantor_name" class="form-control @error('guarantor_name') is-invalid @enderror" value="{{ old('guarantor_name') }}">@error('guarantor_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-4"><div class="form-group"><label>Relation</label><input type="text" name="guarantor_relation" class="form-control @error('guarantor_relation') is-invalid @enderror" value="{{ old('guarantor_relation') }}">@error('guarantor_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                     </div>
                 </div>
 
@@ -1436,7 +1380,7 @@
                     },
                     old_loan_close_amount: {
                         required: function(element) {
-                            return $("#lead_type").val() === 'Loan' && (($("#loan_type_select").val() === 'Vehicle Loan' && $("#vehicle_purchase_type").val() !== 'New Purchase') || (['Personal Loan', 'Business Loan'].includes($("#loan_type_select").val()) && $("#loan_purchase_type").val() === 'Balance Transfer'));
+                            return $("#hypothecation_status").val() == '1';
                         },
                         number: true,
                         min: 0
@@ -1465,9 +1409,6 @@
                         required: function(element) {
                             return $('#assigned_to').length > 0;
                         }
-                    },
-                    mfg_year: {
-                        digits: true
                     },
                     // Loan Specific
                     loan_type: {
@@ -1542,31 +1483,6 @@
                     ins_model_name: "Please enter the model name"
                 }
             });
-
-            // --- Firm to Employee Logic ---
-            {{--$('#firm_id').change(function() {--}}
-            {{--    let firmId = $(this).val();--}}
-            {{--    let assignedToSelect = $('#assigned_to');--}}
-
-            {{--    if (assignedToSelect.length > 0) { // Only if the dropdown exists (Admin/Team Lead)--}}
-            {{--        assignedToSelect.empty().append('<option value="">Loading...</option>');--}}
-
-            {{--        if (firmId) {--}}
-            {{--            $.ajax({--}}
-            {{--                url: '{{ url("get-employees-by-firm") }}/' + firmId,--}}
-            {{--                type: 'GET',--}}
-            {{--                success: function(data) {--}}
-            {{--                    assignedToSelect.empty().append('<option value="">Select User</option>');--}}
-            {{--                    $.each(data, function(key, user) {--}}
-            {{--                        assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');--}}
-            {{--                    });--}}
-            {{--                }--}}
-            {{--            });--}}
-            {{--        } else {--}}
-            {{--            assignedToSelect.empty().append('<option value="">Select Firm First</option>');--}}
-            {{--        }--}}
-            {{--    }--}}
-            {{--});--}}
 
             // --- Location Scripts ---
             function populateStates(selector) {
@@ -1802,6 +1718,8 @@
                     $('#insurance_section').show();
                     $('#insurance_section input, #insurance_section select').prop('disabled', false);
                 }
+                 // After showing/hiding main sections, re-trigger hypothecation logic
+                $('#hypothecation_status').trigger('change');
             }).trigger('change');
 
             // --- Insurance Type Logic ---
@@ -1912,19 +1830,8 @@
                 let val = $(this).val();
                 let loanType = $('#loan_type_select').val();
 
-                // Show BT details if Balance Transfer is selected
                 if (val === 'Balance Transfer') {
-                    $('#bt_details_div').show();
-                    $('#bt_details_div input').prop('disabled', false);
-                } else {
-                    // Also check for vehicle loan BT
-                    if (loanType === 'Vehicle Loan' && $('#vehicle_purchase_type').val() === 'Balance Transfer') {
-                         $('#bt_details_div').show();
-                         $('#bt_details_div input').prop('disabled', false);
-                    } else {
-                        $('#bt_details_div').hide();
-                        $('#bt_details_div input').prop('disabled', true);
-                    }
+                    $('#hypothecation_status').val('1').trigger('change');
                 }
                 calculateTotal();
             });
@@ -1945,28 +1852,14 @@
 
             $('#vehicle_purchase_type').change(function() {
                 let val = $(this).val();
-                let loanType = $('#loan_type_select').val();
-
                 $('#new_purchase_div').toggle(val === 'New Purchase');
                 $('#repurchase_div').toggle(['Repurchase', 'Refinance', 'Balance Transfer'].includes(val));
 
-                // Show BT Details for Vehicle BT
-                if (loanType === 'Vehicle Loan' && val === 'Balance Transfer') {
-                    $('#bt_details_div').show();
-                    $('#bt_details_div input').prop('disabled', false);
-                } else {
-                    // Check if other loan types have BT selected
-                    if (['Personal Loan', 'Business Loan'].includes(loanType) && $('#loan_purchase_type').val() === 'Balance Transfer') {
-                         $('#bt_details_div').show();
-                         $('#bt_details_div input').prop('disabled', false);
-                    } else {
-                        if($('#bt_details_div').is(':visible')) {
-                            $('#bt_details_div').hide();
-                            $('#bt_details_div input').prop('disabled', true);
-                        }
-                    }
+                if (val === 'Balance Transfer') {
+                    $('#hypothecation_status').val('1').trigger('change');
+                } else if (val === 'New Purchase') {
+                    $('#hypothecation_status').val('0').trigger('change');
                 }
-
                 calculateTotal();
             });
 
@@ -1975,7 +1868,6 @@
                 if (startDate) {
                     var start = new Date(startDate);
                     start.setFullYear(start.getFullYear() + 1);
-                    start.setDate(start.getDate() - 1);
                     var endDate = start.toISOString().split('T')[0];
                     $('input[name="insurance_end_date"]').val(endDate);
                 }
@@ -1985,11 +1877,26 @@
                 $('#insurance_details_div').toggle($(this).val() == '1');
             });
 
-            $('#hypothecation_status, #rto_hypothecation_status, #ins_hypothecation_status').change(function() {
-                let isChecked = $(this).val() == '1';
-                let targetDiv = $($(this).data('target'));
-                targetDiv.toggle(isChecked);
-            }).trigger('change');
+            $('#hypothecation_status').change(function() {
+                var isHp = $(this).val() == '1';
+                $('#hp_related_fields, #total_loan_div').toggle(isHp);
+
+                if (isHp) {
+                    $('#hp_related_fields').find('input').prop('disabled', false);
+                } else {
+                    $('#hp_related_fields').find('input').prop('disabled', true).val('');
+                }
+                calculateTotal();
+            });
+
+
+            $('#rto_insurance_available').change(function() {
+                $('#rto_insurance_details_div').toggle($(this).val() == '1');
+            });
+
+            $('#rto_hypothecation_status').change(function() {
+                $('#rto_hp_details_div').toggle($(this).val() == '1');
+            });
 
             $('#has_co_applicant').change(function() {
                 $('#co_applicant_div').toggle($(this).val() == '1');
@@ -2000,10 +1907,11 @@
             });
 
             function calculateTotal() {
-                let oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
+                let oldLoan = 0;
+                if ($('#hypothecation_status').val() == '1') {
+                    oldLoan = parseFloat($('#old_loan_close_amount').val()) || 0;
+                }
                 let inHand = parseFloat($('#required_in_hand_amount').val()) || 0;
-
-                $('#old_loan_close_amount_display').val(oldLoan.toFixed(2));
                 $('#total_loan_amount').val((oldLoan + inHand).toFixed(2));
             }
 
