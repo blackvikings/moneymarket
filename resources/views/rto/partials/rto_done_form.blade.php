@@ -11,6 +11,8 @@
         <label>Remark</label>
         <textarea name="remark" class="form-control" rows="3" placeholder="Enter any remarks..."></textarea>
     </div>
-    <p class="text-muted">Uploading this document will mark the RTO process as complete and move the lead to the Insurance Module.</p>
-    <button type="submit" class="btn btn-success">Upload & Move to Insurance</button>
+    <p class="text-muted">You can either just save this data or move the lead to the Insurance Module.</p>
+
+    <button type="submit" name="action_type" value="save" class="btn btn-primary mr-2">Save</button>
+    <button type="submit" name="action_type" value="move_to_insurance" class="btn btn-success">Save & Move to Insurance</button>
 </form>

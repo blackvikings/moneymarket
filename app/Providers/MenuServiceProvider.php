@@ -61,12 +61,17 @@ class MenuServiceProvider extends ServiceProvider
                             'route' => $prefix . 'insurance-leads.index',
                             'can' => 'view insurance lead',
                         ],
-                        [
-                            'text' => 'Expiring Insurance',
-                            'route' => $prefix . 'insurance-leads.expiring',
-                            'can' => 'view insurance lead',
-                        ],
                     ],
+                ]);
+            }
+
+            // Add Expiring Insurance Menu as a standalone item
+            if ($user->hasRole('admin') || $user->can('view insurance lead')) {
+                $event->menu->add([
+                    'text' => 'Expiring Insurance',
+                    'icon' => 'fas fa-fw fa-calendar-times',
+                    'route' => $prefix . 'insurance-leads.expiring',
+                    'can' => 'view insurance lead',
                 ]);
             }
 

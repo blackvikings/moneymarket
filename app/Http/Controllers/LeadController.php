@@ -62,8 +62,7 @@ class LeadController extends Controller
 
         // 4. Apply Specific Filters
         if ($currentStatus && in_array($currentStatus, $statuses)) {
-            $dbStatus = ($status === 'Follow up') ? 'Prospect' : $currentStatus;
-            if ($currentStatus === 'Follow up') $dbStatus = 'Prospect';
+            $dbStatus = ($currentStatus === 'Follow up') ? 'Prospect' : $currentStatus;
             $query->where('status', $dbStatus);
         }
 
@@ -581,6 +580,12 @@ class LeadController extends Controller
                 $data['variant'] = $data['ins_variant'] ?? $data['variant'] ?? null;
                 $data['owner_serial_number'] = $data['ins_owner_serial_number'] ?? $data['owner_serial_number'] ?? null;
                 $data['hypothecation_status'] = $data['ins_hypothecation_status'] ?? $data['hypothecation_status'] ?? null;
+
+                // MAP Missing fields for Insurance Type
+                $data['rc_number'] = $data['rto_rc_number'] ?? $data['rc_number'] ?? null;
+                $data['engine_number'] = $data['rto_engine_number'] ?? $data['engine_number'] ?? null;
+                $data['chassis_number'] = $data['rto_chassis_number'] ?? $data['chassis_number'] ?? null;
+                $data['mfg_year'] = $data['mfg_year'] ?? null; // mfg_year is directly taken from 'mfg_year' name in form
             }
         }
         return $data;

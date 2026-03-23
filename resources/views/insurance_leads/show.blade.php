@@ -230,13 +230,13 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance Start Date</label>
-                            <input type="date" name="insurance_start_date" class="form-control" value="{{ $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '' }}" required>
+                            <input type="date" name="insurance_start_date" id="insurance_start_date" class="form-control" value="{{ $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '' }}" required>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance End Date</label>
-                            <input type="date" name="insurance_end_date" class="form-control" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '' }}" required>
+                            <input type="date" name="insurance_end_date" id="insurance_end_date" class="form-control" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '' }}" required>
                         </div>
                     </div>
                 </div>
@@ -500,6 +500,19 @@
                     $('#lead_source_person_name_div').hide();
                 }
             }).trigger('change');
+
+            // --- Auto-calculate Insurance End Date ---
+            $('#insurance_start_date').change(function() {
+                var startDate = $(this).val();
+                if (startDate) {
+                    var start = new Date(startDate);
+                    start.setFullYear(start.getFullYear() + 1);
+                    // Subtract 1 day so it is exactly a 1-year period
+                    start.setDate(start.getDate() - 1);
+                    var endDate = start.toISOString().split('T')[0];
+                    $('#insurance_end_date').val(endDate);
+                }
+            });
         });
     </script>
 @stop

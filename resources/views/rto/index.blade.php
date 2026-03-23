@@ -186,7 +186,7 @@
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-rto-btn" data-id="{{ $lead->id }}">View</button>
-                                @if($lead->rto_stage !== 'Loan Return')
+                                @if($lead->rto_stage == 'RTO Done')
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
                                     </button>
@@ -202,16 +202,7 @@
                                                     </button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    @if($lead->rto_stage == 'New')
-                                                        <form action="{{ route(get_route_prefix() . 'rto.update-stage', $lead->id) }}" method="POST">
-                                                            @csrf
-                                                            <input type="hidden" name="current_stage" value="{{ $lead->rto_stage }}">
-                                                            <p>Move to next stage?</p>
-                                                            <button type="submit" name="action" value="Yes" class="btn btn-success">Yes, Move to Checking</button>
-                                                        </form>
-                                                    @elseif($lead->rto_stage == 'Checking')
-                                                        @include('rto.partials.checking_form', ['lead' => $lead, 'banks' => \App\Models\Bank::where('is_active', true)->get()])
-                                                    @elseif($lead->rto_stage == 'RTO Done')
+                                                   @if($lead->rto_stage == 'RTO Done')
                                                         @include('rto.partials.rto_done_form', ['lead' => $lead])
                                                     @else
                                                         <p class="text-success">This lead has completed the RTO process.</p>
