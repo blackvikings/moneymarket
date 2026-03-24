@@ -314,13 +314,13 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Profile Type</label>
-                                <select name="job_profile_type" id="job_profile_type" class="form-control @error('job_profile_type') is-invalid @enderror" required>
+                                <select name="job_profile" id="job_profile" class="form-control @error('job_profile') is-invalid @enderror" required>
                                     <option value="">Select Profile</option>
-                                    <option value="Self Employed" {{ old('job_profile_type') == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
-                                    <option value="Farmer" {{ old('job_profile_type') == 'Farmer' ? 'selected' : '' }}>Farmer</option>
-                                    <option value="Salaried" {{ old('job_profile_type') == 'Salaried' ? 'selected' : '' }}>Salaried</option>
+                                    <option value="Self Employed" {{ old('job_profile') == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
+                                    <option value="Farmer" {{ old('job_profile') == 'Farmer' ? 'selected' : '' }}>Farmer</option>
+                                    <option value="Salaried" {{ old('job_profile') == 'Salaried' ? 'selected' : '' }}>Salaried</option>
                                 </select>
-                                @error('job_profile_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                @error('job_profile') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-md-4" id="company_name_div">
@@ -363,6 +363,22 @@
                                     <option value="Other" {{ old('salaried_type') == 'Other' ? 'selected' : '' }}>Other</option>
                                 </select>
                                 @error('salaried_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" id="farmer_fields" style="display:none;">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Agri Land Area</label>
+                                <input type="text" name="agri_land_area" class="form-control @error('agri_land_area') is-invalid @enderror" value="{{ old('agri_land_area') }}">
+                                @error('agri_land_area') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Agri Land Document <small class="text-muted">(Optional, Max 5MB)</small></label>
+                                <input type="file" name="agri_land_document" class="form-control-file @error('agri_land_document') is-invalid @enderror">
+                                @error('agri_land_document') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                     </div>
@@ -1376,7 +1392,7 @@
                     residence_type: { required: true },
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
-                    job_profile_type: {
+                    job_profile: {
                         required: function(element) {
                             return $("#lead_type").val() === 'Loan';
                         }
@@ -1482,7 +1498,7 @@
                     residence_type: "Please select a residence type",
                     current_address_line: "Please enter the current address",
                     permanent_address_line: "Please enter the permanent address",
-                    job_profile_type: "Please select a job profile",
+                    job_profile: "Please select a job profile",
                     other_company_name: "Please enter the company name",
                     designation: "Please enter the designation",
                     itr_amount: "Please enter the ITR amount",
@@ -1766,12 +1782,13 @@
             });
 
             // --- Other Form Logic ---
-            $('#job_profile_type').change(function() {
+            $('#job_profile').change(function() {
                 let val = $(this).val();
-                $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div, #business_stability_div, #salary_details_div').hide();
+                $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div, #business_stability_div, #salary_details_div, #farmer_fields').hide();
 
                 if (val === 'Farmer') {
                     $('#company_name_div, #designation_div').hide();
+                    $('#farmer_fields').show();
                 } else {
                     $('#company_name_div, #designation_div').show();
                 }
@@ -1787,7 +1804,7 @@
             }).trigger('change');
 
             $('#income_proof_available').change(function() {
-                let profileType = $('#job_profile_type').val();
+                let profileType = $('#job_profile').val();
                 if (profileType === 'Salaried' && $(this).val() == '1') {
                     $('#salary_details_div').show();
                 } else {

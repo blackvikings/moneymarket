@@ -146,6 +146,8 @@ class LeadController extends Controller
             'aadhar_number' => 'nullable|string|max:20',
             'property_approx_value' => 'nullable|numeric',
             'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'agri_land_area' => 'nullable|string|max:255',
+            'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $data = $request->all();
@@ -169,6 +171,10 @@ class LeadController extends Controller
 
         if ($request->hasFile('salary_slip')) {
             $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
+        }
+
+        if ($request->hasFile('agri_land_document')) {
+            $data['agri_land_document_path'] = $request->file('agri_land_document')->store('agri_land_documents', 'public');
         }
 
         $lead = Lead::create($data);
@@ -250,6 +256,8 @@ class LeadController extends Controller
             'lead_source_person_name' => 'nullable|string|max:255',
             'property_approx_value' => 'nullable|numeric',
             'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'agri_land_area' => 'nullable|string|max:255',
+            'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
         ]);
 
         $data = $request->all();
@@ -298,6 +306,11 @@ class LeadController extends Controller
         if ($request->hasFile('business_proof_document')) {
             if ($lead->business_proof_document_path) Storage::disk('public')->delete($lead->business_proof_document_path);
             $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
+        }
+
+        if ($request->hasFile('agri_land_document')) {
+            if ($lead->agri_land_document_path) Storage::disk('public')->delete($lead->agri_land_document_path);
+            $data['agri_land_document_path'] = $request->file('agri_land_document')->store('agri_land_documents', 'public');
         }
 
         if ($request->hasFile('current_address_proof')) {

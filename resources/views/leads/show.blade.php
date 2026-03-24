@@ -44,10 +44,10 @@
 
                     <hr>
                     <h5>Job Profile</h5>
-                    <p><strong>Type:</strong> {{ $lead->job_profile_type }}</p>
-                    @if($lead->job_profile_type == 'Self Employed')
+                    <p><strong>Type:</strong> {{ $lead->job_profile }}</p>
+                    @if($lead->job_profile == 'Self Employed')
                         <p><strong>Nature of Work:</strong> {{ $lead->nature_of_work }}</p>
-                    @elseif($lead->job_profile_type == 'Salaried')
+                    @elseif($lead->job_profile == 'Salaried')
                         <p><strong>Type:</strong> {{ $lead->salaried_type }}</p>
                         @if($lead->salaried_type == 'Other')
                             <p><strong>Company:</strong> {{ $lead->other_company_name }}</p>

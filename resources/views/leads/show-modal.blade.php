@@ -44,14 +44,14 @@
     @if($lead->lead_type == 'Loan')
         <hr>
         <h6><strong>Job Profile</strong></h6>
-        <p><strong>Type:</strong> {{ $lead->job_profile_type }}</p>
+        <p><strong>Type:</strong> {{ $lead->job_profile }}</p>
         <p><strong>Company:</strong> {{ $lead->other_company_name }}</p>
         <p><strong>Designation:</strong> {{ $lead->designation }}</p>
 
-        @if($lead->job_profile_type == 'Self Employed')
+        @if($lead->job_profile == 'Self Employed')
             <p><strong>Nature of Work:</strong> {{ $lead->nature_of_work }}</p>
             <p><strong>Business Stability:</strong> {{ $lead->business_stability ?? '-' }}</p>
-        @elseif($lead->job_profile_type == 'Salaried')
+        @elseif($lead->job_profile == 'Salaried')
             <p><strong>Salaried Type:</strong> {{ $lead->salaried_type }}</p>
             <p><strong>Last Month Salary:</strong> {{ $lead->last_month_salary ?? '-' }}</p>
             @if($lead->salary_slip_path)

@@ -137,7 +137,7 @@ class LeadController extends Controller
             'permanent_address_state' => 'required|exists:states,id',
             'permanent_address_city' => 'required|exists:cities,id',
             // Job Profile
-            'job_profile_type' => 'required|string',
+            'job_profile' => 'required|string',
             'nature_of_work' => 'nullable|string',
             'salaried_type' => 'nullable|string',
             'other_company_name' => 'nullable|string',
