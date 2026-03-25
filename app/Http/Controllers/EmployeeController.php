@@ -54,18 +54,16 @@ class EmployeeController extends Controller
     public function create()
     {
         $firms = Firm::all();
-        // $banks = Bank::with('branches')->get(); // Eager load branches
+        $user = Auth::user();
+        $userRole = $user->roles->first();
 
-        // Fetch Admins and Team Leads separately for dynamic filtering
-        $admins = User::role('admin')->get();
-        $teamLeads = User::role('Team Lead')->get();
-
-        // Keep $managers for fallback or initial load if needed, though we'll use JS
-        $managers = $admins->merge($teamLeads);
+        $managers = User::whereHas('roles', function ($query) use ($userRole) {
+            $query->where('position', '<', $userRole->position);
+        })->get();
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
-        return view('employees.create', compact('firms', 'managers', 'admins', 'teamLeads', 'roles', 'permissions'));
+        return view('employees.create', compact('firms', 'managers', 'roles', 'permissions'));
     }
 
     public function store(Request $request)
@@ -157,17 +155,18 @@ class EmployeeController extends Controller
             return redirect()->route('admin.employees.index')->with('error', 'Cannot edit admin user.');
         }
         $firms = Firm::all();
-        // $banks = Bank::with('branches')->get(); // Eager load branches
+        $user = Auth::user();
+        $userRole = $user->roles->first();
 
-        // Fetch Admins and Team Leads separately
-        $admins = User::role('admin')->where('id', '!=', $employee->id)->get();
-        $teamLeads = User::role('Team Lead')->where('id', '!=', $employee->id)->get();
-        $managers = $admins->merge($teamLeads);
+        $managers = User::where('id', '!=', $employee->id)
+            ->whereHas('roles', function ($query) use ($userRole) {
+                $query->where('position', '<', $userRole->position);
+            })->get();
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
         $employee->load('education', 'permissions', 'deniedPermissions'); // Load denied permissions
-        return view('employees.edit', compact('employee', 'firms', 'managers', 'admins', 'teamLeads', 'roles', 'permissions'));
+        return view('employees.edit', compact('employee', 'firms', 'managers', 'roles', 'permissions'));
     }
 
     public function update(Request $request, User $employee)
@@ -275,9 +274,14 @@ class EmployeeController extends Controller
 
     public function getEmployeesByFirm(Firm $firm)
     {
-        $employees = User::role('Tele Caller')
-                        ->where('firm_id', $firm->id)
+        $user = Auth::user();
+        $userRole = $user->roles->first();
+
+        $employees = User::where('firm_id', $firm->id)
                         ->where('status', 'Active')
+                        ->whereHas('roles', function ($query) use ($userRole) {
+                            $query->where('position', '>', $userRole->position);
+                        })
                         ->select('id', 'name')
                         ->get();
         return response()->json($employees);

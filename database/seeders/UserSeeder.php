@@ -81,6 +81,7 @@ class UserSeeder extends Seeder
             'export lead' => 'LMS',
             'import lead' => 'LMS',
             'bulk assign lead' => 'LMS',
+            'assign lead' => 'LMS',
             'view user' => 'LMS', // Used in lead assignment dropdowns
             'create user' => 'LMS',
             'edit user' => 'LMS',

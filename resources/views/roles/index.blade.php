@@ -23,6 +23,7 @@
                             <i class="fas fa-user-tag fa-3x text-white-50"></i>
                         </div>
                         <h3 class="widget-user-username">{{ $role->name }}</h3>
+                        <h5 class="widget-user-desc">Position: {{ $role->position }}</h5>
                         <h5 class="widget-user-desc">{{ $role->permissions->count() }} Permissions</h5>
                     </div>
                     <div class="card-body p-0">
@@ -67,17 +68,6 @@
                             <a href="{{ route('admin.roles.edit', $role->id) }}" class="btn btn-sm btn-outline-primary" title="Edit Role">
                                 <i class="fas fa-edit"></i> Edit
                             </a>
-                        @endcan
-                        @can('delete role')
-                            @if($role->name !== 'admin')
-                                <form action="{{ route('admin.roles.destroy', $role->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this role?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Role">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
-                                </form>
-                            @endif
                         @endcan
                     </div>
                 </div>

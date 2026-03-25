@@ -18,7 +18,7 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = Role::all();
+        $roles = Role::orderBy('position')->get();
         return view('roles.index', compact('roles'));
     }
 
@@ -32,11 +32,12 @@ class RoleController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:roles,name',
+            'position' => 'required|integer',
             'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role = Role::create(['name' => $request->name]);
+        $role = Role::create(['name' => $request->name, 'position' => $request->position]);
         $permissions = Permission::whereIn('id', $request->permissions)->get();
 
         // Automatically add 'show master option' if any master view permission is selected
@@ -90,9 +91,6 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
-        if ($role->name === 'admin') {
-            return redirect()->route('admin.roles.index')->with('error', 'Cannot edit admin role.');
-        }
         $permissions = Permission::all();
         return view('roles.edit', compact('role', 'permissions'));
     }
@@ -105,11 +103,12 @@ class RoleController extends Controller
 
         $request->validate([
             'name' => 'required|unique:roles,name,'.$role->id,
+            'position' => 'required|integer',
             'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $role->update(['name' => $request->name]);
+        $role->update(['name' => $request->name, 'position' => $request->position]);
         $permissions = Permission::whereIn('id', $request->permissions)->get();
 
         // Automatically add 'show master option' if any master view permission is selected

@@ -378,13 +378,13 @@
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label>Profile Type</label>
-                                <select name="job_profile" id="job_profile" class="form-control @error('job_profile') is-invalid @enderror" required>
+                                <select name="job_profile_type" id="job_profile_type" class="form-control @error('job_profile_type') is-invalid @enderror" required>
                                     <option value="">Select Profile</option>
-                                    <option value="Self Employed" {{ old('job_profile', $lead->job_profile) == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
-                                    <option value="Farmer" {{ old('job_profile', $lead->job_profile) == 'Farmer' ? 'selected' : '' }}>Farmer</option>
-                                    <option value="Salaried" {{ old('job_profile', $lead->job_profile) == 'Salaried' ? 'selected' : '' }}>Salaried</option>
+                                    <option value="Self Employed" {{ old('job_profile_type', $lead->job_profile_type) == 'Self Employed' ? 'selected' : '' }}>Self Employed</option>
+                                    <option value="Farmer" {{ old('job_profile_type', $lead->job_profile_type) == 'Farmer' ? 'selected' : '' }}>Farmer</option>
+                                    <option value="Salaried" {{ old('job_profile_type', $lead->job_profile_type) == 'Salaried' ? 'selected' : '' }}>Salaried</option>
                                 </select>
-                                @error('job_profile') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                                @error('job_profile_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
                         </div>
                         <div class="col-md-4" id="company_name_div">
@@ -1206,8 +1206,20 @@
                 </div>
 
                 <hr>
-                @if(auth()->user()->hasRole('admin') || auth()->user()->hasRole('Team Lead'))
+                @if(auth()->user()->can('assign lead'))
                 <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Reporting Manager</label>
+                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control @error('reporting_manager_id') is-invalid @enderror">
+                                <option value="">Select Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $lead->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Assign To employee <span class="text-danger">*</span></label>
@@ -1489,7 +1501,7 @@
                     residence_type: { required: true },
                     current_address_line: { required: true },
                     permanent_address_line: { required: true },
-                    job_profile: {
+                    job_profile_type: {
                         required: function(element) {
                             return $("#lead_type").val() === 'Loan';
                         }
@@ -1595,7 +1607,7 @@
                     residence_type: "Please select a residence type",
                     current_address_line: "Please enter the current address",
                     permanent_address_line: "Please enter the permanent address",
-                    job_profile: "Please select a job profile",
+                    job_profile_type: "Please select a job profile",
                     other_company_name: "Please enter the company name",
                     designation: "Please enter the designation",
                     itr_amount: "Please enter the ITR amount",
@@ -1928,7 +1940,7 @@
             }).trigger('change');
 
             // --- Other Form Logic ---
-            $('#job_profile').change(function() {
+            $('#job_profile_type').change(function() {
                 let val = $(this).val();
                 $('#nature_of_work_div, #salaried_type_div, #business_proof_main_div, #business_stability_div, #salary_details_div, #farmer_fields').hide();
 
@@ -1950,7 +1962,7 @@
             }).trigger('change');
 
             $('#income_proof_available').change(function() {
-                let profileType = $('#job_profile').val();
+                let profileType = $('#job_profile_type').val();
                 if (profileType === 'Salaried' && $(this).val() == '1') {
                     $('#salary_details_div').show();
                 } else {

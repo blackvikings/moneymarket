@@ -57,6 +57,12 @@
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 
+                <div class="form-group mb-4">
+                    <label for="position" class="font-weight-bold">Position</label>
+                    <input type="number" name="position" id="position" class="form-control form-control-lg @error('position') is-invalid @enderror" value="{{ old('position', $role->position) }}" required>
+                    @error('position') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                </div>
+
                 <h4 class="mb-3 text-gray-800">Permissions</h4>
 
                 @php

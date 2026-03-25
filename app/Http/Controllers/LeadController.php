@@ -18,7 +18,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
-use Spatie\MediaLibrary\MediaCollections\Models\Media;
+use Spatie\Permission\Models\Media;
 
 class LeadController extends Controller
 {
@@ -108,6 +108,12 @@ class LeadController extends Controller
     public function create()
     {
         $user = Auth::user();
+        $userRole = $user->roles->first();
+
+        $managers = User::whereHas('roles', function ($query) use ($userRole) {
+            $query->where('position', '<', $userRole->position);
+        })->get();
+
         if ($user->hasRole('admin')) {
             $users = User::withoutRole('admin')->get();
         } elseif ($user->hasRole('Team Lead')) {
@@ -122,7 +128,7 @@ class LeadController extends Controller
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
         $banks = Bank::where('is_active', true)->get();
-        return view('leads.create', compact('users', 'firms', 'manufactures', 'insurances', 'banks'));
+        return view('leads.create', compact('users', 'firms', 'manufactures', 'insurances', 'banks', 'managers'));
     }
 
     public function store(Request $request)
@@ -143,11 +149,14 @@ class LeadController extends Controller
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'proof_id_type' => 'nullable|string|max:255',
             'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'aadhar_number' => 'nullable|string|max:20',
             'property_approx_value' => 'nullable|numeric',
             'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'agri_land_area' => 'nullable|string|max:255',
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'job_profile_type' => 'nullable|string|max:255',
         ]);
 
         $data = $request->all();
@@ -157,6 +166,18 @@ class LeadController extends Controller
         }
 
         $data = $this->mapLeadTypeData($data);
+
+        $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'old_loan_close_amount_display', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
+
+        foreach ($numericFields as $field) {
+            if (isset($data[$field]) && $data[$field] === '') {
+                $data[$field] = null;
+            }
+        }
+
+        if (isset($data['old_loan_close_amount_display']) && isset($data['required_in_hand_amount'])) {
+             $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
+        }
 
         $data['created_by'] = Auth::id();
         $data['status'] = 'New';
@@ -171,6 +192,14 @@ class LeadController extends Controller
 
         if ($request->hasFile('salary_slip')) {
             $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
+        }
+
+        if ($request->hasFile('itr_document')) {
+            $data['itr_document_path'] = $request->file('itr_document')->store('itr_docs', 'public');
+        }
+
+        if ($request->hasFile('business_proof_document')) {
+            $data['business_proof_document_path'] = $request->file('business_proof_document')->store('business_proofs', 'public');
         }
 
         if ($request->hasFile('agri_land_document')) {
@@ -224,6 +253,12 @@ class LeadController extends Controller
     public function edit(Lead $lead)
     {
         $user = Auth::user();
+        $userRole = $user->roles->first();
+
+        $managers = User::whereHas('roles', function ($query) use ($userRole) {
+            $query->where('position', '<', $userRole->position);
+        })->get();
+
         if ($user->hasRole('admin')) {
             $users = User::all();
         } elseif ($user->hasRole('Team Lead')) {
@@ -238,7 +273,7 @@ class LeadController extends Controller
         $manufactures = VehicleManufacture::where('is_active', true)->get();
         $insurances = Insurance::where('is_active', true)->get();
         $banks = Bank::where('is_active', true)->get();
-        return view('leads.edit', compact('lead', 'users', 'firms', 'manufactures', 'insurances', 'banks'));
+        return view('leads.edit', compact('lead', 'users', 'firms', 'manufactures', 'insurances', 'banks', 'managers'));
     }
 
     public function update(Request $request, Lead $lead)
@@ -258,6 +293,7 @@ class LeadController extends Controller
             'salary_slip' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'agri_land_area' => 'nullable|string|max:255',
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
+            'job_profile_type' => 'nullable|string|max:255',
         ]);
 
         $data = $request->all();

@@ -42,6 +42,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="position">Position <span class="text-danger">*</span></label>
+                    <input type="number" name="position" id="position" class="form-control @error('position') is-invalid @enderror" value="{{ old('position', 0) }}" required>
+                    @error('position') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                </div>
+
+                <div class="form-group">
                     <label>Permissions <span class="text-danger">*</span></label>
                     <div class="row">
                         @php
@@ -120,10 +126,15 @@
             $('#createRoleForm').validate({
                 rules: {
                     name: { required: true },
+                    position: { required: true, number: true },
                     'permissions[]': { required: true, minlength: 1 }
                 },
                 messages: {
                     name: "Please enter a role name",
+                    position: {
+                        required: "Please enter a position",
+                        number: "Please enter a valid number"
+                    },
                     'permissions[]': "Please select at least one permission"
                 },
                 errorPlacement: function (error, element) {
