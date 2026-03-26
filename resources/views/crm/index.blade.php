@@ -203,49 +203,89 @@
                                                 </button>
                                             </div>
 
-                                            @if($lead->crm_stage == 'Agreement')
+                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
+                                                @csrf
                                                 <div class="modal-body">
-                                                    @include('crm.partials.disbursal_form', ['lead' => $lead])
-                                                </div>
-                                            @else
-                                                <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
-                                                    @csrf
-                                                    <div class="modal-body">
-                                                        <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
+                                                    <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
 
-                                                        @php
-                                                            // Removed 'Agreement' from the list as requested
-                                                            $stagesList = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved'];
-                                                            $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal'];
-                                                            $currentIndex = array_search($lead->crm_stage, $allStages);
-                                                            if ($currentIndex === false) $currentIndex = -1;
-                                                        @endphp
+                                                    @php
+                                                        $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal'];
+                                                        $currentIndex = array_search($lead->crm_stage, $allStages);
+                                                        if ($currentIndex === false) $currentIndex = -1;
+                                                    @endphp
 
-                                                        <div class="form-group">
-                                                            <label>Stage Progress</label>
-                                                            @foreach($stagesList as $index => $stage)
-                                                                @php
-                                                                    $stageIndex = array_search($stage, $allStages);
-                                                                    $isChecked = $stageIndex <= $currentIndex;
-                                                                @endphp
-                                                                <div class="form-check">
-                                                                    <input class="form-check-input stage-checkbox" type="checkbox"
-                                                                        name="completed_stages[]"
-                                                                        value="{{ $stage }}"
-                                                                        {{ $isChecked ? 'checked disabled' : '' }}>
-                                                                    <label class="form-check-label">{{ $stage }}</label>
+                                                    <div class="form-group">
+                                                        <label>Stage Progress</label>
+                                                        @foreach($allStages as $index => $stage)
+                                                            @if($stage === 'Agreement' && $lead->crm_stage !== 'Approved') @continue @endif
+                                                            @if($stage === 'Disbursal' && $lead->crm_stage !== 'Approved' && $lead->crm_stage !== 'Agreement') @continue @endif
+
+                                                            <div class="form-check">
+                                                                <input class="form-check-input stage-checkbox" type="checkbox"
+                                                                    name="completed_stages[]"
+                                                                    value="{{ $stage }}"
+                                                                    {{ $index <= $currentIndex ? 'checked disabled' : '' }}
+                                                                    data-lead-id="{{ $lead->id }}"
+                                                                    @if($stage === 'Disbursal') data-total-loan-amount="{{ $lead->total_loan_amount }}" @endif>
+                                                                <label class="form-check-label">{{ $stage }}</label>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+
+                                                    <div id="disbursal_fields_{{ $lead->id }}" style="display: none;">
+                                                        <hr>
+                                                        <h5>Disbursal Information</h5>
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label>Disbursal Date <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="disbursal_date" class="form-control">
                                                                 </div>
-                                                            @endforeach
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label>Finance Amount <span class="text-danger">*</span></label>
+                                                                    <input type="number" step="0.01" name="finance_amount" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label>Disbursal Amount <span class="text-danger">*</span></label>
+                                                                    <input type="number" step="0.01" name="disbursal_amount" class="form-control">
+                                                                </div>
+                                                            </div>
                                                         </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input" name="move_to_rto" value="1">
+                                                                    <label class="form-check-label">Move to RTO</label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-check">
+                                                                    <input type="checkbox" class="form-check-input move-to-insurance-check" name="move_to_insurance" value="1" data-target="#insurance_expiry_container_{{ $lead->id }}">
+                                                                    <label class="form-check-label">Move to Insurance</label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
+                                                            <div class="col-md-6 offset-md-6">
+                                                                <div class="form-group">
+                                                                    <label>Insurance Expiry Date <span class="text-danger">*</span></label>
+                                                                    <input type="date" name="insurance_expiry_date" class="form-control">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
 
-                                                        <p class="text-muted small">Select stages to complete. You can select multiple stages at once.</p>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="submit" name="action" value="Yes" class="btn btn-success">Update</button>
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                    </div>
-                                                </form>
-                                            @endif
+                                                    <p class="text-muted small">Select stages to complete. You can select multiple stages at once.</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="submit" name="action" value="Yes" class="btn btn-success">Update</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                </div>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
@@ -292,6 +332,41 @@
                         $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
                     }
                 });
+            });
+
+            $('.stage-checkbox').change(function() {
+                let leadId = $(this).data('lead-id');
+                let form = $(this).closest('form');
+                let disbursalFields = $('#disbursal_fields_' + leadId);
+                let disbursalCheckbox = form.find('input[value="Disbursal"]');
+                let isDisbursalChecked = disbursalCheckbox.is(':checked');
+
+                if (isDisbursalChecked) {
+                    disbursalFields.show();
+                    disbursalFields.find('input[name="disbursal_date"], input[name="finance_amount"], input[name="disbursal_amount"]').prop('required', true);
+                    form.attr('action', '{{ route(get_route_prefix() . "crm.store-disbursal", ["lead" => ":id"]) }}'.replace(':id', leadId));
+
+                    // Populate Finance Amount
+                    let totalLoanAmount = disbursalCheckbox.data('total-loan-amount');
+                    if (totalLoanAmount) {
+                        disbursalFields.find('input[name="finance_amount"]').val(totalLoanAmount);
+                    }
+                } else {
+                    disbursalFields.hide();
+                    disbursalFields.find('input').prop('required', false);
+                    form.attr('action', '{{ route(get_route_prefix() . "crm.update-stage", ["lead" => ":id"]) }}'.replace(':id', leadId));
+                }
+            });
+
+            $('.move-to-insurance-check').change(function() {
+                let target = $(this).data('target');
+                if ($(this).is(':checked')) {
+                    $(target).removeClass('d-none');
+                    $(target).find('input').prop('required', true);
+                } else {
+                    $(target).addClass('d-none');
+                    $(target).find('input').prop('required', false);
+                }
             });
         });
     </script>

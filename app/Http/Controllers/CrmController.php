@@ -158,14 +158,14 @@ class CrmController extends Controller
         $messages = ['Disbursal details saved.'];
 
         // Move to RTO if requested
-        if ($request->has('move_to_rto') && $request->move_to_rto) {
+        if ($request->boolean('move_to_rto')) {
             $data['rto_stage'] = 'New';
             $data['rto_new_at'] = now();
             $messages[] = 'Lead moved to RTO.';
         }
 
         // Move to Insurance if requested
-        if ($request->has('move_to_insurance') && $request->move_to_insurance) {
+        if ($request->boolean('move_to_insurance')) {
             $data['insurance_lead_stage'] = 'New';
             $data['insurance_end_date'] = $request->insurance_expiry_date;
             $messages[] = 'Lead moved to Insurance.';

@@ -78,6 +78,14 @@ class LeadController extends Controller
             $query->where('assigned_to', $request->assigned_to);
         }
 
+        if ($request->filled('customer_name')) {
+            $query->where('customer_name', 'like', '%' . $request->customer_name . '%');
+        }
+
+        if ($request->filled('contact_number')) {
+            $query->where('contact_number', 'like', '%' . $request->contact_number . '%');
+        }
+
         // 5. Calculate Counts
         $counts = ['All' => $countQuery->count()];
         foreach ($statuses as $status) {
@@ -87,7 +95,7 @@ class LeadController extends Controller
 
         // 6. Get Results
         $leads = $query->with(['assignedTo', 'bank', 'currentCity'])
-            ->orderByRaw('assigned_to IS NULL DESC, id DESC')
+            ->orderBy('created_at', 'DESC') // Changed sorting to show newest leads on top
             ->paginate(10)
             ->appends($request->except('page'));
 
@@ -95,9 +103,9 @@ class LeadController extends Controller
         if ($user->hasRole('admin')) {
             $users = User::all();
         } elseif ($user->hasRole('Team Lead')) {
-             $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-             $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
-             $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
+            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
+            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
         } else {
             $users = collect([]);
         }
@@ -157,6 +165,7 @@ class LeadController extends Controller
             'agri_land_area' => 'nullable|string|max:255',
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'job_profile_type' => 'nullable|string|max:255',
+            'has_itr' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
@@ -176,7 +185,7 @@ class LeadController extends Controller
         }
 
         if (isset($data['old_loan_close_amount_display']) && isset($data['required_in_hand_amount'])) {
-             $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
+            $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
         }
 
         $data['created_by'] = Auth::id();
@@ -211,8 +220,8 @@ class LeadController extends Controller
         if ($request->hasFile('current_address_proof')) {
             foreach ($request->file('current_address_proof') as $file) {
                 $lead->addMedia($file)
-                     ->usingName($request->proof_id_type ?? 'Address Proof')
-                     ->toMediaCollection('loan_documents');
+                    ->usingName($request->proof_id_type ?? 'Address Proof')
+                    ->toMediaCollection('loan_documents');
             }
         }
 
@@ -294,6 +303,7 @@ class LeadController extends Controller
             'agri_land_area' => 'nullable|string|max:255',
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'job_profile_type' => 'nullable|string|max:255',
+            'has_itr' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
@@ -313,7 +323,7 @@ class LeadController extends Controller
         }
 
         if (isset($data['old_loan_close_amount_display']) && isset($data['required_in_hand_amount'])) {
-             $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
+            $data['total_loan_amount'] = (float)$data['old_loan_close_amount_display'] + (float)$data['required_in_hand_amount'];
         }
 
         if ($lead->status == 'Prospect') {
@@ -352,8 +362,8 @@ class LeadController extends Controller
         if ($request->hasFile('current_address_proof')) {
             foreach ($request->file('current_address_proof') as $file) {
                 $lead->addMedia($file)
-                     ->usingName($request->proof_id_type ?? 'Address Proof')
-                     ->toMediaCollection('loan_documents');
+                    ->usingName($request->proof_id_type ?? 'Address Proof')
+                    ->toMediaCollection('loan_documents');
             }
         }
 

@@ -151,58 +151,6 @@
                 <p><strong>Disbursal Amount:</strong> {{ number_format($lead->disbursal_amount, 2) }}</p>
             </div>
         </div>
-    @elseif($lead->crm_stage != 'Disbursal')
-        <hr>
-        <h6><strong>Update Stage</strong></h6>
-        <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
-            @csrf
-            <input type="hidden" name="action" value="Yes">
-            <input type="hidden" name="current_stage" value="{{ $lead->crm_stage ?? 'New' }}">
-
-            <div class="form-group">
-                <label>Mark stages as completed:</label><br>
-                @foreach($stages as $index => $stage)
-                    @if($index > $currentStageIndex)
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="completed_stages[]" value="{{ $stage }}" id="stage_{{ $index }}">
-                            <label class="form-check-label" for="stage_{{ $index }}">
-                                {{ $stage }}
-                            </label>
-                        </div>
-                    @endif
-                @endforeach
-            </div>
-
-            {{-- Special fields for Disbursal stage --}}
-            <div id="disbursal_fields" style="display: none;">
-                <div class="form-group">
-                    <label>Disbursal Date <span class="text-danger">*</span></label>
-                    <input type="date" name="disbursal_date" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Finance Amount <span class="text-danger">*</span></label>
-                    <input type="number" step="0.01" name="finance_amount" class="form-control">
-                </div>
-                <div class="form-group">
-                    <label>Disbursal Amount <span class="text-danger">*</span></label>
-                    <input type="number" step="0.01" name="disbursal_amount" class="form-control">
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="move_to_rto" value="1" id="move_to_rto">
-                    <label class="form-check-label" for="move_to_rto">Move to RTO</label>
-                </div>
-                <div class="form-check">
-                    <input type="checkbox" class="form-check-input" name="move_to_insurance" value="1" id="move_to_insurance">
-                    <label class="form-check-label" for="move_to_insurance">Move to Insurance</label>
-                </div>
-                <div class="form-group mt-2" id="insurance_expiry_div" style="display: none;">
-                    <label>Insurance Expiry Date <span class="text-danger">*</span></label>
-                    <input type="date" name="insurance_expiry_date" class="form-control">
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary mt-2">Update Stage</button>
-        </form>
     @endif
 </div>
 <div class="modal-footer">

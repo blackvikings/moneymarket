@@ -2,6 +2,10 @@
 
 @section('title', 'Leads')
 
+@section('css')
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap4.min.css">
+@stop
+
 @section('content_header')
     <div class="d-flex justify-content-between align-items-center">
         <h1>Leads</h1>
@@ -126,6 +130,14 @@
                 <div class="form-group mr-2">
                     <label for="end_date" class="mr-2">End Date:</label>
                     <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+                </div>
+                <div class="form-group mr-2">
+                    <label for="customer_name" class="mr-2">Customer Name:</label>
+                    <input type="text" name="customer_name" class="form-control" value="{{ request('customer_name') }}" placeholder="Search by name">
+                </div>
+                <div class="form-group mr-2">
+                    <label for="contact_number" class="mr-2">Contact Number:</label>
+                    <input type="text" name="contact_number" class="form-control" value="{{ request('contact_number') }}" placeholder="Search by number">
                 </div>
                 <div class="form-group mr-2">
                     <label for="assignment_status" class="mr-2">Assignment:</label>
@@ -535,8 +547,12 @@
 @stop
 
 @section('js')
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script>
     <script>
         $(document).ready(function() {
+            $('.table').DataTable();
+
             // --- AJAX View Modal ---
             $('.view-lead-btn').click(function() {
                 let leadId = $(this).data('id');

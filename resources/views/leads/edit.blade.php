@@ -281,7 +281,16 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <h6>Permanent Address <span class="text-danger">*</span></h6>
                             <div class="form-group mb-0">
-                                <input type="checkbox" id="same_as_current"> <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
+                                @php
+                                    $isSameAddress = (
+                                        $lead->current_address_line == $lead->permanent_address_line &&
+                                        $lead->current_address_pincode == $lead->permanent_address_pincode &&
+                                        $lead->current_address_city == $lead->permanent_address_city &&
+                                        $lead->current_address_state == $lead->permanent_address_state
+                                    );
+                                @endphp
+                                <input type="checkbox" id="same_as_current" {{ $isSameAddress ? 'checked' : '' }}>
+                                <label for="same_as_current" class="mb-0 ml-1">Same as Current Address</label>
                             </div>
                         </div>
                         <div class="form-group">
@@ -1773,6 +1782,10 @@
                     $('#permanent_city').empty().append('<option value="">Select State First</option>');
                 }
             });
+
+            if ($('#same_as_current').is(':checked')) {
+                $('#same_as_current').trigger('change');
+            }
 
             // --- Vehicle Logic ---
             function populateVehicleNames(manufactureId, container, selectedVehicleName = null) {
