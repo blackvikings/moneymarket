@@ -63,7 +63,10 @@ class EmployeeController extends Controller
 
         $roles = Role::where('name', '!=', 'admin')->get();
         $permissions = Permission::all();
-        return view('employees.create', compact('firms', 'managers', 'roles', 'permissions'));
+        $admins = User::role('admin')->get();
+        $teamLeads = User::role('Team Lead')->get();
+
+        return view('employees.create', compact('firms', 'managers', 'roles', 'permissions', 'admins', 'teamLeads'));
     }
 
     public function store(Request $request)
@@ -272,18 +275,22 @@ class EmployeeController extends Controller
         return response()->json($bank->branches);
     }
 
-    public function getEmployeesByFirm(Firm $firm)
+    public function getEmployeesByFirm()
     {
-        $user = Auth::user();
-        $userRole = $user->roles->first();
+        $currentUser = Auth::user();
+        $userRole = $currentUser->roles->first();
 
-        $employees = User::where('firm_id', $firm->id)
-                        ->where('status', 'Active')
+        if (!$userRole) {
+            return response()->json([]);
+        }
+
+        $employees = User::where('id', '!=', $currentUser->id)
                         ->whereHas('roles', function ($query) use ($userRole) {
-                            $query->where('position', '>', $userRole->position);
+                            $query->where('position', '>=', $userRole->position);
                         })
                         ->select('id', 'name')
                         ->get();
+
         return response()->json($employees);
     }
 }

@@ -41,12 +41,18 @@ class LeadController extends Controller
         $query = Lead::query();
 
         // 2. Hierarchy Logic
-        if ($user->hasRole('Team Lead')) {
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $subordinateIds[] = $user->id;
-            $query->whereIn('assigned_to', $subordinateIds);
-        } elseif (!$user->hasRole('admin')) {
-            $query->where('assigned_to', $user->id);
+        if (!$user->hasRole('admin')) {
+            $query->where(function ($q) use ($user) {
+                // Case 1: Lead is assigned directly to the user
+                $q->where('assigned_to', $user->id);
+
+                // Case 2: User is the reporting manager for the assigned employee
+                $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id');
+                $q->orWhereIn('assigned_to', $subordinateIds);
+
+                // Case 3: User is the reporting manager listed on the lead itself
+                $q->orWhere('reporting_manager_id', $user->id);
+            });
         }
 
         // 3. Apply Date Filters (Common)
@@ -166,6 +172,7 @@ class LeadController extends Controller
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'job_profile_type' => 'nullable|string|max:255',
             'has_itr' => 'nullable|boolean',
+            'reporting_manager_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();
@@ -304,6 +311,7 @@ class LeadController extends Controller
             'agri_land_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'job_profile_type' => 'nullable|string|max:255',
             'has_itr' => 'nullable|boolean',
+            'reporting_manager_id' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();

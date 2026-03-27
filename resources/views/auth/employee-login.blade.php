@@ -6,18 +6,18 @@
     <form action="{{ route('employee.login') }}" method="post">
         @csrf
 
-        {{-- Email field --}}
+        {{-- Employee ID field --}}
         <div class="input-group mb-3">
-            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
-                   value="{{ old('email') }}" placeholder="{{ __('adminlte::adminlte.email') }}" autofocus>
+            <input type="text" name="employee_id" class="form-control @error('employee_id') is-invalid @enderror"
+                   value="{{ old('employee_id') }}" placeholder="Employee ID" autofocus>
 
             <div class="input-group-append">
                 <div class="input-group-text">
-                    <span class="fas fa-envelope {{ config('adminlte.classes_auth_icon', '') }}"></span>
+                    <span class="fas fa-id-card {{ config('adminlte.classes_auth_icon', '') }}"></span>
                 </div>
             </div>
 
-            @error('email')
+            @error('employee_id')
                 <span class="invalid-feedback" role="alert">
                     <strong>{{ $message }}</strong>
                 </span>

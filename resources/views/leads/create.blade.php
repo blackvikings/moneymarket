@@ -1136,18 +1136,6 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Reporting Manager</label>
-                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control @error('reporting_manager_id') is-invalid @enderror">
-                                <option value="">Select Manager</option>
-                                @foreach($managers as $manager)
-                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id') == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
                             <label>Assign To employee </label>
                             <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" >
                                 <option value="">Select User</option>
@@ -1158,10 +1146,22 @@
                             @error('assigned_to') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Reporting Manager</label>
+                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_id') is-invalid @enderror">
+                                <option value="">Select Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id') == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
                 </div>
                 @endif
 
-                <button type="submit" id="submitBtn" class="btn btn-primary mt-3">Save Lead</button>
+                <button type="button" id="submitBtn" class="btn btn-primary mt-3">Create Lead</button>
             </form>
         </div>
     </div>
@@ -1258,6 +1258,7 @@
         Dropzone.autoDiscover = false;
 
         $(document).ready(function() {
+            $('.select2').select2();
             // --- Month/Year Datepicker ---
             $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
                 format: "mm-yyyy",
@@ -1456,11 +1457,6 @@
                             return $("#has_guarantor").val() == '1';
                         }
                     },
-                    assigned_to: {
-                        required: function(element) {
-                            return $('#assigned_to').length > 0;
-                        }
-                    },
                     // Loan Specific
                     loan_type: {
                         required: function(element) {
@@ -1524,7 +1520,6 @@
                     co_relation: "Please enter the co-applicant's relation",
                     guarantor_name: "Please enter the guarantor's name",
                     guarantor_relation: "Please enter the guarantor's relation",
-                    assigned_to: "Please select a user to assign the lead to",
                     loan_type: "Please select a loan type",
                     vehicle_loan_type: "Please select a vehicle loan type",
                     vehicle_purchase_type: "Please select a purchase type",
@@ -1534,6 +1529,26 @@
                     ins_model_name: "Please enter the model name"
                 }
             });
+
+            // --- Firm to Employee Logic ---
+            function loadEmployees() {
+                let assignedToSelect = $('#assigned_to');
+                if (assignedToSelect.length > 0) {
+                    assignedToSelect.empty().append('<option value="">Loading...</option>');
+                    $.ajax({
+                        url: '{{ route("get-employees-by-firm") }}',
+                        type: 'GET',
+                        success: function(data) {
+                            assignedToSelect.empty().append('<option value="">Select User</option>');
+                            $.each(data, function(key, user) {
+                                assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
+                            });
+                        }
+                    });
+                }
+            }
+            loadEmployees();
+
 
             // --- Location Scripts ---
             function populateStates(selector) {

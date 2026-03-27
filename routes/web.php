@@ -263,7 +263,7 @@ Route::get('/get-cities/{state}', [LocationController::class, 'getCities'])->nam
 Route::get('/get-location-by-pincode/{pincode}', [LocationController::class, 'getLocationByPincode'])->name('get-location-by-pincode');
 Route::get('/get-vehicle-names/{vehicleManufacture}', [VehicleManufactureController::class, 'getVehicleNames'])->name('get-vehicle-names');
 Route::get('/get-variants', [VehicleManufactureController::class, 'getVariantsByName'])->name('get-variants');
-Route::get('/get-employees-by-firm/{firm}', [EmployeeController::class, 'getEmployeesByFirm'])->name('get-employees-by-firm');
+Route::get('/get-employees-by-firm', [EmployeeController::class, 'getEmployeesByFirm'])->name('get-employees-by-firm');
 Route::post('/vehicle-manufactures/store-ajax', [VehicleManufactureController::class, 'storeAjax'])->name('vehicle-manufactures.store-ajax');
 
 // Lead Source Person Routes

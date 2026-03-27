@@ -1219,26 +1219,26 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Reporting Manager</label>
-                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control @error('reporting_manager_id') is-invalid @enderror">
-                                <option value="">Select Manager</option>
-                                @foreach($managers as $manager)
-                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $lead->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Assign To employee <span class="text-danger">*</span></label>
-                            <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" required>
+                            <label>Assign To employee </label>
+                            <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" >
                                 <option value="">Select User</option>
                                 @foreach($users as $user)
                                     <option value="{{ $user->id }}" {{ old('assigned_to', $lead->assigned_to) == $user->id ? 'selected' : '' }}>{{ $user->name }}</option>
                                 @endforeach
                             </select>
                             @error('assigned_to') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Reporting Manager</label>
+                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_id') is-invalid @enderror">
+                                <option value="">Select Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $lead->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                 </div>
@@ -1341,6 +1341,7 @@
         Dropzone.autoDiscover = false;
 
         $(document).ready(function() {
+            $('.select2').select2();
             // --- Month/Year Datepicker ---
             $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
                 format: "mm-yyyy",
@@ -1642,29 +1643,27 @@
             });
 
             // --- Firm to Employee Logic ---
-            $('#firm_id').change(function() {
-                let firmId = $(this).val();
+            function loadEmployees() {
                 let assignedToSelect = $('#assigned_to');
-
-                if (assignedToSelect.length > 0) { // Only if the dropdown exists (Admin/Team Lead)
+                if (assignedToSelect.length > 0) {
                     assignedToSelect.empty().append('<option value="">Loading...</option>');
-
-                    if (firmId) {
-                        $.ajax({
-                            url: '{{ url("get-employees-by-firm") }}/' + firmId,
-                            type: 'GET',
-                            success: function(data) {
-                                assignedToSelect.empty().append('<option value="">Select User</option>');
-                                $.each(data, function(key, user) {
-                                    assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
-                                });
-                            }
-                        });
-                    } else {
-                        assignedToSelect.empty().append('<option value="">Select Firm First</option>');
-                    }
+                    $.ajax({
+                        url: '{{ route("get-employees-by-firm") }}',
+                        type: 'GET',
+                        success: function(data) {
+                            assignedToSelect.empty().append('<option value="">Select User</option>');
+                            $.each(data, function(key, user) {
+                                // For edit form, we pre-select the user based on the current assigned_to
+                                let selected = ('{{ $lead->assigned_to }}' == user.id) ? 'selected' : '';
+                                assignedToSelect.append('<option value="' + user.id + '" ' + selected + '>' + user.name + '</option>');
+                            });
+                        }
+                    });
                 }
-            });
+            }
+
+            // Load employees on document ready
+            loadEmployees();
 
             // --- Location Scripts ---
             function populateStates(selector, selectedState = null) {

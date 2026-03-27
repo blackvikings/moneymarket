@@ -21,11 +21,11 @@ class EmployeeLoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'employee_id' => 'required|string',
             'password' => 'required',
         ]);
 
-        if (Auth::attempt($request->only('email', 'password'), $request->filled('remember'))) {
+        if (Auth::attempt($request->only('employee_id', 'password'), $request->filled('remember'))) {
             $user = Auth::user();
             if (!$user->hasRole('admin')) {
                 $request->session()->regenerate();
@@ -38,13 +38,13 @@ class EmployeeLoginController extends Controller
             } else {
                 Auth::logout();
                 return back()->withErrors([
-                    'email' => 'Admins should login via the admin portal.',
+                    'employee_id' => 'Admins should login via the admin portal.',
                 ]);
             }
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'employee_id' => 'The provided credentials do not match our records.',
         ]);
     }
 
@@ -54,5 +54,10 @@ class EmployeeLoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/employee/login');
+    }
+
+    public function username()
+    {
+        return 'employee_id';
     }
 }
