@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('leads', function (Blueprint $table) {
             // RTO Stage
-            $table->string('rto_stage', 50)->nullable()->default('New'); // New, Checking, Loan Return, Vehicle Detail, Insurance, RTO Done
+            $table->string('rto_stage', 50)->nullable()->default(null); // New, Checking, Loan Return, Vehicle Detail, Insurance, RTO Done
 
             // RTO-specific lead creation fields
             $table->string('rto_address_proof_path')->nullable();

@@ -167,6 +167,7 @@
                         <th>Branch</th>
                         <th>CRM Stage</th>
                         <th>Start Date</th>
+                        <th>Ageing</th>
                         <th>City</th>
                         <th>Actions</th>
                     </tr>
@@ -181,6 +182,7 @@
                             <td>{{ $lead->bankBranch ? $lead->bankBranch->name : '-' }}</td>
                             <td><span class="badge badge-primary">{{ $lead->crm_stage ?? 'New' }}</span></td>
                             <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : $lead->created_at->format('d-m-Y') }}</td>
+                            <td>{{ $lead->ageing }}</td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
@@ -203,17 +205,17 @@
                                                 </button>
                                             </div>
 
-                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
+                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" id="updateStageForm{{ $lead->id }}">
                                                 @csrf
+                                                {{-- Removed: <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}"> --}}
+
+                                                @php
+                                                    $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal'];
+                                                    $currentIndex = array_search($lead->crm_stage, $allStages);
+                                                    if ($currentIndex === false) $currentIndex = -1;
+                                                @endphp
+
                                                 <div class="modal-body">
-                                                    <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
-
-                                                    @php
-                                                        $allStages = ['New', 'Login', 'FI Document', 'Vehicle Evaluation', 'Credit', 'Approved', 'Agreement', 'Disbursal'];
-                                                        $currentIndex = array_search($lead->crm_stage, $allStages);
-                                                        if ($currentIndex === false) $currentIndex = -1;
-                                                    @endphp
-
                                                     <div class="form-group">
                                                         <label>Stage Progress</label>
                                                         @foreach($allStages as $index => $stage)
@@ -258,13 +260,13 @@
                                                         <div class="row">
                                                             <div class="col-md-6">
                                                                 <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input" name="move_to_rto" value="1">
+                                                                    <input type="checkbox" class="form-check-input" name="move_to_rto" value="yes">
                                                                     <label class="form-check-label">Move to RTO</label>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-6">
                                                                 <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input move-to-insurance-check" name="move_to_insurance" value="1" data-target="#insurance_expiry_container_{{ $lead->id }}">
+                                                                    <input type="checkbox" class="form-check-input move-to-insurance-check" name="move_to_insurance" value="yes" data-target="#insurance_expiry_container_{{ $lead->id }}">
                                                                     <label class="form-check-label">Move to Insurance</label>
                                                                 </div>
                                                             </div>
@@ -282,7 +284,7 @@
                                                     <p class="text-muted small">Select stages to complete. You can select multiple stages at once.</p>
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="submit" name="action" value="Yes" class="btn btn-success">Update</button>
+                                                    <button type="submit" class="btn btn-success">Update</button> {{-- Removed name="action" value="Yes" --}}
                                                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                                 </div>
                                             </form>
@@ -293,7 +295,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No leads found in this CRM stage.</td>
+                            <td colspan="9" class="text-center">No leads found in this CRM stage.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -315,6 +317,8 @@
 @section('js')
     <script>
         $(document).ready(function() {
+            console.log("CRM index.blade.php script loaded.");
+
             $('.view-crm-btn').click(function() {
                 let leadId = $(this).data('id');
                 let url = '{{ route(get_route_prefix() . "crm.show", ":id") }}'.replace(':id', leadId);
@@ -334,6 +338,45 @@
                 });
             });
 
+            // Attach submit handler to each form dynamically
+            $('[id^="actionModal"]').on('shown.bs.modal', function () {
+                let leadId = $(this).attr('id').replace('actionModal', '');
+                let form = $('#updateStageForm' + leadId);
+
+                form.off('submit').on('submit', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+                    console.log("Form submission intercepted for lead ID:", leadId);
+                    console.log("Form action URL:", form.attr('action'));
+                    console.log("Form method:", form.attr('method'));
+                    console.log("Form data:", form.serialize());
+
+                    $.ajax({
+                        url: form.attr('action'),
+                        method: form.attr('method'),
+                        data: form.serialize(),
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'), // Ensure CSRF token is sent
+                            'Accept': 'application/json' // Request JSON response
+                        },
+                        success: function(response) {
+                            console.log("AJAX Success:", response);
+                            // Close the modal after successful submission
+                            $('#actionModal' + leadId).modal('hide');
+
+                            // location.reload()
+                            // Optionally, display a success message or update the UI without full reload
+                            // For now, we'll just log and close the modal.
+                        },
+                        error: function(xhr, status, error) {
+                            console.error("AJAX Error:", xhr.responseText);
+                            // Display error message to the user
+                            alert('Error updating stage: ' + xhr.responseText);
+                        }
+                    });
+                });
+            });
+
+
             $('.stage-checkbox').change(function() {
                 let leadId = $(this).data('lead-id');
                 let form = $(this).closest('form');
@@ -341,20 +384,16 @@
                 let disbursalCheckbox = form.find('input[value="Disbursal"]');
                 let isDisbursalChecked = disbursalCheckbox.is(':checked');
 
+                // Always set the form action to update-stage, as the backend now handles the logic
+                form.attr('action', '{{ route(get_route_prefix() . "crm.update-stage", ["lead" => ":id"]) }}'.replace(':id', leadId));
+
                 if (isDisbursalChecked) {
                     disbursalFields.show();
                     disbursalFields.find('input[name="disbursal_date"], input[name="finance_amount"], input[name="disbursal_amount"]').prop('required', true);
-                    form.attr('action', '{{ route(get_route_prefix() . "crm.store-disbursal", ["lead" => ":id"]) }}'.replace(':id', leadId));
-
-                    // Populate Finance Amount
-                    let totalLoanAmount = disbursalCheckbox.data('total-loan-amount');
-                    if (totalLoanAmount) {
-                        disbursalFields.find('input[name="finance_amount"]').val(totalLoanAmount);
-                    }
+                    // No need to change form action here, it's already set to update-stage
                 } else {
                     disbursalFields.hide();
                     disbursalFields.find('input').prop('required', false);
-                    form.attr('action', '{{ route(get_route_prefix() . "crm.update-stage", ["lead" => ":id"]) }}'.replace(':id', leadId));
                 }
             });
 

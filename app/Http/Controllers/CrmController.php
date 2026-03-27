@@ -54,7 +54,7 @@ class CrmController extends Controller
             $query->where('crm_stage', $request->stage);
         }
 
-        $leads = $query->latest()->paginate(10);
+        $leads = $query->latest()->paginate(10)->appends($request->query());
         $stages = $this->stages;
 
         // Calculate counts for each stage using the same base logic
@@ -89,51 +89,90 @@ class CrmController extends Controller
 
     public function updateStage(Request $request, Lead $lead)
     {
+        // Validate only completed_stages, as action and current_stage are no longer sent directly
         $request->validate([
-            'action' => 'required|in:Yes,No',
-            'current_stage' => 'required|in:' . implode(',', $this->stages),
-            'completed_stages' => 'nullable|array',
+            'completed_stages' => 'nullable|array', // Allow array of stages, can be empty
+            'completed_stages.*' => 'in:' . implode(',', $this->stages), // Each stage must be valid
+            'disbursal_date' => 'nullable|date',
+            'finance_amount' => 'nullable|numeric',
+            'disbursal_amount' => 'nullable|numeric',
+            'move_to_rto' => 'nullable|boolean',
+            'move_to_insurance' => 'nullable|boolean',
+            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,1|date',
         ]);
 
-        $currentStageIndex = array_search($request->current_stage, $this->stages);
+        $currentLeadStageIndex = array_search($lead->crm_stage, $this->stages);
+        $newStage = $lead->crm_stage; // Initialize with current stage
+        // If completed_stages are provided, find the highest selected stage that is a valid progression
+        if ($request->has('completed_stages') && is_array($request->completed_stages)) {
+            $selectedStages = $request->completed_stages;
+            $highestSelectedStageIndex = $currentLeadStageIndex;
+            $potentialNewStage = $lead->crm_stage;
 
-        if ($request->action === 'Yes' && $request->has('completed_stages')) {
-            $completedStages = $request->completed_stages;
-            $lastCompletedStage = null;
-            $lastCompletedIndex = -1;
-
-            // Find the furthest stage selected
-            foreach ($completedStages as $stage) {
-                $index = array_search($stage, $this->stages);
-                if ($index !== false && $index > $lastCompletedIndex) {
-                    $lastCompletedIndex = $index;
-                    $lastCompletedStage = $stage;
+            foreach ($selectedStages as $stage) {
+                $stageIndex = array_search($stage, $this->stages);
+                // Ensure the selected stage is valid and is a progression from the current stage
+                if ($stageIndex !== false && $stageIndex > $highestSelectedStageIndex) {
+                    $highestSelectedStageIndex = $stageIndex;
+                    $potentialNewStage = $stage;
                 }
             }
 
-            // If a valid future stage is selected
-            if ($lastCompletedIndex > $currentStageIndex) {
+            // Check if the potential new stage is actually different and a valid progression
+            if ($potentialNewStage !== $lead->crm_stage) {
                 // Update timestamps for all intermediate stages up to the selected one
-                for ($i = $currentStageIndex + 1; $i <= $lastCompletedIndex; $i++) {
+                $timestampFieldAll = '';
+                for ($i = $currentLeadStageIndex + 1; $i <= $highestSelectedStageIndex; $i++) {
                     $stageName = $this->stages[$i];
                     $timestampField = 'crm_' . strtolower(str_replace(' ', '_', $stageName)) . '_at';
                     if (Schema::hasColumn('leads', $timestampField)) {
-                        $lead->$timestampField = now();
+                        // Only update if it's not already set (or if you want to re-stamp on every update)
+                        if (empty($lead->$timestampField)) {
+                            $lead->$timestampField = now();
+                        }
+                    }
+                    $timestampFieldAll = $timestampFieldAll . $timestampField . ',';
+                }
+
+                $lead->crm_stage = $potentialNewStage;
+
+                // Handle disbursal specific fields if the new stage is Disbursal
+                if ($potentialNewStage === 'Disbursal') {
+                    $lead->disbursal_date = $request->disbursal_date;
+                    $lead->finance_amount = $request->finance_amount;
+                    $lead->disbursal_amount = $request->disbursal_amount;
+                    $lead->crm_disbursal_at = now(); // Ensure disbursal timestamp is set
+
+                    // Handle move to RTO
+
+                    if ($request->move_to_rto === 'yes' ) {
+                        $lead->
+                        $lead->rto_new_at = now();
+                    }
+                    // Handle move to Insurance
+                    if ($request->move_to_insurance == 'yes') {
+                        $lead->insurance_lead_stage = 'New';
+                        $lead->insurance_end_date = $request->insurance_expiry_date;
                     }
                 }
 
-                // Move to the LAST COMPLETED stage (so it appears in that bucket)
-                // Previously it was moving to $lastCompletedIndex + 1, which skipped the stage
-                if (isset($this->stages[$lastCompletedIndex])) {
-                    $nextStage = $this->stages[$lastCompletedIndex];
-                    $lead->crm_stage = $nextStage;
-                    $lead->save();
-                    return redirect()->back()->with('success', 'Stages updated. Lead moved to ' . $nextStage);
+                $lead->save();
+
+                // If it's an AJAX request, return JSON
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => 'Stage updated to ' . $potentialNewStage, 'lead' => $lead]);
                 }
+                // Otherwise, redirect with a success message
+                dd($request->expectsJson());
+                return redirect()->back()->with('success', 'Stage updated to ' . $potentialNewStage);
             }
         }
 
-        return redirect()->back()->with('info', 'No action taken.');
+        // If no stage change detected or no completed_stages provided
+        if ($request->expectsJson()) {
+            return response()->json(['message' => 'No action taken or no stage change detected.']);
+        }
+        return redirect()->back()->with('info', 'No action taken or no stage change detected.');
     }
 
     public function storeDisbursal(Request $request, Lead $lead)
@@ -156,16 +195,15 @@ class CrmController extends Controller
         ];
 
         $messages = ['Disbursal details saved.'];
-
         // Move to RTO if requested
-        if ($request->boolean('move_to_rto')) {
+        if ($request->boolean('move_to_rto') === true) {
             $data['rto_stage'] = 'New';
             $data['rto_new_at'] = now();
             $messages[] = 'Lead moved to RTO.';
         }
 
         // Move to Insurance if requested
-        if ($request->boolean('move_to_insurance')) {
+        if ($request->boolean('move_to_insurance') === true) {
             $data['insurance_lead_stage'] = 'New';
             $data['insurance_end_date'] = $request->insurance_expiry_date;
             $messages[] = 'Lead moved to Insurance.';
@@ -183,12 +221,13 @@ class CrmController extends Controller
             $messages[] = 'Referral payment logged.';
         }
 
+
         return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', implode(' ', $messages));
     }
 
     public function export(Request $request)
     {
-        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export crm')) {
+        if (!Auth::user()->hasRole('admin') && !auth()->user()->can('export crm')) {
             abort(403, 'Unauthorized action.');
         }
         return (new CrmExport($request))->download('crm-leads.csv');
