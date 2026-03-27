@@ -99,19 +99,28 @@
     </div>
 
     @if($currentStage != 'Loan Return' && $currentStage != 'RTO Done')
-    <hr>
-    <div class="mt-3">
-        <button class="btn btn-danger btn-sm" onclick="$('#rejection_div').toggle()">Reject Lead (Loan Return)</button>
-        <div id="rejection_div" style="display:none;" class="mt-2">
-            <form action="{{ route(get_route_prefix() . 'rto.reject', $lead->id) }}" method="POST">
-                @csrf
-                <div class="form-group">
-                    <textarea name="rejection_reason" class="form-control" placeholder="Enter reason for rejection" required></textarea>
-                </div>
-                <button type="submit" class="btn btn-sm btn-danger">Confirm Reject</button>
-            </form>
+        <hr>
+        <div class="mt-3">
+            <button class="btn btn-secondary btn-sm" onclick="$('#update_pending_work_div').toggle()">Update Pending Work</button>
+            <div id="update_pending_work_div" style="display:none;" class="mt-2">
+                @include('rto.partials.update_pending_work_form')
+            </div>
         </div>
-    </div>
+
+        <hr>
+        <div class="mt-3">
+            <button class="btn btn-danger btn-sm" onclick="$('#rejection_div').toggle()">Reject Lead (Loan Return)</button>
+            <div id="rejection_div" style="display:none;" class="mt-2">
+                <form action="{{ route(get_route_prefix() . 'rto.reject', $lead->id) }}" method="POST">
+                    @csrf
+                    <div class="form-group">
+                        <label>Reason for Rejection</label>
+                        <textarea name="rejection_reason" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-danger">Confirm Reject</button>
+                </form>
+            </div>
+        </div>
     @endif
 </div>
 

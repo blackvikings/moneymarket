@@ -164,6 +164,7 @@
                         <th>Customer Name</th>
                         <th>Contact</th>
                         <th>RTO Stage</th>
+                        <th>Pending Work</th>
                         <th>Aging</th>
                         <th>City</th>
                         <th>Actions</th>
@@ -171,11 +172,30 @@
                 </thead>
                 <tbody>
                     @forelse($leads as $lead)
+                        @php
+                            $pendingWork = [];
+                            if ($lead->rto_hsrp_status !== 'Done' && $lead->rto_hsrp_status !== 'Previously Done') $pendingWork[] = 'HSRP';
+                            if ($lead->rto_insurance_status !== 'Done' && $lead->rto_insurance_status !== 'Previously Done') $pendingWork[] = 'Insurance';
+                            if ($lead->rto_fitness_status !== 'Done' && $lead->rto_fitness_status !== 'Previously Done') $pendingWork[] = 'Fitness';
+                            if ($lead->rto_tax_status !== 'Done' && $lead->rto_tax_status !== 'Previously Done') $pendingWork[] = 'Tax';
+                            if ($lead->rto_puc_status !== 'Done' && $lead->rto_puc_status !== 'Previously Done') $pendingWork[] = 'PUC';
+                            if ($lead->rto_echallan_status !== 'Done' && $lead->rto_echallan_status !== 'Previously Done') $pendingWork[] = 'E-challan';
+                            if ($lead->rto_ncr_status !== 'Done' && $lead->rto_ncr_status !== 'Previously Done') $pendingWork[] = 'NCR';
+                            if ($lead->rto_challan_status !== 'Done' && $lead->rto_challan_status !== 'Previously Done') $pendingWork[] = 'RTO Challan';
+                            if ($lead->rto_permit_status !== 'Done' && $lead->rto_permit_status !== 'Previously Done') $pendingWork[] = 'Permit';
+                        @endphp
                         <tr>
                             <td>{{ $lead->id }}</td>
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
+                            <td>
+                                @if(!empty($pendingWork))
+                                    <span class="badge badge-warning">{{ implode(', ', $pendingWork) }}</span>
+                                @else
+                                    <span class="badge badge-success">All Done</span>
+                                @endif
+                            </td>
                             <td>
                                 @if($lead->rto_agent_assigned_at)
                                     {{ \Carbon\Carbon::parse($lead->rto_agent_assigned_at)->diffInDays(now()) }} Days
@@ -230,7 +250,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="7" class="text-center">No leads found.</td></tr>
+                        <tr><td colspan="8" class="text-center">No leads found.</td></tr>
                     @endforelse
                 </tbody>
             </table>

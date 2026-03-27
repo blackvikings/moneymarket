@@ -458,7 +458,7 @@ class LeadController extends Controller
                     'lead' => $lead->id,
                     'qualify' => 1,
                     'bank_id' => $request->bank_id,
-                    'bank_branch_id' => $request->bank_branch_id
+                    'bank_branch_id' => $request->bank_branch_id,
                 ])->with('error', 'Incomplete Data: Please fill in Job Profile and Loan Details before qualifying the lead.');
             }
             $data['status'] = 'Lead';
@@ -471,6 +471,7 @@ class LeadController extends Controller
                 $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
                 $data['bank_id'] = $request->bank_id;
                 $data['bank_branch_id'] = $request->bank_branch_id;
+                $data['crm_stage'] = 'New';
             } elseif ($lead->lead_type === 'RTO') {
                 $data['status'] = 'Lead';
                 $data['rto_stage'] = 'New';
