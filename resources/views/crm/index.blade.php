@@ -191,7 +191,8 @@
                                         Action
                                     </button>
                                 @else
-                                    <span class="text-success small">Moved to RTO</span>
+                                    @if($lead->rto_stage === 'New') <span class="text-success small">Moved to RTO</span> @endif
+                                    @if($lead->insurance_lead_stage === 'New') <span class="text-success small">Moved to Insurance</span> @endif
                                 @endif
 
                                 <!-- Action Modal -->
@@ -363,7 +364,7 @@
                             // Close the modal after successful submission
                             $('#actionModal' + leadId).modal('hide');
 
-                            // location.reload()
+                            location.reload()
                             // Optionally, display a success message or update the UI without full reload
                             // For now, we'll just log and close the modal.
                         },
