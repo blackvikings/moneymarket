@@ -11,6 +11,9 @@
         <div class="card-header">
             <h3 class="card-title">All Referral Payments</h3>
             <div class="card-tools d-flex align-items-center">
+                <a href="{{ route(get_route_prefix() . 'referral-persons.index') }}" class="btn btn-info btn-sm mr-2">
+                    <i class="fas fa-user-friends"></i> View Referral Persons
+                </a>
                 <button class="btn btn-primary btn-sm mr-2" data-toggle="modal" data-target="#addReferralPersonModal">
                     <i class="fas fa-plus"></i> Add New Referral Person
                 </button>
@@ -53,10 +56,11 @@
                     <tr>
                         <th>#</th>
                         <th>Lead Customer</th>
+                        <th>Service Type</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Referral Person</th>
-                        <th>Paid At</th>
+                        <th>Payment Date</th>
                         <th>Paid By</th>
                         <th>Action</th>
                     </tr>
@@ -66,6 +70,7 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $referral->lead->customer_name ?? 'N/A' }}</td>
+                            <td>{{ $referral->lead->service_type ?? 'N/A' }}</td>
                             <td>₹{{ number_format($referral->amount, 2) }}</td>
                             <td>
                                 <span class="badge badge-{{ $referral->status == 'Paid' ? 'success' : 'warning' }}">
@@ -73,15 +78,13 @@
                                 </span>
                             </td>
                             <td>{{ $referral->lead->lead_source_person_name ?? 'N/A' }}</td>
-                            <td>{{ $referral->paid_at ? $referral->paid_at->format('d-m-Y H:i A') : '-' }}</td>
+                            <td>{{ $referral->paid_at ? $referral->paid_at->format('d-m-Y') : '-' }}</td>
                             <td>{{ $referral->paidBy ? $referral->paidBy->name : '-' }}</td>
                             <td>
                                 @if($referral->status == 'Pending')
-                                    <form action="{{ route(get_route_prefix() . 'referral-logs.markAsPaid', $referral->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to mark this as paid?');">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button type="submit" class="btn btn-success btn-sm">Mark as Paid</button>
-                                    </form>
+                                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#paymentModal{{ $referral->id }}">
+                                        Mark as Paid
+                                    </button>
                                 @else
                                     -
                                 @endif
@@ -89,7 +92,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No referral logs found.</td>
+                            <td colspan="9" class="text-center">No referral logs found.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -99,6 +102,48 @@
             {{ $referrals->appends(request()->query())->links() }}
         </div>
     </div>
+
+    @foreach($referrals as $referral)
+        @if($referral->status == 'Pending')
+            <!-- Payment Modal -->
+            <div class="modal fade" id="paymentModal{{ $referral->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Mark as Paid</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <form action="{{ route(get_route_prefix() . 'referral-logs.markAsPaid', $referral->id) }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PATCH')
+                            <div class="modal-body">
+                                <div class="form-group">
+                                    <label>Mode of Payment <span class="text-danger">*</span></label>
+                                    <select name="payment_mode" class="form-control payment-mode-select" required>
+                                        <option value="">Select Mode</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Online">Online</option>
+                                        <option value="Bank Transfer">Bank Transfer</option>
+                                    </select>
+                                </div>
+
+                                <div class="payment-details">
+                                    <!-- Dynamic fields will be injected here by JS -->
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="submit" class="btn btn-success">Save Payment</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endif
+    @endforeach
 
     <!-- Add Referral Person Modal -->
     <div class="modal fade" id="addReferralPersonModal" tabindex="-1" role="dialog" aria-labelledby="addReferralPersonModalLabel" aria-hidden="true">
@@ -143,6 +188,92 @@
 @section('js')
 <script>
     $(document).ready(function() {
+        $('.payment-mode-select').change(function() {
+            let mode = $(this).val();
+            let detailsContainer = $(this).closest('.modal-body').find('.payment-details');
+            detailsContainer.html(''); // Clear previous fields
+
+            let fields = '';
+            if (mode === 'Cash') {
+                fields = `
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="payment_date" class="form-control" required>
+                    </div>
+                `;
+            } else if (mode === 'Cheque') {
+                fields = `
+                    <div class="form-group">
+                        <label>Cheque Number <span class="text-danger">*</span></label>
+                        <input type="text" name="cheque_number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="payment_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Image</label>
+                        <input type="file" name="cheque_image" class="form-control-file">
+                    </div>
+                `;
+            } else if (mode === 'Online') {
+                fields = `
+                    <div class="form-group">
+                        <label>UPI ID <span class="text-danger">*</span></label>
+                        <input type="text" name="upi_id" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="payment_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Image</label>
+                        <input type="file" name="online_payment_image" class="form-control-file">
+                    </div>
+                `;
+            } else if (mode === 'Bank Transfer') {
+                fields = `
+                    <div class="form-group">
+                        <label>Account Holder Name <span class="text-danger">*</span></label>
+                        <input type="text" name="account_holder_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Account Number <span class="text-danger">*</span></label>
+                        <input type="text" name="account_number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Bank Name <span class="text-danger">*</span></label>
+                        <input type="text" name="bank_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>IFSC Code <span class="text-danger">*</span></label>
+                        <input type="text" name="ifsc_code" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="payment_date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Upload Image</label>
+                        <input type="file" name="bank_transfer_image" class="form-control-file">
+                    </div>
+                `;
+            }
+            detailsContainer.html(fields);
+        });
+
         // --- Add Referral Person AJAX ---
         $('#addReferralPersonForm').submit(function(e) {
             e.preventDefault();
@@ -156,8 +287,6 @@
                         $('#addReferralPersonModal').modal('hide');
                         $('#addReferralPersonForm')[0].reset();
                         alert(response.message);
-                        // Optional: Reload page to see if needed, though this page lists logs, not persons directly.
-                        // But user wanted the ability to add person from here.
                     }
                 },
                 error: function(xhr) {

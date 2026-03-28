@@ -143,6 +143,9 @@
 
                 {{-- Stages Tabs --}}
                 @foreach($stages as $stage)
+                    @if($stage === 'Payment Release Detail')
+                        @continue
+                    @endif
                     <div class="crm-tab-container">
                         <a href="{{ route(get_route_prefix() . 'crm.index', ['stage' => $stage]) }}" class="crm-tab-content clip-chevron {{ request('stage') == $stage ? 'active' : '' }}">
                             <span class="crm-tab-title">{{ $stage }}</span>
@@ -391,7 +394,6 @@
                 if (isDisbursalChecked) {
                     disbursalFields.show();
                     disbursalFields.find('input[name="disbursal_date"], input[name="finance_amount"], input[name="disbursal_amount"]').prop('required', true);
-                    // No need to change form action here, it's already set to update-stage
                 } else {
                     disbursalFields.hide();
                     disbursalFields.find('input').prop('required', false);

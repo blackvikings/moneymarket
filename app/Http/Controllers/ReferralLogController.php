@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Exports\ReferralLogExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Storage;
 
 class ReferralLogController extends Controller
 {
@@ -57,17 +58,59 @@ class ReferralLogController extends Controller
         return view('referral_logs.index', compact('referrals'));
     }
 
-    public function markAsPaid(ReferralLog $referral)
+    public function markAsPaid(Request $request, ReferralLog $referral)
     {
-        if ($referral->status === 'Pending') {
-            $referral->update([
-                'status' => 'Paid',
-                'paid_at' => now(),
-                'paid_by' => Auth::id(),
-            ]);
-            return redirect()->back()->with('success', 'Referral marked as paid.');
+        if ($referral->status !== 'Pending') {
+            return redirect()->back()->with('error', 'This referral has already been paid.');
         }
-        return redirect()->back()->with('error', 'This referral has already been paid.');
+
+        $request->validate([
+            'payment_mode' => 'required|in:Cash,Cheque,Online,Bank Transfer',
+            'amount' => 'required_if:payment_mode,Cash|numeric',
+            'payment_date' => 'required|date',
+            'cheque_number' => 'required_if:payment_mode,Cheque',
+            'cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'upi_id' => 'required_if:payment_mode,Online',
+            'online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'account_holder_name' => 'required_if:payment_mode,Bank Transfer',
+            'account_number' => 'required_if:payment_mode,Bank Transfer',
+            'bank_name' => 'required_if:payment_mode,Bank Transfer',
+            'ifsc_code' => 'required_if:payment_mode,Bank Transfer',
+            'bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        $data = [
+            'status' => 'Paid',
+            'paid_at' => $request->payment_date,
+            'paid_by' => Auth::id(),
+            'payment_mode' => $request->payment_mode,
+        ];
+
+        if ($request->payment_mode == 'Cash') {
+            $data['amount'] = $request->amount;
+        } elseif ($request->payment_mode == 'Cheque') {
+            $data['cheque_number'] = $request->cheque_number;
+            if ($request->hasFile('cheque_image')) {
+                $data['cheque_image_path'] = $request->file('cheque_image')->store('cheque_images', 'public');
+            }
+        } elseif ($request->payment_mode == 'Online') {
+            $data['upi_id'] = $request->upi_id;
+            if ($request->hasFile('online_payment_image')) {
+                $data['online_payment_image_path'] = $request->file('online_payment_image')->store('online_payment_images', 'public');
+            }
+        } elseif ($request->payment_mode == 'Bank Transfer') {
+            $data['account_holder_name'] = $request->account_holder_name;
+            $data['account_number'] = $request->account_number;
+            $data['bank_name'] = $request->bank_name;
+            $data['ifsc_code'] = $request->ifsc_code;
+            if ($request->hasFile('bank_transfer_image')) {
+                $data['bank_transfer_image_path'] = $request->file('bank_transfer_image')->store('bank_transfer_images', 'public');
+            }
+        }
+
+        $referral->update($data);
+
+        return redirect()->back()->with('success', 'Referral marked as paid successfully.');
     }
 
     public function export(Request $request)

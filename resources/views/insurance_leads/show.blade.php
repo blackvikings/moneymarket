@@ -275,6 +275,37 @@
                 </div>
 
                 <hr>
+                <h5>Premium Payment Details</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Premium Amount Collected <span class="text-danger">*</span></label>
+                            <select name="premium_amount_collected" id="premium_amount_collected" class="form-control" required>
+                                <option value="No" {{ old('premium_amount_collected', $lead->premium_amount_collected) == 'No' ? 'selected' : '' }}>No</option>
+                                <option value="Yes" {{ old('premium_amount_collected', $lead->premium_amount_collected) == 'Yes' ? 'selected' : '' }}>Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="premium_payment_details_container" style="{{ old('premium_amount_collected', $lead->premium_amount_collected) == 'Yes' ? '' : 'display: none;' }}">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Payment Type <span class="text-danger">*</span></label>
+                                <select name="premium_payment_type" id="premium_payment_type" class="form-control">
+                                    <option value="">Select Payment Type</option>
+                                    <option value="Cash" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cash' ? 'selected' : '' }}>Cash</option>
+                                    <option value="Cheque" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cheque' ? 'selected' : '' }}>Cheque</option>
+                                    <option value="Online" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Online' ? 'selected' : '' }}>Online</option>
+                                    <option value="Bank Transfer" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="premium_payment_fields"></div>
+                </div>
+
+                <hr>
                 <h5>KYC & Vehicle Documents</h5>
                 <div class="row">
                     <div class="col-md-3">
@@ -513,6 +544,141 @@
                     $('#insurance_end_date').val(endDate);
                 }
             });
+
+            // --- Premium Payment Logic ---
+            $('#premium_amount_collected').change(function() {
+                if ($(this).val() === 'Yes') {
+                    $('#premium_payment_details_container').show();
+                } else {
+                    $('#premium_payment_details_container').hide();
+                }
+            }).trigger('change');
+
+            $('#premium_payment_type').change(function() {
+                let type = $(this).val();
+                let fieldsContainer = $('#premium_payment_fields');
+                fieldsContainer.html(''); // Clear previous fields
+
+                let fields = '';
+                if (type === 'Cash') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (type === 'Cheque') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Cheque Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_cheque_number" class="form-control" value="{{ $lead->premium_cheque_number }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_cheque_image" class="form-control-file">
+                        </div>
+                    `;
+                } else if (type === 'Online') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>UPI ID <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_upi_id" class="form-control" value="{{ $lead->premium_upi_id }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_online_payment_image" class="form-control-file">
+                        </div>
+                    `;
+                } else if (type === 'Bank Transfer') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Account Holder Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_account_holder_name" class="form-control" value="{{ $lead->premium_account_holder_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Account Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_account_number" class="form-control" value="{{ $lead->premium_account_number }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Bank Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_bank_name" class="form-control" value="{{ $lead->premium_bank_name }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>IFSC Code <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_ifsc_code" class="form-control" value="{{ $lead->premium_ifsc_code }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Upload Image</label>
+                                    <input type="file" name="premium_bank_transfer_image" class="form-control-file">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                fieldsContainer.html(fields);
+            }).trigger('change');
         });
     </script>
 @stop

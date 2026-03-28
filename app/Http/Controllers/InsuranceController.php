@@ -28,6 +28,10 @@ class InsuranceController extends Controller
             $query->where('company_name', 'like', '%' . $request->company_name . '%');
         }
 
+        if ($request->has('vehicle_type') && $request->vehicle_type != '') {
+            $query->where('vehicle_type', $request->vehicle_type);
+        }
+
         if ($request->has('status') && $request->status != '') {
             $query->where('is_active', $request->status);
         }
@@ -47,6 +51,7 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name',
             'agent_name' => 'required',
+            'vehicle_type' => 'required|in:2 Wheeler,3 Wheeler,4 Wheeler,Commercial',
             'types' => 'nullable|array',
             'types.*.name' => 'required_with:types|string',
         ]);
@@ -54,6 +59,7 @@ class InsuranceController extends Controller
         $insurance = Insurance::create([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
+            'vehicle_type' => $request->vehicle_type,
         ]);
 
         if ($request->has('types') && is_array($request->types)) {
@@ -84,6 +90,7 @@ class InsuranceController extends Controller
         $request->validate([
             'company_name' => 'required|unique:insurances,company_name,' . $insurance->id,
             'agent_name' => 'required',
+            'vehicle_type' => 'required|in:2 Wheeler,3 Wheeler,4 Wheeler,Commercial',
             'types' => 'nullable|array',
             'types.*.name' => 'required_with:types|string',
         ]);
@@ -91,6 +98,7 @@ class InsuranceController extends Controller
         $insurance->update([
             'company_name' => $request->company_name,
             'agent_name' => $request->agent_name,
+            'vehicle_type' => $request->vehicle_.type,
         ]);
 
         // Delete existing types and recreate

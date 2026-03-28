@@ -52,6 +52,11 @@ class MenuServiceProvider extends ServiceProvider
                             'can' => 'view crm',
                         ],
                         [
+                            'text' => 'Payment Release',
+                            'route' => $prefix . 'payment-release.index',
+                            'can' => 'view crm', // Assuming same permission as crm
+                        ],
+                        [
                             'text' => 'RTO',
                             'route' => $prefix . 'rto.index',
                             'can' => 'view rto',
@@ -82,6 +87,16 @@ class MenuServiceProvider extends ServiceProvider
                     'icon' => 'fas fa-fw fa-money-check-alt',
                     'route' => $prefix . 'referral-logs.index',
                     'can' => 'view referral log',
+                ]);
+            }
+
+            // Add Referral Person Menu (Admin Only)
+            if ($user->hasRole('admin')) {
+                $event->menu->add([
+                    'text' => 'Referral Persons',
+                    'icon' => 'fas fa-fw fa-user-friends',
+                    'route' => $prefix . 'referral-persons.index',
+                    'can' => 'view referral log', // Assuming same permission
                 ]);
             }
 

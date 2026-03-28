@@ -24,6 +24,8 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\ChangePasswordController;
+use App\Http\Controllers\PaymentReleaseController;
+use App\Http\Controllers\ReferralPersonController;
 
 Route::get('/', function () {
     return redirect()->route('employee.login');
@@ -117,6 +119,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
+    Route::get('payment-release', [PaymentReleaseController::class, 'index'])->name('payment-release.index');
+    Route::post('payment-release/{lead}/toggle-status', [PaymentReleaseController::class, 'toggleStatus'])->name('payment-release.toggle-status');
+    Route::post('payment-release/{lead}/store-details', [PaymentReleaseController::class, 'storeDetails'])->name('payment-release.store-details');
 
     Route::get('rto/export', [RtoController::class, 'export'])->name('rto.export');
     Route::get('rto', [RtoController::class, 'index'])->name('rto.index');
@@ -152,6 +157,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::get('referral-logs/export', [ReferralLogController::class, 'export'])->name('referral-logs.export');
     Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
     Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
+
+    // Referral Person Module
+    Route::resource('referral-persons', ReferralPersonController::class)->except(['show']);
 });
 
 // Employee Routes
@@ -184,6 +192,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
+    Route::get('payment-release', [PaymentReleaseController::class, 'index'])->name('payment-release.index');
+    Route::post('payment-release/{lead}/toggle-status', [PaymentReleaseController::class, 'toggleStatus'])->name('payment-release.toggle-status');
+    Route::post('payment-release/{lead}/store-details', [PaymentReleaseController::class, 'storeDetails'])->name('payment-release.store-details');
 
     Route::get('rto/export', [RtoController::class, 'export'])->name('rto.export');
     Route::get('rto', [RtoController::class, 'index'])->name('rto.index');
@@ -255,6 +266,9 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::get('referral-logs/export', [ReferralLogController::class, 'export'])->name('referral-logs.export');
     Route::get('referral-logs', [ReferralLogController::class, 'index'])->name('referral-logs.index');
     Route::patch('referral-logs/{referral}/mark-as-paid', [ReferralLogController::class, 'markAsPaid'])->name('referral-logs.markAsPaid');
+
+    // Referral Person Module
+    Route::resource('referral-persons', ReferralPersonController::class)->except(['show']);
 });
 
 // Location Routes (Shared)

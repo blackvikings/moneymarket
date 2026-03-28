@@ -30,6 +30,10 @@ class InsuranceLeadController extends Controller
             $query->where('insurance_lead_status', $request->status);
         }
 
+        if ($request->has('premium_status') && $request->premium_status != '') {
+            $query->where('premium_amount_collected', $request->premium_status);
+        }
+
         $leads = $query->latest()->paginate(10);
 
         return view('insurance_leads.index', compact('leads'));
@@ -126,19 +130,45 @@ class InsuranceLeadController extends Controller
 
     public function updateDetails(Request $request, Lead $lead)
     {
-        // Validation updated for new fields
         $request->validate([
             'insurance_id' => 'required|exists:insurances,id',
             'insurance_start_date' => 'required|date',
             'insurance_end_date' => 'required|date',
-            // 'insurance_type' => 'required|string', // Disabled for now as show page might not have it
-            // ... other validations
+            'premium_amount_collected' => 'required|in:Yes,No',
+            'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
+            'premium_payment_amount' => 'required_if:premium_amount_collected,Yes|numeric',
+            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque',
+            'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_upi_id' => 'required_if:premium_payment_type,Online',
+            'premium_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer',
+            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer',
+            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer',
+            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer',
+            'premium_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $data = $request->all();
 
         if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;
+        }
+
+        if ($request->premium_amount_collected == 'No') {
+            $data['premium_payment_type'] = null;
+            $data['premium_payment_amount'] = null;
+            $data['premium_payment_date'] = null;
+        }
+
+        if ($request->hasFile('premium_cheque_image')) {
+            $data['premium_cheque_image_path'] = $request->file('premium_cheque_image')->store('premium_cheque_images', 'public');
+        }
+        if ($request->hasFile('premium_online_payment_image')) {
+            $data['premium_online_payment_image_path'] = $request->file('premium_online_payment_image')->store('premium_online_payment_images', 'public');
+        }
+        if ($request->hasFile('premium_bank_transfer_image')) {
+            $data['premium_bank_transfer_image_path'] = $request->file('premium_bank_transfer_image')->store('premium_bank_transfer_images', 'public');
         }
 
         // Handle Media Updates

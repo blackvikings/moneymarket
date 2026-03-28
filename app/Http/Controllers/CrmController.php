@@ -20,8 +20,8 @@ class CrmController extends Controller
         'Credit',
         'Approved',
         'Agreement',
-        'Disbursal'
-        // 'Closed' removed as per request
+        'Disbursal',
+        'Payment Release Detail'
     ];
 
     public function __construct()
@@ -96,9 +96,12 @@ class CrmController extends Controller
             'disbursal_date' => 'nullable|date',
             'finance_amount' => 'nullable|numeric',
             'disbursal_amount' => 'nullable|numeric',
-            'move_to_rto' => 'nullable|boolean',
-            'move_to_insurance' => 'nullable|boolean',
-            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,1|date',
+            'move_to_rto' => 'nullable|string',
+            'move_to_insurance' => 'nullable|string',
+            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,yes|date',
+            'payment_amount' => 'nullable|numeric',
+            'payment_date' => 'nullable|date',
+            'payment_remarks' => 'nullable|string',
         ]);
 
         $currentLeadStageIndex = array_search($lead->crm_stage, $this->stages);
@@ -146,7 +149,7 @@ class CrmController extends Controller
                     // Handle move to RTO
 
                     if ($request->move_to_rto === 'yes' ) {
-                        $lead->
+                        $lead->rto_stage = 'New';
                         $lead->rto_new_at = now();
                     }
                     // Handle move to Insurance
@@ -156,6 +159,19 @@ class CrmController extends Controller
                     }
                 }
 
+                if ($potentialNewStage === 'Payment Release Detail') {
+                     $request->validate([
+                        'payment_amount' => 'required|numeric',
+                        'payment_date' => 'required|date',
+                        'payment_remarks' => 'nullable|string',
+                    ]);
+                    $lead->payment_amount = $request->payment_amount;
+                    $lead->payment_date = $request->payment_date;
+                    $lead->payment_remarks = $request->payment_remarks;
+                    $lead->payment_release_detail_at = now();
+                }
+
+
                 $lead->save();
 
                 // If it's an AJAX request, return JSON
@@ -163,7 +179,6 @@ class CrmController extends Controller
                     return response()->json(['message' => 'Stage updated to ' . $potentialNewStage, 'lead' => $lead]);
                 }
                 // Otherwise, redirect with a success message
-                dd($request->expectsJson());
                 return redirect()->back()->with('success', 'Stage updated to ' . $potentialNewStage);
             }
         }

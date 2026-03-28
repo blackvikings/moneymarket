@@ -218,6 +218,19 @@ class Lead extends Model implements HasMedia
         'guarantor_pincode',
         'guarantor_city',
         'guarantor_state',
+        'premium_amount_collected',
+        'premium_payment_type',
+        'premium_payment_amount',
+        'premium_payment_date',
+        'premium_cheque_number',
+        'premium_cheque_image_path',
+        'premium_upi_id',
+        'premium_online_payment_image_path',
+        'premium_account_holder_name',
+        'premium_account_number',
+        'premium_bank_name',
+        'premium_ifsc_code',
+        'premium_bank_transfer_image_path',
     ];
 
     protected $casts = [
@@ -227,6 +240,7 @@ class Lead extends Model implements HasMedia
         'converted_at' => 'datetime',
         'loan_return_date' => 'date',
         'disbursal_date' => 'date',
+        'premium_payment_date' => 'date',
         // CRM Stage Timestamps
         'crm_new_at' => 'datetime',
         'crm_login_at' => 'datetime',

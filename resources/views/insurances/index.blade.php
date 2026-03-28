@@ -24,17 +24,26 @@
             <br>
             <form action="{{ route(get_route_prefix(). 'insurances.index') }}" method="GET">
                 <div class="row">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <input type="text" name="company_name" class="form-control" placeholder="Search by Company Name" value="{{ request('company_name') }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <select name="vehicle_type" class="form-control">
+                            <option value="">All Vehicle Types</option>
+                            <option value="2 Wheeler" {{ request('vehicle_type') == '2 Wheeler' ? 'selected' : '' }}>2 Wheeler</option>
+                            <option value="3 Wheeler" {{ request('vehicle_type') == '3 Wheeler' ? 'selected' : '' }}>3 Wheeler</option>
+                            <option value="4 Wheeler" {{ request('vehicle_type') == '4 Wheeler' ? 'selected' : '' }}>4 Wheeler</option>
+                            <option value="Commercial" {{ request('vehicle_type') == 'Commercial' ? 'selected' : '' }}>Commercial</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
                         <select name="status" class="form-control">
                             <option value="">All Status</option>
                             <option value="1" {{ request('status') == '1' ? 'selected' : '' }}>Active</option>
                             <option value="0" {{ request('status') == '0' ? 'selected' : '' }}>Blocked</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <button type="submit" class="btn btn-primary">Filter</button>
                         <a href="{{ route(get_route_prefix(). 'insurances.index') }}" class="btn btn-secondary">Reset</a>
                     </div>
@@ -47,6 +56,7 @@
                     <tr>
                         <th>Company Name</th>
                         <th>Agent Name</th>
+                        <th>Vehicle Type</th>
                         <th>Address</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -57,6 +67,7 @@
                         <tr>
                             <td>{{ $insurance->company_name }}</td>
                             <td>{{ $insurance->agent_name }}</td>
+                            <td>{{ $insurance->vehicle_type }}</td>
                             <td>
                                 @if($insurance->address_line)
                                     {{ $insurance->address_line }},<br>

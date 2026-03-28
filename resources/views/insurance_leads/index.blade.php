@@ -8,7 +8,7 @@
 
 @section('content')
     <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-8">
             <form action="{{ route(get_route_prefix() . 'insurance-leads.index') }}" method="GET" class="form-inline">
                 <div class="form-group mr-2">
                     <select name="status" class="form-control">
@@ -17,10 +17,17 @@
                         <option value="Done" {{ request('status') == 'Done' ? 'selected' : '' }}>Done</option>
                     </select>
                 </div>
+                <div class="form-group mr-2">
+                    <select name="premium_status" class="form-control">
+                        <option value="">All Premium Statuses</option>
+                        <option value="Yes" {{ request('premium_status') == 'Yes' ? 'selected' : '' }}>Collected</option>
+                        <option value="No" {{ request('premium_status') == 'No' ? 'selected' : '' }}>Not Collected</option>
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary">Filter</button>
             </form>
         </div>
-        <div class="col-md-6 text-right">
+        <div class="col-md-4 text-right">
             @if(auth()->user()->hasRole('admin') || auth()->user()->can('export insurance lead'))
                 <a href="{{ route(get_route_prefix() . 'insurance-leads.export', request()->all()) }}" class="btn btn-success mr-1">Export</a>
             @endif
@@ -41,6 +48,7 @@
                         <th>Contact</th>
                         <th>Type</th>
                         <th>Status</th>
+                        <th>Premium Status</th>
                         <th>Expiry Date</th>
                         <th>City</th>
                         <th>Actions</th>
@@ -59,6 +67,11 @@
                                 </span>
                             </td>
                             <td>
+                                <span class="badge badge-{{ $lead->premium_amount_collected == 'Yes' ? 'success' : 'danger' }}">
+                                    {{ $lead->premium_amount_collected == 'Yes' ? 'Collected' : 'Not Collected' }}
+                                </span>
+                            </td>
+                            <td>
                                 @if($lead->insurance_end_date)
                                     {{ $lead->insurance_end_date->format('d-m-Y') }}
                                 @else
@@ -73,7 +86,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No insurance leads found.</td>
+                            <td colspan="9" class="text-center">No insurance leads found.</td>
                         </tr>
                     @endforelse
                 </tbody>
