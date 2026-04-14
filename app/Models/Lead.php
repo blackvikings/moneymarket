@@ -105,6 +105,7 @@ class Lead extends Model implements HasMedia
         'remark',
         'bank_id',
         'bank_branch_id',
+        'bank_executive_name',
         'converted_at',
         'crm_stage',
         'rto_stage',
@@ -292,6 +293,12 @@ class Lead extends Model implements HasMedia
         'crm_disbursal_at' => 'datetime',
         // RTO Timestamps
         'rto_new_at' => 'datetime',
+        'rto_agent_assigned_at' => 'datetime',
+        'rto_work_done_at' => 'datetime',
+        'rto_challan_done_at' => 'datetime',
+        'rto_doc_uploaded_at' => 'datetime',
+        'rto_verification_done_at' => 'datetime',
+        'rto_approval_at' => 'datetime',
         'rto_done_at' => 'datetime',
     ];
 
@@ -415,7 +422,7 @@ class Lead extends Model implements HasMedia
     {
         if ($this->rto_new_at) {
             $end = $this->rto_done_at ?? now();
-            $days = (int) $this->rto_new_at->diffInDays($end);
+            $days = max(1, (int) $this->rto_new_at->diffInDays($end));
             return $days . ' ' . Str::plural('day', $days);
         }
         return '-';

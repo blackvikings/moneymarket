@@ -6,12 +6,56 @@ use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\State;
 use App\Models\City;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class LeadController extends Controller
 {
+    private function canAssignLeadTo(User $actor, ?int $assigneeId): bool
+    {
+        if (!$assigneeId) {
+            return true;
+        }
+
+        if ($actor->hasRole('admin')) {
+            return User::withoutRole('admin')->whereKey($assigneeId)->exists();
+        }
+
+        $role = $actor->roles()->first();
+
+        if (!$role) {
+            return $actor->id === $assigneeId;
+        }
+
+        if (strcasecmp($role->name, 'Tele Caller') === 0) {
+            return $actor->id === $assigneeId;
+        }
+
+        return User::whereKey($assigneeId)
+            ->whereHas('roles', function ($query) use ($role) {
+                $query->where('position', '>=', $role->position);
+            })
+            ->exists();
+    }
+
+    private function validateAssignmentOrFail(User $actor, ?int $assigneeId)
+    {
+        if (!$this->canAssignLeadTo($actor, $assigneeId)) {
+            return response()->json([
+                'message' => 'You can only assign leads to yourself, users with the same role, or users below your role. Tele Caller can only assign leads to self.',
+                'errors' => [
+                    'assigned_to' => [
+                        'You can only assign leads to yourself, users with the same role, or users below your role. Tele Caller can only assign leads to self.',
+                    ],
+                ],
+            ], 422);
+        }
+
+        return null;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -72,11 +116,16 @@ class LeadController extends Controller
         $data['created_by'] = $user->id;
         $data['status'] = 'New';
 
-        // Force assignment for non-admins, or use provided value for admins
-        if ($user->hasRole('admin') || $user->hasRole('Team Lead')) {
+        if ($user->hasRole('admin')) {
             $data['assigned_to'] = $request->input('assigned_to', $user->id);
-        } else {
+        } elseif ($user->roles()->where('name', 'Tele Caller')->exists()) {
             $data['assigned_to'] = $user->id;
+        } else {
+            $data['assigned_to'] = $request->input('assigned_to', $user->id);
+        }
+
+        if ($response = $this->validateAssignmentOrFail($user, $data['assigned_to'] ?? null)) {
+            return $response;
         }
 
         $lead = Lead::create($data);
@@ -199,6 +248,12 @@ class LeadController extends Controller
         ]);
 
         $data = $validated;
+
+        if ($request->filled('assigned_to')) {
+            if ($response = $this->validateAssignmentOrFail($user, (int) $request->assigned_to)) {
+                return $response;
+            }
+        }
 
         // Convert State and City IDs to names
         $data['current_address_state'] = State::find($validated['current_address_state'])->name;

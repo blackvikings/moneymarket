@@ -57,7 +57,7 @@ Route::get('email/verify/{id}/{hash}', [VerificationController::class, 'verify']
 Route::post('email/resend', [VerificationController::class, 'resend'])->name('verification.resend');
 
 // Shared Routes (Accessible by both, but logic inside controllers might differ)
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+Route::get('/home', [HomeController::class, 'index'])->middleware(['single.admin.session', 'admin.session.timeout'])->name('home');
 
 // Logout Route (Global fallback if needed, though specific ones are preferred)
 Route::post('logout', function () {
@@ -69,7 +69,7 @@ Route::post('logout', function () {
 
 
 // Admin Routes
-Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.timeout'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
 

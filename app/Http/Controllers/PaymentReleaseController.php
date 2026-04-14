@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Lead;
+use Illuminate\Support\Facades\Validator;
 
 class PaymentReleaseController extends Controller
 {
@@ -26,7 +27,7 @@ class PaymentReleaseController extends Controller
 
     public function storeDetails(Request $request, Lead $lead)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'payment_type' => 'required|in:Cash,Cheque,Online,Bank Transfer',
             'payment_amount' => 'required_if:payment_type,Cash,Cheque,Online|nullable|numeric',
             'payment_date' => 'required|date',
@@ -41,6 +42,13 @@ class PaymentReleaseController extends Controller
             'payment_ifsc_code' => 'required_if:payment_type,Bank Transfer|nullable|string|max:255',
             'payment_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        if ($validator->fails()) {
+            return back()
+                ->withErrors($validator)
+                ->withInput()
+                ->with('payment_release_lead_id', $lead->id);
+        }
 
         // Reset all mode-specific fields to avoid stale data if a lead is edited later.
         $lead->payment_type = $request->payment_type;

@@ -9,6 +9,16 @@
 @section('content')
     <div class="card">
         <div class="card-body">
+            @if($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
@@ -70,10 +80,10 @@
                                                 <label>Payment Type <span class="text-danger">*</span></label>
                                                 <select name="payment_type" class="form-control payment-type" required>
                                                     <option value="">Select Type</option>
-                                                    <option value="Cash">Cash</option>
-                                                    <option value="Cheque">Cheque</option>
-                                                    <option value="Online">Online</option>
-                                                    <option value="Bank Transfer">Bank Transfer</option>
+                                                    <option value="Cash" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Cash' ? 'selected' : '' }}>Cash</option>
+                                                    <option value="Cheque" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Cheque' ? 'selected' : '' }}>Cheque</option>
+                                                    <option value="Online" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Online' ? 'selected' : '' }}>Online</option>
+                                                    <option value="Bank Transfer" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
                                                 </select>
                                             </div>
 
@@ -102,11 +112,35 @@
             {{ $leads->links() }}
         </div>
     </div>
+@stop
 
+@section('js')
     <script>
+        function paymentReleaseOldValue(field, leadId) {
+            const activeLeadId = '{{ session('payment_release_lead_id') }}';
+            if (!activeLeadId || String(activeLeadId) !== String(leadId)) {
+                return '';
+            }
+
+            const values = {
+                payment_amount: @json(old('payment_amount')),
+                payment_date: @json(old('payment_date')),
+                payment_cheque_number: @json(old('payment_cheque_number')),
+                payment_upi_id: @json(old('payment_upi_id')),
+                payment_account_holder_name: @json(old('payment_account_holder_name')),
+                payment_account_number: @json(old('payment_account_number')),
+                payment_bank_name: @json(old('payment_bank_name')),
+                payment_ifsc_code: @json(old('payment_ifsc_code'))
+            };
+
+            return values[field] || '';
+        }
+
         function renderPaymentTypeFields($select) {
             const type = ($select.val() || '').trim();
-            const $container = $select.closest('.modal-body').find('.payment-type-fields');
+            const $modal = $select.closest('.payment-release-modal');
+            const leadId = $modal.attr('id').replace('paymentModal', '');
+            const $container = $modal.find('.payment-type-fields');
 
             let fields = '';
             if (type === 'Cash') {
@@ -115,13 +149,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" required>
+                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
                             </div>
                         </div>
                     </div>
@@ -132,13 +166,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Cheque Number <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_cheque_number" class="form-control" required>
+                                <input type="text" name="payment_cheque_number" class="form-control" value="${paymentReleaseOldValue('payment_cheque_number', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
                             </div>
                         </div>
                     </div>
@@ -146,7 +180,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" required>
+                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -163,13 +197,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>UPI ID <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_upi_id" class="form-control" required>
+                                <input type="text" name="payment_upi_id" class="form-control" value="${paymentReleaseOldValue('payment_upi_id', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
                             </div>
                         </div>
                     </div>
@@ -177,7 +211,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" required>
+                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -194,13 +228,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Account Holder Name <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_account_holder_name" class="form-control" required>
+                                <input type="text" name="payment_account_holder_name" class="form-control" value="${paymentReleaseOldValue('payment_account_holder_name', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Account Number <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_account_number" class="form-control" required>
+                                <input type="text" name="payment_account_number" class="form-control" value="${paymentReleaseOldValue('payment_account_number', leadId)}" required>
                             </div>
                         </div>
                     </div>
@@ -208,13 +242,13 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Bank Name <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_bank_name" class="form-control" required>
+                                <input type="text" name="payment_bank_name" class="form-control" value="${paymentReleaseOldValue('payment_bank_name', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>IFSC Code <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_ifsc_code" class="form-control" required>
+                                <input type="text" name="payment_ifsc_code" class="form-control" value="${paymentReleaseOldValue('payment_ifsc_code', leadId)}" required>
                             </div>
                         </div>
                     </div>
@@ -222,7 +256,7 @@
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" required>
+                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -233,8 +267,6 @@
                         </div>
                     </div>
                 `;
-            } else {
-                fields = '';
             }
 
             $container.html(fields);
@@ -250,6 +282,13 @@
                 $select.val('Cash');
             }
             renderPaymentTypeFields($select);
+        });
+
+        $(function () {
+            const reopenLeadId = '{{ session('payment_release_lead_id') }}';
+            if (reopenLeadId) {
+                $('#paymentModal' + reopenLeadId).modal('show');
+            }
         });
     </script>
 @stop

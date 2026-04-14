@@ -205,7 +205,10 @@
                             </td>
                             <td>
                                 @if($lead->rto_agent_assigned_at)
-                                    {{ \Carbon\Carbon::parse($lead->rto_agent_assigned_at)->diffInDays(now()) }} Days
+                                    @php
+                                        $agingDays = max(1, (int) $lead->rto_agent_assigned_at->diffInDays(now()));
+                                    @endphp
+                                    {{ $agingDays }} {{ \Illuminate\Support\Str::plural('Day', $agingDays) }}
                                 @else
                                     -
                                 @endif

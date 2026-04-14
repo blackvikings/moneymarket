@@ -17,12 +17,58 @@ use App\Imports\LeadImport;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Media;
 use Spatie\Permission\Models\Role;
 
 class LeadController extends Controller
 {
+    private function getAssignableUsersFor(User $user)
+    {
+        if ($user->hasRole('admin')) {
+            return User::withoutRole('admin');
+        }
+
+        $role = $user->roles()->first();
+
+        if (!$role) {
+            return User::whereKey($user->id);
+        }
+
+        if (strcasecmp($role->name, 'Tele Caller') === 0) {
+            return User::whereKey($user->id);
+        }
+
+        return User::whereHas('roles', function ($query) use ($role) {
+            $query->where('position', '>=', $role->position);
+        });
+    }
+
+    private function canAssignLeadTo(User $actor, ?int $assigneeId): bool
+    {
+        if (!$assigneeId) {
+            return true;
+        }
+
+        return $this->getAssignableUsersFor($actor)
+            ->whereKey($assigneeId)
+            ->exists();
+    }
+
+    private function validateLeadAssignment(User $actor, array $data): void
+    {
+        $assignedTo = isset($data['assigned_to']) && $data['assigned_to'] !== ''
+            ? (int) $data['assigned_to']
+            : null;
+
+        if (!$this->canAssignLeadTo($actor, $assignedTo)) {
+            throw ValidationException::withMessages([
+                'assigned_to' => 'You can only assign leads to yourself, users with the same role, or users below your role. Tele Caller can only assign leads to self.',
+            ]);
+        }
+    }
+
     public function __construct()
     {
         $this->middleware('permission:view lead', ['only' => ['index', 'show']]);
@@ -107,15 +153,7 @@ class LeadController extends Controller
             ->appends($request->except('page'));
 
         // 7. Users for dropdown
-        if ($user->hasRole('admin')) {
-            $users = User::all();
-        } elseif ($user->hasRole('Team Lead')) {
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
-            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
-        } else {
-            $users = collect([]);
-        }
+        $users = $this->getAssignableUsersFor($user)->get();
 
         return view('leads.index', compact('leads', 'users', 'statuses', 'counts'));
     }
@@ -129,15 +167,7 @@ class LeadController extends Controller
             $query->where('position', '<', $userRole->position);
         })->get();
 
-        if ($user->hasRole('admin')) {
-            $users = User::withoutRole('admin')->get();
-        } elseif ($user->hasRole('Team Lead')) {
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
-            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
-        } else {
-            $users = collect([$user]);
-        }
+        $users = $this->getAssignableUsersFor($user)->get();
 
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
@@ -190,6 +220,7 @@ class LeadController extends Controller
         ]);
 
         $data = $request->all();
+        $this->validateLeadAssignment(Auth::user(), $data);
 
         if (($data['lead_source'] ?? '') !== 'Any person') {
             $data['lead_source_person_name'] = null;
@@ -342,15 +373,7 @@ class LeadController extends Controller
             $query->where('position', '<', $userRole->position);
         })->get();
 
-        if ($user->hasRole('admin')) {
-            $users = User::all();
-        } elseif ($user->hasRole('Team Lead')) {
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $otherTeamLeadIds = User::role('Team Lead')->where('id', '!=', $user->id)->pluck('id')->toArray();
-            $users = User::whereIn('id', array_merge($subordinateIds, $otherTeamLeadIds))->get();
-        } else {
-            $users = User::where('id', $lead->assigned_to)->get();
-        }
+        $users = $this->getAssignableUsersFor($user)->get();
 
         $firms = Firm::where('is_active', true)->get();
         $manufactures = VehicleManufacture::where('is_active', true)->get();
@@ -396,6 +419,7 @@ class LeadController extends Controller
         ]);
 
         $data = $request->all();
+        $this->validateLeadAssignment(Auth::user(), $data);
 
         if (($data['lead_source'] ?? '') !== 'Any person') {
             $data['lead_source_person_name'] = null;
@@ -602,11 +626,18 @@ class LeadController extends Controller
             $logData['remark'] = 'Lead qualified.';
         } elseif ($action === 'proceed_to_bank_assign') {
             if ($lead->lead_type === 'Loan') {
+                $request->validate([
+                    'bank_id' => 'required|exists:banks,id',
+                    'bank_branch_id' => 'required|exists:bank_branches,id',
+                    'bank_executive_name' => 'nullable|string|max:255',
+                ]);
+
                 $data['status'] = 'Bank Assign';
                 $logData['status'] = 'Bank Assign';
                 $logData['remark'] = 'Moved to Bank Assignment stage (Loan).';
                 $data['bank_id'] = $request->bank_id;
                 $data['bank_branch_id'] = $request->bank_branch_id;
+                $data['bank_executive_name'] = $request->bank_executive_name;
                 $data['crm_stage'] = 'New';
             } elseif ($lead->lead_type === 'RTO') {
                 $data['status'] = 'Lead';
@@ -653,12 +684,14 @@ class LeadController extends Controller
         $request->validate([
             'bank_id' => 'required|exists:banks,id',
             'bank_branch_id' => 'required|exists:bank_branches,id',
+            'bank_executive_name' => 'nullable|string|max:255',
         ]);
 
         $lead->update([
             'status' => 'Lead',
             'bank_id' => $request->bank_id,
             'bank_branch_id' => $request->bank_branch_id,
+            'bank_executive_name' => $request->bank_executive_name,
             'converted_at' => now(),
             'crm_stage' => 'New',
         ]);
@@ -686,6 +719,8 @@ class LeadController extends Controller
 
         $leadIds = $request->input('lead_ids');
         $assignedTo = $request->input('assigned_to');
+
+        $this->validateLeadAssignment(Auth::user(), ['assigned_to' => $assignedTo]);
 
         Lead::whereIn('id', $leadIds)->update(['assigned_to' => $assignedTo]);
 

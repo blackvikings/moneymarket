@@ -187,12 +187,13 @@ class InsuranceLeadController extends Controller
 
         $lead->load(['insurance', 'vehicleName', 'manufacture', 'currentCity', 'currentState', 'permanentCity', 'permanentState', 'firm', 'media']);
         $insurances = Insurance::where('is_active', true)->get();
+        $manufactures = VehicleManufacture::where('is_active', true)->get();
 
         if ($request->ajax()) {
             return view('insurance_leads.show-modal', compact('lead', 'insurances'))->render();
         }
 
-        return view('insurance_leads.show', compact('lead', 'insurances'));
+        return view('insurance_leads.show', compact('lead', 'insurances', 'manufactures'));
     }
 
     public function updateDetails(Request $request, Lead $lead)
@@ -201,6 +202,10 @@ class InsuranceLeadController extends Controller
             'insurance_id' => 'required|exists:insurances,id',
             'insurance_start_date' => 'required|date',
             'insurance_end_date' => 'required|date',
+            'manufacture_id' => 'nullable|exists:vehicle_manufactures,id',
+            'model_name' => 'nullable|string|max:255',
+            'variant' => 'nullable|string|max:255',
+            'vehicle_name_id' => 'nullable|exists:vehicle_names,id',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
             'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
@@ -217,6 +222,11 @@ class InsuranceLeadController extends Controller
         ]);
 
         $data = $request->all();
+
+        if ($request->filled('manufacture_id')) {
+            $mfg = VehicleManufacture::find($request->manufacture_id);
+            $data['mfg_name'] = $mfg ? $mfg->name : null;
+        }
 
         if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;

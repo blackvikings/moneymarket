@@ -251,8 +251,37 @@
                             <td>{{ $lead->contact_number }}</td>
                             <td>{{ $lead->lead_type ?? '-' }}</td>
                             <td>
+                                @php
+                                    $statusLabel = $lead->status == 'Prospect'
+                                        ? 'Follow up'
+                                        : str_replace('_', ' ', $lead->status);
+
+                                    if ($lead->status !== 'New') {
+                                        if (
+                                            $lead->lead_type === 'Loan' &&
+                                            !empty($lead->crm_stage) &&
+                                            in_array($lead->status, ['Lead', 'Bank Assign'], true)
+                                        ) {
+                                            $statusLabel = $lead->crm_stage === 'New'
+                                                ? 'Bank Assign'
+                                                : $lead->crm_stage;
+                                        }
+
+                                        if (!empty($lead->rto_stage)) {
+                                            $statusLabel = $lead->rto_stage === 'New'
+                                                ? 'RTO'
+                                                : $lead->rto_stage;
+                                        }
+
+                                        if (!empty($lead->insurance_lead_stage)) {
+                                            $statusLabel = $lead->insurance_lead_stage === 'New'
+                                                ? 'Insurance'
+                                                : $lead->insurance_lead_stage;
+                                        }
+                                    }
+                                @endphp
                                 <span class="badge badge-{{ $lead->status == 'Lead' ? 'success' : ($lead->status == 'Rejected' || $lead->status == 'Not_Active' ? 'danger' : 'info') }}">
-                                    {{ $lead->status == 'Prospect' ? 'Follow up' : str_replace('_', ' ', $lead->status) }}
+                                    {{ $statusLabel }}
                                 </span>
                             </td>
                             <td>{{ $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned' }}</td>
@@ -310,6 +339,10 @@
                                                             <select name="bank_branch_id" class="form-control branch-select" required>
                                                                 <option value="">Select Bank First</option>
                                                             </select>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label>Executive Name</label>
+                                                            <input type="text" name="bank_executive_name" class="form-control" placeholder="Enter executive name">
                                                         </div>
                                                         <button type="submit" class="btn btn-primary btn-block mt-3">Assign Bank & Move to CRM</button>
                                                     </form>
@@ -428,6 +461,10 @@
                                                                         <select name="bank_branch_id" class="form-control branch-select" required>
                                                                             <option value="">Select Bank First</option>
                                                                         </select>
+                                                                    </div>
+                                                                    <div class="form-group">
+                                                                        <label>Executive Name</label>
+                                                                        <input type="text" name="bank_executive_name" class="form-control" placeholder="Enter executive name">
                                                                     </div>
                                                                 </div>
                                                             @else
@@ -605,6 +642,7 @@
                     if (sectionToShow.length > 0) {
                         sectionToShow.show();
                         sectionToShow.find('select').prop('required', true).prop('disabled', false);
+                        sectionToShow.find('input, textarea').prop('disabled', false);
                     }
                 }
             }

@@ -284,12 +284,21 @@ class EmployeeController extends Controller
             return response()->json([]);
         }
 
-        $employees = User::where('id', '!=', $currentUser->id)
-                        ->whereHas('roles', function ($query) use ($userRole) {
-                            $query->where('position', '>=', $userRole->position);
-                        })
-                        ->select('id', 'name')
-                        ->get();
+        $employeesQuery = User::query();
+
+        if ($currentUser->hasRole('admin')) {
+            $employeesQuery->withoutRole('admin');
+        } elseif (strcasecmp($userRole->name, 'Tele Caller') === 0) {
+            $employeesQuery->whereKey($currentUser->id);
+        } else {
+            $employeesQuery->whereHas('roles', function ($query) use ($userRole) {
+                $query->where('position', '>=', $userRole->position);
+            });
+        }
+
+        $employees = $employeesQuery
+            ->select('id', 'name')
+            ->get();
 
         return response()->json($employees);
     }

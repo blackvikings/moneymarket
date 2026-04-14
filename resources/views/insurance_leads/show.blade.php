@@ -189,6 +189,7 @@
         <div class="card-body">
             <form action="{{ route(get_route_prefix() . 'insurance-leads.update-details', $lead->id) }}" method="POST" enctype="multipart/form-data" id="updateInsuranceForm">
                 @csrf
+                <input type="hidden" name="vehicle_name_id" id="vehicle_name_id" value="{{ old('vehicle_name_id', $lead->vehicle_name_id) }}">
                 <div class="row">
                     <div class="col-md-3">
                         <div class="form-group">
@@ -252,6 +253,46 @@
                         <div class="form-group">
                             <label>Insurance End Date</label>
                             <input type="date" name="insurance_end_date" id="insurance_end_date" class="form-control" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '' }}" required>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <h5>Vehicle Details</h5>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Manufacturer</label>
+                            <select name="manufacture_id" id="manufacture_id" class="form-control manufacture-select">
+                                <option value="">Select Manufacturer</option>
+                                @foreach($manufactures as $mfg)
+                                    <option value="{{ $mfg->id }}" {{ (string) old('manufacture_id', $lead->manufacture_id) === (string) $mfg->id ? 'selected' : '' }}>
+                                        {{ $mfg->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Model Name</label>
+                            <select name="model_name" id="model_name" class="form-control vehicle-name-select">
+                                <option value="">{{ $lead->manufacture_id ? 'Loading...' : 'Select Manufacturer First' }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Variant</label>
+                            <select name="variant" id="variant" class="form-control variant-select">
+                                <option value="">{{ $lead->model_name ? 'Loading...' : 'Select Model First' }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="other_vehicle_loan_name_div" style="{{ old('vehicle_loan_type', $lead->vehicle_loan_type) == 'Other' ? '' : 'display:none;' }}">
+                        <div class="form-group">
+                            <label>Other Vehicle Name</label>
+                            <input type="text" name="other_vehicle_loan_name" class="form-control" value="{{ old('other_vehicle_loan_name', $lead->other_vehicle_loan_name) }}">
                         </div>
                     </div>
                 </div>
@@ -546,6 +587,107 @@
                     $('#lead_source_person_name_div').hide();
                 }
             }).trigger('change');
+
+            // --- Vehicle Detail Logic ---
+            function toggleOtherVehicle() {
+                let val = $('#vehicle_loan_type').val();
+                if (val === 'Other') {
+                    $('#other_vehicle_loan_name_div').show();
+                } else {
+                    $('#other_vehicle_loan_name_div').hide();
+                    $('#other_vehicle_loan_name_div').find('input').val('');
+                }
+            }
+
+            function loadModelNames(selectedModel = null) {
+                let mfgId = $('#manufacture_id').val();
+                let modelSelect = $('#model_name');
+                modelSelect.empty().append('<option value="">Loading...</option>');
+
+                if (!mfgId) {
+                    modelSelect.empty().append('<option value="">Select Manufacturer First</option>');
+                    $('#variant').empty().append('<option value="">Select Model First</option>');
+                    return;
+                }
+
+                $.ajax({
+                    url: '{{ url("get-vehicle-names") }}/' + mfgId,
+                    type: 'GET',
+                    success: function(data) {
+                        modelSelect.empty().append('<option value="">Select Model</option>');
+                        $.each(data, function(key, name) {
+                            let selected = selectedModel && selectedModel === name ? 'selected' : '';
+                            modelSelect.append('<option value="' + name + '" ' + selected + '>' + name + '</option>');
+                        });
+                        if (selectedModel) {
+                            modelSelect.trigger('change');
+                        }
+                    }
+                });
+            }
+
+            function loadVariants(selectedVariant = null, selectedVehicleNameId = null) {
+                let modelName = $('#model_name').val();
+                let mfgId = $('#manufacture_id').val();
+                let variantSelect = $('#variant');
+                variantSelect.empty().append('<option value="">Loading...</option>');
+
+                if (!(mfgId && modelName)) {
+                    variantSelect.empty().append('<option value="">Select Model First</option>');
+                    $('#vehicle_name_id').val(selectedVehicleNameId || '');
+                    return;
+                }
+
+                $.ajax({
+                    url: '{{ route("get-variants") }}',
+                    type: 'GET',
+                    data: { manufactureId: mfgId, vehicleName: modelName },
+                    success: function(data) {
+                        variantSelect.empty().append('<option value="">Select Variant</option>');
+                        $.each(data, function(key, item) {
+                            let selected = selectedVariant && selectedVariant === item.variant ? 'selected' : '';
+                            variantSelect.append('<option value="' + item.variant + '" data-id="' + item.id + '" ' + selected + '>' + item.variant + '</option>');
+                        });
+
+                        if (selectedVehicleNameId) {
+                            let selectedOption = variantSelect.find('option[data-id="' + selectedVehicleNameId + '"]');
+                            if (selectedOption.length) {
+                                selectedOption.prop('selected', true);
+                            }
+                        }
+
+                        variantSelect.trigger('change');
+                    }
+                });
+            }
+
+            $('#manufacture_id').change(function() {
+                loadModelNames();
+            });
+
+            $('#model_name').change(function() {
+                loadVariants();
+            });
+
+            $('#variant').change(function() {
+                let selectedId = $(this).find(':selected').data('id') || '';
+                $('#vehicle_name_id').val(selectedId);
+            });
+
+            $('#vehicle_loan_type').change(toggleOtherVehicle);
+            toggleOtherVehicle();
+
+            let initialManufactureId = $('#manufacture_id').val();
+            let initialModelName = @json(old('model_name', $lead->model_name));
+            let initialVariant = @json(old('variant', $lead->variant));
+            let initialVehicleNameId = @json(old('vehicle_name_id', $lead->vehicle_name_id));
+
+            if (initialManufactureId) {
+                loadModelNames(initialModelName);
+                if (initialModelName) {
+                    loadVariants(initialVariant, initialVehicleNameId);
+                }
+            }
 
             // --- Auto-calculate Insurance End Date ---
             $('#insurance_start_date').change(function() {
