@@ -187,19 +187,26 @@
                             <td>{{ $lead->converted_at ? $lead->converted_at->format('d-m-Y') : $lead->created_at->format('d-m-Y') }}</td>
                             <td>{{ $lead->ageing }}</td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
-                            <td>
-                                <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
-                                @if($lead->crm_stage !== 'Disbursal')
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                        Action
-                                    </button>
-                                @else
-                                    @if($lead->rto_stage === 'New') <span class="text-success small">Moved to RTO</span> @endif
-                                    @if($lead->insurance_lead_stage === 'New') <span class="text-success small">Moved to Insurance</span> @endif
-                                @endif
+                             <td>
+                                 <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
+                                 @if($lead->crm_stage !== 'Disbursal')
+                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
+                                         Action
+                                     </button>
+                                 @else
+                                     @if($lead->rto_stage && (auth()->user()->hasRole('admin') || auth()->user()->can('view rto')))
+                                         <button type="button"
+                                                 class="btn btn-warning btn-sm view-rto-btn"
+                                                 data-url="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}">
+                                             RTO
+                                         </button>
+                                     @endif
+                                     @if($lead->rto_stage === 'New') <span class="text-success small">Moved to RTO</span> @endif
+                                     @if($lead->insurance_lead_stage === 'New') <span class="text-success small">Moved to Insurance</span> @endif
+                                 @endif
 
-                                <!-- Action Modal -->
-                                <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                 <!-- Action Modal -->
+                                 <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
                                     <div class="modal-dialog modal-lg" role="document">
                                         <div class="modal-content">
                                             <div class="modal-header">
@@ -251,7 +258,7 @@
                                                             <div class="col-md-4">
                                                                 <div class="form-group">
                                                                     <label>Finance Amount <span class="text-danger">*</span></label>
-                                                                    <input type="number" step="0.01" name="finance_amount" class="form-control">
+                                                                    <input type="number" step="0.01" name="finance_amount" class="form-control" value="{{ $lead->finance_amount ?? $lead->total_loan_amount }}">
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-4">
@@ -323,11 +330,30 @@
         $(document).ready(function() {
             console.log("CRM index.blade.php script loaded.");
 
-            $('.view-crm-btn').click(function() {
-                let leadId = $(this).data('id');
-                let url = '{{ route(get_route_prefix() . "crm.show", ":id") }}'.replace(':id', leadId);
+             $('.view-crm-btn').click(function() {
+                 let leadId = $(this).data('id');
+                 let url = '{{ route(get_route_prefix() . "crm.show", ":id") }}'.replace(':id', leadId);
 
-                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                 $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading details...</p></div>');
+                 $('#globalViewModal').modal('show');
+
+                 $.ajax({
+                     url: url,
+                     type: 'GET',
+                     success: function(response) {
+                         $('#globalViewModalContent').html(response);
+                     },
+                     error: function() {
+                         $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
+                     }
+                 });
+             });
+
+            $('.view-rto-btn').click(function() {
+                let url = $(this).data('url');
+                if (!url) return;
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading RTO flow...</p></div>');
                 $('#globalViewModal').modal('show');
 
                 $.ajax({
@@ -337,18 +363,27 @@
                         $('#globalViewModalContent').html(response);
                     },
                     error: function() {
-                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load RTO lead flow.</div>');
                     }
                 });
             });
 
-            // Attach submit handler to each form dynamically
-            $('[id^="actionModal"]').on('shown.bs.modal', function () {
-                let leadId = $(this).attr('id').replace('actionModal', '');
-                let form = $('#updateStageForm' + leadId);
+             // Attach submit handler to each form dynamically
+             $('[id^="actionModal"]').on('shown.bs.modal', function () {
+                 let leadId = $(this).attr('id').replace('actionModal', '');
+                 let form = $('#updateStageForm' + leadId);
 
                 form.off('submit').on('submit', function(event) {
                     event.preventDefault(); // Prevent default form submission
+
+                    // This form submits via AJAX, so native HTML5 required validation won't block submission by default.
+                    // Enforce it here so fields like Finance Amount* are actually required before the request is sent.
+                    let formEl = form.get(0);
+                    if (formEl && formEl.checkValidity && !formEl.checkValidity()) {
+                        if (formEl.reportValidity) formEl.reportValidity();
+                        return;
+                    }
+
                     console.log("Form submission intercepted for lead ID:", leadId);
                     console.log("Form action URL:", form.attr('action'));
                     console.log("Form method:", form.attr('method'));
@@ -378,29 +413,49 @@
                         }
                     });
                 });
+
+                // Ensure Disbursal section visibility is correct when the modal opens.
+                syncDisbursalFields(form, leadId);
             });
 
 
-            $('.stage-checkbox').change(function() {
-                let leadId = $(this).data('lead-id');
-                let form = $(this).closest('form');
-                let disbursalFields = $('#disbursal_fields_' + leadId);
-                let disbursalCheckbox = form.find('input[value="Disbursal"]');
-                let isDisbursalChecked = disbursalCheckbox.is(':checked');
+            function syncDisbursalFields(form, leadId) {
+                if (!form || !form.length || !leadId) return;
 
-                // Always set the form action to update-stage, as the backend now handles the logic
+                let disbursalFields = $('#disbursal_fields_' + leadId);
+                if (!disbursalFields.length) return;
+
+                let disbursalCheckbox = form.find('input.stage-checkbox[value="Disbursal"]');
+                let isDisbursalChecked = disbursalCheckbox.length && disbursalCheckbox.is(':checked');
+
+                // Always set the form action to update-stage, as the backend handles the logic.
                 form.attr('action', '{{ route(get_route_prefix() . "crm.update-stage", ["lead" => ":id"]) }}'.replace(':id', leadId));
 
                 if (isDisbursalChecked) {
                     disbursalFields.show();
                     disbursalFields.find('input[name="disbursal_date"], input[name="finance_amount"], input[name="disbursal_amount"]').prop('required', true);
+
+                    let totalLoanAmount = disbursalCheckbox.data('total-loan-amount');
+                    let financeAmountInput = disbursalFields.find('input[name="finance_amount"]');
+                    let hasFinanceAmount = financeAmountInput.val() !== undefined && financeAmountInput.val() !== null && financeAmountInput.val() !== '';
+                    let hasTotalLoanAmount = totalLoanAmount !== undefined && totalLoanAmount !== null && totalLoanAmount !== '';
+                    if (!hasFinanceAmount && hasTotalLoanAmount) {
+                        financeAmountInput.val(totalLoanAmount);
+                    }
                 } else {
                     disbursalFields.hide();
                     disbursalFields.find('input').prop('required', false);
                 }
+            }
+
+            // Delegated handlers so it works reliably inside Bootstrap modals.
+            $(document).on('change', '.stage-checkbox', function() {
+                let leadId = $(this).data('lead-id');
+                let form = $(this).closest('form');
+                syncDisbursalFields(form, leadId);
             });
 
-            $('.move-to-insurance-check').change(function() {
+            $(document).on('change', '.move-to-insurance-check', function() {
                 let target = $(this).data('target');
                 if ($(this).is(':checked')) {
                     $(target).removeClass('d-none');

@@ -76,6 +76,8 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'admin', 'as' => 'admin.'], 
     Route::get('employees/export', [EmployeeController::class, 'export'])->name('employees.export');
     Route::post('employees/{employee}/update-status', [EmployeeController::class, 'updateStatus'])->name('employees.update-status');
     Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');
+    Route::get('get-managers-by-role/{role}', [EmployeeController::class, 'getManagersByRole'])->name('get-managers-by-role');
+    Route::get('get-managers-by-user/{user}', [LeadController::class, 'getManagersByUser'])->name('get-managers-by-user');
     Route::resource('employees', EmployeeController::class);
 
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
@@ -228,6 +230,8 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
 
     // Employees need access to get branches for dropdowns
     Route::get('get-branches/{bank}', [EmployeeController::class, 'getBranches'])->name('get-branches');
+    Route::get('get-managers-by-role/{role}', [EmployeeController::class, 'getManagersByRole'])->name('get-managers-by-role');
+    Route::get('get-managers-by-user/{user}', [LeadController::class, 'getManagersByUser'])->name('get-managers-by-user');
 
     // Masters Routes for Employees (if they have permission)
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');

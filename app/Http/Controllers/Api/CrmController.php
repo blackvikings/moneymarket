@@ -43,7 +43,8 @@ class CrmController extends Controller
 
         // Add ageing to each lead
         $leads->getCollection()->transform(function ($lead) {
-            $lead->ageing = $lead->created_at->diffForHumans();
+            // Use the model accessor so API matches the web behaviour (min 1 day).
+            $lead->ageing = $lead->aging;
             return $lead;
         });
 

@@ -25,6 +25,7 @@
             <p><strong>Model:</strong> {{ $lead->vehicleName ? $lead->vehicleName->name : ($lead->model_name ?? '-') }}</p>
             <p><strong>Variant:</strong> {{ $lead->vehicleName ? $lead->vehicleName->variant : ($lead->variant ?? '-') }}</p>
             <p><strong>RC Number:</strong> {{ $lead->rc_number ?? '-' }}</p>
+            <p><strong>Vehicle Type:</strong> {{ $lead->vehicle_loan_type ?? '-' }}</p>
         </div>
     </div>
 

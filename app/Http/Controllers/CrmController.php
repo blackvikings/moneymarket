@@ -141,6 +141,13 @@ class CrmController extends Controller
 
                 // Handle disbursal specific fields if the new stage is Disbursal
                 if ($potentialNewStage === 'Disbursal') {
+                    // Enforce required disbursal fields when moving to Disbursal via update-stage (e.g. from Approved).
+                    $request->validate([
+                        'disbursal_date' => 'required|date',
+                        'finance_amount' => 'required|numeric',
+                        'disbursal_amount' => 'required|numeric',
+                    ]);
+
                     $lead->disbursal_date = $request->disbursal_date;
                     $lead->finance_amount = $request->finance_amount;
                     $lead->disbursal_amount = $request->disbursal_amount;

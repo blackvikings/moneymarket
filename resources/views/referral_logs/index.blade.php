@@ -70,8 +70,16 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $referral->lead->customer_name ?? 'N/A' }}</td>
-                            <td>{{ $referral->lead->service_type ?? 'N/A' }}</td>
-                            <td>₹{{ number_format($referral->amount, 2) }}</td>
+                            <td>
+                                @php
+                                    $serviceType = $referral->lead->lead_type ?? null;
+                                    if ($serviceType === 'Loan' && !empty($referral->lead->loan_type)) {
+                                        $serviceType = $referral->lead->loan_type;
+                                    }
+                                @endphp
+                                {{ $serviceType ?? 'N/A' }}
+                            </td>
+                            <td>&#8377;{{ number_format($referral->amount, 2) }}</td>
                             <td>
                                 <span class="badge badge-{{ $referral->status == 'Paid' ? 'success' : 'warning' }}">
                                     {{ $referral->status }}
@@ -260,6 +268,10 @@
                     <div class="form-group">
                         <label>IFSC Code <span class="text-danger">*</span></label>
                         <input type="text" name="ifsc_code" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount <span class="text-danger">*</span></label>
+                        <input type="number" name="amount" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Date <span class="text-danger">*</span></label>

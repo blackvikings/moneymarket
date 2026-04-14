@@ -172,6 +172,30 @@
                     </div>
                 </div>
 
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Vehicle Type</label>
+                            <select name="vehicle_loan_type" id="vehicle_loan_type" class="form-control">
+                                <option value="">Select Vehicle Type</option>
+                                <option value="Car" {{ old('vehicle_loan_type') == 'Car' ? 'selected' : '' }}>Car</option>
+                                <option value="Commercial Vehicle" {{ old('vehicle_loan_type') == 'Commercial Vehicle' ? 'selected' : '' }}>Commercial Vehicle</option>
+                                <option value="Construction Equipment" {{ old('vehicle_loan_type') == 'Construction Equipment' ? 'selected' : '' }}>Construction Equipment</option>
+                                <option value="Tractor" {{ old('vehicle_loan_type') == 'Tractor' ? 'selected' : '' }}>Tractor</option>
+                                <option value="2 Wheeler" {{ old('vehicle_loan_type') == '2 Wheeler' ? 'selected' : '' }}>2 Wheeler</option>
+                                <option value="3 Wheeler" {{ old('vehicle_loan_type') == '3 Wheeler' ? 'selected' : '' }}>3 Wheeler</option>
+                                <option value="Other" {{ old('vehicle_loan_type') == 'Other' ? 'selected' : '' }}>Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4" id="other_vehicle_loan_name_div" style="display:none;">
+                        <div class="form-group">
+                            <label>Other Vehicle Name</label>
+                            <input type="text" name="other_vehicle_loan_name" class="form-control" value="{{ old('other_vehicle_loan_name') }}">
+                        </div>
+                    </div>
+                </div>
+
                 <hr>
                 <h5>Address Details</h5>
                 <div class="row">
@@ -441,6 +465,19 @@
                 });
             });
 
+            // Toggle "Other Vehicle Name" for Vehicle Type.
+            function toggleOtherVehicle() {
+                let val = $('#vehicle_loan_type').val();
+                if (val === 'Other') {
+                    $('#other_vehicle_loan_name_div').show();
+                } else {
+                    $('#other_vehicle_loan_name_div').hide();
+                    $('#other_vehicle_loan_name_div').find('input').val('');
+                }
+            }
+            $('#vehicle_loan_type').change(toggleOtherVehicle);
+            toggleOtherVehicle();
+
             // --- Dropzone Initialization ---
             var myDropzone = new Dropzone("#addressProofDropzone", {
                 url: "{{ route(get_route_prefix() . 'insurance-leads.store') }}",
@@ -694,12 +731,17 @@
 
             // --- Premium Payment Logic ---
             $('#premium_amount_collected').change(function() {
-                if ($(this).val() === 'Yes') {
-                    $('#premium_payment_details_container').show();
-                } else {
-                    $('#premium_payment_details_container').hide();
+                const isYes = $(this).val() === 'Yes';
+                $('#premium_payment_details_container').toggle(isYes);
+                $('#premium_payment_type').prop('required', isYes).prop('disabled', !isYes);
+
+                if (!isYes) {
+                    $('#premium_payment_type').val('');
+                    $('#premium_payment_fields').html('');
+                } else if (!$('#premium_payment_type').val()) {
+                    $('#premium_payment_type').val('Cash').trigger('change');
                 }
-            });
+            }).trigger('change');
 
             $('#premium_payment_type').change(function() {
                 let type = $(this).val();

@@ -63,6 +63,19 @@ class InsuranceLeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
+            'premium_amount_collected' => 'required|in:Yes,No',
+            'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
+            'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
+            'premium_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             // ... add other validations as needed
         ]);
 
@@ -87,7 +100,61 @@ class InsuranceLeadController extends Controller
         $data['model_name'] = $request->model_name ?? $data['model_name'] ?? null;
         $data['variant'] = $request->variant ?? $data['variant'] ?? null;
 
+        // Normalize premium payment fields based on selection to avoid stale values.
+        if (($request->premium_amount_collected ?? 'No') === 'No') {
+            $data['premium_payment_type'] = null;
+            $data['premium_payment_amount'] = null;
+            $data['premium_payment_date'] = null;
+            $data['premium_cheque_number'] = null;
+            $data['premium_cheque_image_path'] = null;
+            $data['premium_upi_id'] = null;
+            $data['premium_online_payment_image_path'] = null;
+            $data['premium_account_holder_name'] = null;
+            $data['premium_account_number'] = null;
+            $data['premium_bank_name'] = null;
+            $data['premium_ifsc_code'] = null;
+            $data['premium_bank_transfer_image_path'] = null;
+        } else {
+            $type = $request->premium_payment_type;
+            if ($type !== 'Cheque') {
+                $data['premium_cheque_number'] = null;
+                $data['premium_cheque_image_path'] = null;
+            }
+            if ($type !== 'Online') {
+                $data['premium_upi_id'] = null;
+                $data['premium_online_payment_image_path'] = null;
+            }
+            if ($type !== 'Bank Transfer') {
+                $data['premium_account_holder_name'] = null;
+                $data['premium_account_number'] = null;
+                $data['premium_bank_name'] = null;
+                $data['premium_ifsc_code'] = null;
+                $data['premium_bank_transfer_image_path'] = null;
+            }
+            if ($type === 'Bank Transfer') {
+                $data['premium_payment_amount'] = null;
+            }
+        }
+
         $lead = Lead::create($data);
+
+        // Save premium payment images (if any) after lead creation.
+        $premiumUpdate = [];
+        if ($request->hasFile('premium_cheque_image')) {
+            $premiumUpdate['premium_cheque_image_path'] = $request->file('premium_cheque_image')
+                ->store('premium_cheque_images', 'public');
+        }
+        if ($request->hasFile('premium_online_payment_image')) {
+            $premiumUpdate['premium_online_payment_image_path'] = $request->file('premium_online_payment_image')
+                ->store('premium_online_payment_images', 'public');
+        }
+        if ($request->hasFile('premium_bank_transfer_image')) {
+            $premiumUpdate['premium_bank_transfer_image_path'] = $request->file('premium_bank_transfer_image')
+                ->store('premium_bank_transfer_images', 'public');
+        }
+        if (!empty($premiumUpdate)) {
+            $lead->update($premiumUpdate);
+        }
 
         // Handle Media
         if ($request->hasFile('insurance_address_proof')) {
@@ -136,16 +203,16 @@ class InsuranceLeadController extends Controller
             'insurance_end_date' => 'required|date',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_amount_collected,Yes|numeric',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
             'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
-            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque',
+            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'premium_upi_id' => 'required_if:premium_payment_type,Online',
+            'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
             'premium_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer',
-            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer',
-            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer',
-            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer',
+            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
             'premium_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
@@ -155,10 +222,40 @@ class InsuranceLeadController extends Controller
             $data['lead_source_person_name'] = null;
         }
 
-        if ($request->premium_amount_collected == 'No') {
+        // Normalize premium fields based on selection to avoid stale values.
+        if ($request->premium_amount_collected === 'No') {
             $data['premium_payment_type'] = null;
             $data['premium_payment_amount'] = null;
             $data['premium_payment_date'] = null;
+            $data['premium_cheque_number'] = null;
+            $data['premium_cheque_image_path'] = null;
+            $data['premium_upi_id'] = null;
+            $data['premium_online_payment_image_path'] = null;
+            $data['premium_account_holder_name'] = null;
+            $data['premium_account_number'] = null;
+            $data['premium_bank_name'] = null;
+            $data['premium_ifsc_code'] = null;
+            $data['premium_bank_transfer_image_path'] = null;
+        } else {
+            $type = $request->premium_payment_type;
+            if ($type !== 'Cheque') {
+                $data['premium_cheque_number'] = null;
+                $data['premium_cheque_image_path'] = null;
+            }
+            if ($type !== 'Online') {
+                $data['premium_upi_id'] = null;
+                $data['premium_online_payment_image_path'] = null;
+            }
+            if ($type !== 'Bank Transfer') {
+                $data['premium_account_holder_name'] = null;
+                $data['premium_account_number'] = null;
+                $data['premium_bank_name'] = null;
+                $data['premium_ifsc_code'] = null;
+                $data['premium_bank_transfer_image_path'] = null;
+            }
+            if ($type === 'Bank Transfer') {
+                $data['premium_payment_amount'] = null;
+            }
         }
 
         if ($request->hasFile('premium_cheque_image')) {

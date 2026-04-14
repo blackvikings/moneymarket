@@ -144,11 +144,15 @@
     @if($lead->crm_stage == 'Disbursal')
         <hr>
         <h6><strong>Disbursal Details</strong></h6>
+        @php
+            $financeAmount = $lead->finance_amount ?? $lead->total_loan_amount;
+            $disbursalAmount = $lead->disbursal_amount;
+        @endphp
         <div class="row">
             <div class="col-md-12">
                 <p><strong>Disbursal Date:</strong> {{ $lead->disbursal_date ? $lead->disbursal_date->format('d-m-Y') : '-' }}</p>
-                <p><strong>Finance Amount:</strong> {{ number_format($lead->finance_amount, 2) }}</p>
-                <p><strong>Disbursal Amount:</strong> {{ number_format($lead->disbursal_amount, 2) }}</p>
+                <p><strong>Finance Amount:</strong> {{ $financeAmount !== null ? number_format($financeAmount, 2) : '-' }}</p>
+                <p><strong>Disbursal Amount:</strong> {{ $disbursalAmount !== null ? number_format($disbursalAmount, 2) : '-' }}</p>
             </div>
         </div>
     @endif
@@ -164,6 +168,13 @@
                 <input type="hidden" name="move_to_rto" value="1">
                 <button type="submit" class="btn btn-success">Move to RTO</button>
             </form>
+        @endif
+        @if($lead->rto_stage && (auth()->user()->hasRole('admin') || auth()->user()->can('view rto')))
+            <button type="button"
+                    class="btn btn-warning btn-sm crm-view-rto-btn"
+                    data-url="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}">
+                Open RTO Flow
+            </button>
         @endif
         @if(!$lead->insurance_lead_stage)
             <button type="button" class="btn btn-info" onclick="$('#insuranceExpiryModal').modal('show');">Move to Insurance</button>
@@ -205,6 +216,25 @@
 </div>
 
 <script>
+    // From within CRM modal, allow opening the RTO flow modal (same global modal container).
+    // Note: the global modal container exists on CRM index page where this partial is used.
+    $('.crm-view-rto-btn').click(function() {
+        let url = $(this).data('url');
+        if (!url) return;
+
+        $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading RTO flow...</p></div>');
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(response) {
+                $('#globalViewModalContent').html(response);
+            },
+            error: function() {
+                $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load RTO lead flow.</div>');
+            }
+        });
+    });
+
     // Show/Hide Disbursal fields based on checkbox selection
     $('input[name="completed_stages[]"]').change(function() {
         let isDisbursalChecked = false;

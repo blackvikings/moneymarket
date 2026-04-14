@@ -173,16 +173,23 @@
                 <tbody>
                     @forelse($leads as $lead)
                         @php
+                            $isDone = function ($v) {
+                                return $v === 'Done'
+                                    || $v === 'Previously Done'
+                                    || $v === 1 || $v === '1' || $v === true
+                                    || $v === 2 || $v === '2';
+                            };
+
                             $pendingWork = [];
-                            if ($lead->rto_hsrp_status !== 'Done' && $lead->rto_hsrp_status !== 'Previously Done') $pendingWork[] = 'HSRP';
-                            if ($lead->rto_insurance_status !== 'Done' && $lead->rto_insurance_status !== 'Previously Done') $pendingWork[] = 'Insurance';
-                            if ($lead->rto_fitness_status !== 'Done' && $lead->rto_fitness_status !== 'Previously Done') $pendingWork[] = 'Fitness';
-                            if ($lead->rto_tax_status !== 'Done' && $lead->rto_tax_status !== 'Previously Done') $pendingWork[] = 'Tax';
-                            if ($lead->rto_puc_status !== 'Done' && $lead->rto_puc_status !== 'Previously Done') $pendingWork[] = 'PUC';
-                            if ($lead->rto_echallan_status !== 'Done' && $lead->rto_echallan_status !== 'Previously Done') $pendingWork[] = 'E-challan';
-                            if ($lead->rto_ncr_status !== 'Done' && $lead->rto_ncr_status !== 'Previously Done') $pendingWork[] = 'NCR';
-                            if ($lead->rto_challan_status !== 'Done' && $lead->rto_challan_status !== 'Previously Done') $pendingWork[] = 'RTO Challan';
-                            if ($lead->rto_permit_status !== 'Done' && $lead->rto_permit_status !== 'Previously Done') $pendingWork[] = 'Permit';
+                            if (!$isDone($lead->rto_hsrp_status)) $pendingWork[] = 'HSRP';
+                            if (!$isDone($lead->rto_insurance_status)) $pendingWork[] = 'Insurance';
+                            if (!$isDone($lead->rto_fitness_status)) $pendingWork[] = 'Fitness';
+                            if (!$isDone($lead->rto_tax_status)) $pendingWork[] = 'Tax';
+                            if (!$isDone($lead->rto_puc_status)) $pendingWork[] = 'PUC';
+                            if (!$isDone($lead->rto_echallan_status)) $pendingWork[] = 'E-challan';
+                            if (!$isDone($lead->rto_ncr_status)) $pendingWork[] = 'NCR';
+                            if (!$isDone($lead->rto_challan_status)) $pendingWork[] = 'RTO Challan';
+                            if (!$isDone($lead->rto_permit_status)) $pendingWork[] = 'Permit';
                         @endphp
                         <tr>
                             <td>{{ $lead->id }}</td>

@@ -314,6 +314,7 @@
             const roles = @json($roles->load('permissions'));
             const employeeDirectPermissions = @json($employee->permissions->pluck('name'));
             const employeeDeniedPermissions = @json($employee->deniedPermissions->pluck('name'));
+            const employeeId = "{{ $employee->id }}";
 
             function renderPermissions(roleName) {
                 let container = $('#permissions-container');
@@ -405,31 +406,33 @@
 
 
             // --- Reporting Manager Logic ---
-            const admins = @json($admins);
-            const teamLeads = @json($teamLeads);
             const oldManagerId = "{{ old('reporting_manager_id', $employee->reporting_manager_id) }}";
 
             function populateManagers(role) {
                 let managerSelect = $('#reporting_manager_id');
-                managerSelect.empty().append('<option value="">Select Manager</option>');
+                managerSelect.empty().append('<option value="">Loading...</option>');
 
-                let managersToDisplay = [];
+                if (role) {
+                    $.ajax({
+                        url: '{{ url("admin/get-managers-by-role") }}/' + role + '?exclude_id=' + employeeId,
+                        type: 'GET',
+                        success: function(data) {
+                            managerSelect.empty().append('<option value="">Select Manager</option>');
+                            $.each(data, function(index, manager) {
+                                let selected = (oldManagerId == manager.id) ? 'selected' : '';
+                                managerSelect.append('<option value="' + manager.id + '" ' + selected + '>' + manager.name + '</option>');
+                            });
 
-                if (role === 'Team Lead') {
-                    managersToDisplay = admins;
-                } else if (role) {
-                    // For Tele Caller or any other role, show Team Leads
-                    managersToDisplay = teamLeads;
-                }
-
-                $.each(managersToDisplay, function(index, manager) {
-                    let selected = (oldManagerId == manager.id) ? 'selected' : '';
-                    managerSelect.append('<option value="' + manager.id + '" ' + selected + '>' + manager.name + '</option>');
-                });
-
-                // Auto-select if only one option exists (excluding the default "Select Manager")
-                if (managersToDisplay.length === 1) {
-                    managerSelect.val(managersToDisplay[0].id);
+                            if (data.length === 1) {
+                                managerSelect.val(data[0].id);
+                            }
+                        },
+                        error: function() {
+                            managerSelect.empty().append('<option value="">Error loading managers</option>');
+                        }
+                    });
+                } else {
+                    managerSelect.empty().append('<option value="">Select Manager</option>');
                 }
             }
 

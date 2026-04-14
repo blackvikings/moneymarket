@@ -98,7 +98,7 @@
         </div>
     </div>
 
-    @if($currentStage != 'Loan Return' && $currentStage != 'RTO Done')
+    @if($currentStage != 'Loan Return')
         <hr>
         <div class="mt-3">
             <button class="btn btn-secondary btn-sm" onclick="$('#update_pending_work_div').toggle()">Update Pending Work</button>
@@ -106,7 +106,9 @@
                 @include('rto.partials.update_pending_work_form')
             </div>
         </div>
+    @endif
 
+    @if($currentStage != 'Loan Return' && $currentStage != 'RTO Done')
         <hr>
         <div class="mt-3">
             <button class="btn btn-danger btn-sm" onclick="$('#rejection_div').toggle()">Reject Lead (Loan Return)</button>

@@ -58,7 +58,7 @@ class EmployeeController extends Controller
         $userRole = $user->roles->first();
 
         $managers = User::whereHas('roles', function ($query) use ($userRole) {
-            $query->where('position', '<', $userRole->position);
+            $query->where('position', '>', $userRole->position);
         })->get();
 
         $roles = Role::where('name', '!=', 'admin')->get();
@@ -163,7 +163,7 @@ class EmployeeController extends Controller
 
         $managers = User::where('id', '!=', $employee->id)
             ->whereHas('roles', function ($query) use ($userRole) {
-                $query->where('position', '<', $userRole->position);
+                $query->where('position', '<=', $userRole->position);
             })->get();
 
         $roles = Role::where('name', '!=', 'admin')->get();
@@ -292,5 +292,26 @@ class EmployeeController extends Controller
                         ->get();
 
         return response()->json($employees);
+    }
+
+    public function getManagersByRole(Request $request, $roleName)
+    {
+        $role = Role::where('name', $roleName)->first();
+
+        if (!$role) {
+            return response()->json([]);
+        }
+
+        $query = User::whereHas('roles', function ($query) use ($role) {
+            $query->where('position', '<=', $role->position);
+        });
+
+        if ($request->has('exclude_id')) {
+            $query->where('id', '!=', $request->exclude_id);
+        }
+
+        $managers = $query->select('id', 'name')->get();
+
+        return response()->json($managers);
     }
 }

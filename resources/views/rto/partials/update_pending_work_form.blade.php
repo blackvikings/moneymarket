@@ -1,6 +1,19 @@
 <form action="{{ route(get_route_prefix() . 'rto.update-work-checklist', $lead->id) }}" method="POST">
     @csrf
     @php
+        $isSelected = function ($current, $option) {
+            if ($option === 'Pending') {
+                return $current === 'Pending' || $current === null || $current === '' || $current === 0 || $current === '0' || $current === false;
+            }
+            if ($option === 'Done') {
+                return $current === 'Done' || $current === 1 || $current === '1' || $current === true;
+            }
+            if ($option === 'Previously Done') {
+                return $current === 'Previously Done' || $current === 2 || $current === '2';
+            }
+            return false;
+        };
+
         $workItems = [
             'rto_hsrp_status' => 'HSRP',
             'rto_insurance_status' => 'Insurance',
@@ -19,9 +32,9 @@
                 <div class="form-group">
                     <label>{{ $label }}</label>
                     <select name="{{ $field }}" class="form-control form-control-sm">
-                        <option value="Pending" {{ $lead->$field == 'Pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="Previously Done" {{ $lead->$field == 'Previously Done' ? 'selected' : '' }}>Previously Done</option>
-                        <option value="Done" {{ $lead->$field == 'Done' ? 'selected' : '' }}>Done</option>
+                        <option value="Pending" {{ $isSelected($lead->$field, 'Pending') ? 'selected' : '' }}>Pending</option>
+                        <option value="Previously Done" {{ $isSelected($lead->$field, 'Previously Done') ? 'selected' : '' }}>Previously Done</option>
+                        <option value="Done" {{ $isSelected($lead->$field, 'Done') ? 'selected' : '' }}>Done</option>
                     </select>
                 </div>
             </div>

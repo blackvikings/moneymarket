@@ -38,7 +38,6 @@ class Lead extends Model implements HasMedia
         'proof_id_type',
         'aadhar_number',
         'property_approx_value',
-        'salary_slip_path',
         'agri_land_area',
         'agri_land_document_path',
         'job_profile_type',
@@ -109,6 +108,45 @@ class Lead extends Model implements HasMedia
         'converted_at',
         'crm_stage',
         'rto_stage',
+        'rto_address_proof_path',
+        'rto_hsrp_status',
+        'rto_hypothecation_status',
+        'rto_hypothecation_bank_id',
+        'rto_insurance_status',
+        'rto_fitness_status',
+        'rto_tax_status',
+        'rto_puc_status',
+        'rto_echallan_status',
+        'rto_ncr_status',
+        'rto_challan_status',
+        'rto_permit_status',
+        'rto_hsrp_remark',
+        'rto_hypothecation_remark',
+        'rto_insurance_remark',
+        'rto_fitness_remark',
+        'rto_tax_remark',
+        'rto_puc_remark',
+        'rto_echallan_remark',
+        'rto_ncr_remark',
+        'rto_challan_remark',
+        'rto_permit_remark',
+        'rto_vehicle_type',
+        'rto_loan_closed_status',
+        'rto_hp_termination_status',
+        'rto_challan_verified',
+        'loan_return_reason',
+        'rto_name_transfer_status',
+        'rto_seller_name',
+        'rto_seller_number',
+        'rto_seller_address',
+        'rto_hypothecation_add_status',
+        'rto_hypothecation_add_bank_id',
+        'rto_agent_assigned_at',
+        'rto_work_done_at',
+        'rto_challan_done_at',
+        'rto_doc_uploaded_at',
+        'rto_verification_done_at',
+        'rto_approval_at',
         'rto_new_at',
         'rto_bank_id',
         'rto_noc_status',
@@ -240,7 +278,9 @@ class Lead extends Model implements HasMedia
         'converted_at' => 'datetime',
         'loan_return_date' => 'date',
         'disbursal_date' => 'date',
+        'payment_date' => 'date',
         'premium_payment_date' => 'date',
+        'payment_release_detail_at' => 'datetime',
         // CRM Stage Timestamps
         'crm_new_at' => 'datetime',
         'crm_login_at' => 'datetime',
@@ -263,6 +303,9 @@ class Lead extends Model implements HasMedia
         $this->addMediaCollection('aadhar_front')->singleFile();
         $this->addMediaCollection('aadhar_back')->singleFile();
         $this->addMediaCollection('final_document')->singleFile();
+
+        // Single-file documents attached to the lead via Spatie Media Library.
+        $this->addMediaCollection('salary_slip')->singleFile();
 
         // Future Collections
         $this->addMediaCollection('loan_documents');
@@ -353,10 +396,18 @@ class Lead extends Model implements HasMedia
     // Accessor for Aging
     public function getAgingAttribute()
     {
-        if ($this->converted_at) {
-            return $this->created_at->diffForHumans($this->converted_at, true);
-        }
-        return $this->created_at->diffForHumans(null, true);
+        $start = $this->converted_at ?? $this->created_at;
+        $end = now();
+
+        // Business expectation: even if ageing is within the same day, show "1 day" (not 0).
+        $days = max(1, (int) $start->diffInDays($end));
+        return $days . ' ' . Str::plural('day', $days);
+    }
+
+    // Accessor alias for UK spelling used in views/APIs.
+    public function getAgeingAttribute()
+    {
+        return $this->getAgingAttribute();
     }
 
     // Accessor for RTO Aging

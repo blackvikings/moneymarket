@@ -111,10 +111,16 @@ class UserSeeder extends Seeder
         }
 
         // Create roles
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole = Role::firstOrCreate(['name' => 'admin'], ['position' => 1]);
+        $adminRole->update(['position' => 1]);
         $adminRole->syncPermissions(array_keys($permissions));
 
-        $teamLeadRole = Role::firstOrCreate(['name' => 'Team Lead']);
+        $branchManagerRole = Role::firstOrCreate(['name' => 'Branch Manager'], ['position' => 2]);
+        $branchManagerRole->update(['position' => 2]);
+        $branchManagerRole->syncPermissions(array_keys($permissions)); // Branch Managers generally have most permissions
+
+        $teamLeadRole = Role::firstOrCreate(['name' => 'Team Lead'], ['position' => 3]);
+        $teamLeadRole->update(['position' => 3]);
         $teamLeadRole->syncPermissions([
             'show employee option', 'view employee',
             'show master option', 'view rto agent', 'view insurance', 'view vehicle manufacture', 'view bank', 'view firm',
@@ -125,7 +131,8 @@ class UserSeeder extends Seeder
             'view referral log',
         ]);
 
-        $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller']);
+        $teleCallerRole = Role::firstOrCreate(['name' => 'Tele Caller'], ['position' => 4]);
+        $teleCallerRole->update(['position' => 4]);
         $teleCallerRole->syncPermissions([
             'show lms option', 'view lead', 'edit lead',
         ]);
@@ -143,27 +150,44 @@ class UserSeeder extends Seeder
         );
         $admin->assignRole($adminRole);
 
-        // Create Tele Caller users
-        $teleCaller1 = User::firstOrCreate(
-            ['email' => 'telecaller1@example.com'],
+        // Create Branch Manager users
+        $branchManager1 = User::firstOrCreate(
+            ['email' => 'bm1@example.com'],
             [
-                'name' => 'Tele Caller 1',
+                'name' => 'Branch Manager 1',
                 'password' => Hash::make('password'),
-                'employee_type' => 'Tele Caller',
+                'employee_type' => 'Branch Manager',
                 'is_first_login' => true,
             ]
         );
-        $teleCaller1->assignRole($teleCallerRole);
+        $branchManager1->assignRole($branchManagerRole);
 
-        $teleCaller2 = User::firstOrCreate(
-            ['email' => 'telecaller2@example.com'],
-            [
-                'name' => 'Tele Caller 2',
-                'password' => Hash::make('password'),
-                'employee_type' => 'Tele Caller',
-                'is_first_login' => true,
-            ]
-        );
-        $teleCaller2->assignRole($teleCallerRole);
+        // Create Team Lead users
+        for ($i = 1; $i <= 3; $i++) {
+            $teamLead = User::firstOrCreate(
+                ['email' => "teamlead$i@example.com"],
+                [
+                    'name' => "Team Lead $i",
+                    'password' => Hash::make('password'),
+                    'employee_type' => 'Team Lead',
+                    'is_first_login' => true,
+                ]
+            );
+            $teamLead->assignRole($teamLeadRole);
+        }
+
+        // Create Tele Caller users
+        for ($i = 1; $i <= 5; $i++) {
+            $teleCaller = User::firstOrCreate(
+                ['email' => "telecaller$i@example.com"],
+                [
+                    'name' => "Tele Caller $i",
+                    'password' => Hash::make('password'),
+                    'employee_type' => 'Tele Caller',
+                    'is_first_login' => true,
+                ]
+            );
+            $teleCaller->assignRole($teleCallerRole);
+        }
     }
 }

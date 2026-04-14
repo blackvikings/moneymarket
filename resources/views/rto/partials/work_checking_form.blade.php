@@ -18,7 +18,14 @@
             @endphp
 
             @foreach($checklist as $field => $label)
-                @if($lead->$field == 'Pending')
+                @php
+                    $v = $lead->$field;
+                    $isDone = $v === 'Done'
+                        || $v === 'Previously Done'
+                        || $v === 1 || $v === '1' || $v === true
+                        || $v === 2 || $v === '2';
+                @endphp
+                @if(!$isDone)
                     <div class="form-group">
                         <label>{{ $label }}</label>
                         <select name="{{ $field }}" class="form-control form-control-sm">

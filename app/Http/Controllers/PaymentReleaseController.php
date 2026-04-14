@@ -27,15 +27,64 @@ class PaymentReleaseController extends Controller
     public function storeDetails(Request $request, Lead $lead)
     {
         $request->validate([
-            'payment_amount' => 'required|numeric',
+            'payment_type' => 'required|in:Cash,Cheque,Online,Bank Transfer',
+            'payment_amount' => 'required_if:payment_type,Cash,Cheque,Online|nullable|numeric',
             'payment_date' => 'required|date',
             'payment_remarks' => 'nullable|string',
+            'payment_cheque_number' => 'required_if:payment_type,Cheque|nullable|string|max:255',
+            'payment_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'payment_upi_id' => 'required_if:payment_type,Online|nullable|string|max:255',
+            'payment_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'payment_account_holder_name' => 'required_if:payment_type,Bank Transfer|nullable|string|max:255',
+            'payment_account_number' => 'required_if:payment_type,Bank Transfer|nullable|string|max:255',
+            'payment_bank_name' => 'required_if:payment_type,Bank Transfer|nullable|string|max:255',
+            'payment_ifsc_code' => 'required_if:payment_type,Bank Transfer|nullable|string|max:255',
+            'payment_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
-        $lead->payment_amount = $request->payment_amount;
+        // Reset all mode-specific fields to avoid stale data if a lead is edited later.
+        $lead->payment_type = $request->payment_type;
+        $lead->payment_cheque_number = null;
+        $lead->payment_cheque_image_path = null;
+        $lead->payment_upi_id = null;
+        $lead->payment_online_payment_image_path = null;
+        $lead->payment_account_holder_name = null;
+        $lead->payment_account_number = null;
+        $lead->payment_bank_name = null;
+        $lead->payment_ifsc_code = null;
+        $lead->payment_bank_transfer_image_path = null;
+
+        $lead->payment_amount = in_array($request->payment_type, ['Cash', 'Cheque', 'Online'], true)
+            ? $request->payment_amount
+            : null;
         $lead->payment_date = $request->payment_date;
         $lead->payment_remarks = $request->payment_remarks;
+
+        if ($request->payment_type === 'Cheque') {
+            $lead->payment_cheque_number = $request->payment_cheque_number;
+            if ($request->hasFile('payment_cheque_image')) {
+                $lead->payment_cheque_image_path = $request->file('payment_cheque_image')
+                    ->store('payment_cheque_images', 'public');
+            }
+        } elseif ($request->payment_type === 'Online') {
+            $lead->payment_upi_id = $request->payment_upi_id;
+            if ($request->hasFile('payment_online_payment_image')) {
+                $lead->payment_online_payment_image_path = $request->file('payment_online_payment_image')
+                    ->store('payment_online_payment_images', 'public');
+            }
+        } elseif ($request->payment_type === 'Bank Transfer') {
+            $lead->payment_account_holder_name = $request->payment_account_holder_name;
+            $lead->payment_account_number = $request->payment_account_number;
+            $lead->payment_bank_name = $request->payment_bank_name;
+            $lead->payment_ifsc_code = $request->payment_ifsc_code;
+            if ($request->hasFile('payment_bank_transfer_image')) {
+                $lead->payment_bank_transfer_image_path = $request->file('payment_bank_transfer_image')
+                    ->store('payment_bank_transfer_images', 'public');
+            }
+        }
+
         $lead->payment_release_status = 'Done';
+        $lead->payment_release_detail_at = now();
         $lead->save();
 
         return back()->with('success', 'Payment details saved and status updated to Done.');

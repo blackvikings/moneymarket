@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Media;
+use Spatie\Permission\Models\Role;
 
 class LeadController extends Controller
 {
@@ -162,6 +163,19 @@ class LeadController extends Controller
             'assigned_to' => 'nullable|exists:users,id',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'proof_id_type' => 'nullable|string|max:255',
+            'premium_amount_collected' => 'required_if:lead_type,Insurance|in:Yes,No',
+            'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
+            'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
+            'premium_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
@@ -182,6 +196,57 @@ class LeadController extends Controller
         }
 
         $data = $this->mapLeadTypeData($data);
+
+        // Normalize premium payment fields based on selection (Insurance lead type).
+        if (($data['lead_type'] ?? null) === 'Insurance') {
+            if (($data['premium_amount_collected'] ?? 'No') === 'No') {
+                $data['premium_payment_type'] = null;
+                $data['premium_payment_amount'] = null;
+                $data['premium_payment_date'] = null;
+                $data['premium_cheque_number'] = null;
+                $data['premium_cheque_image_path'] = null;
+                $data['premium_upi_id'] = null;
+                $data['premium_online_payment_image_path'] = null;
+                $data['premium_account_holder_name'] = null;
+                $data['premium_account_number'] = null;
+                $data['premium_bank_name'] = null;
+                $data['premium_ifsc_code'] = null;
+                $data['premium_bank_transfer_image_path'] = null;
+            } else {
+                $type = $data['premium_payment_type'] ?? null;
+                if ($type !== 'Cheque') {
+                    $data['premium_cheque_number'] = null;
+                    $data['premium_cheque_image_path'] = null;
+                }
+                if ($type !== 'Online') {
+                    $data['premium_upi_id'] = null;
+                    $data['premium_online_payment_image_path'] = null;
+                }
+                if ($type !== 'Bank Transfer') {
+                    $data['premium_account_holder_name'] = null;
+                    $data['premium_account_number'] = null;
+                    $data['premium_bank_name'] = null;
+                    $data['premium_ifsc_code'] = null;
+                    $data['premium_bank_transfer_image_path'] = null;
+                }
+                if ($type === 'Bank Transfer') {
+                    $data['premium_payment_amount'] = null;
+                }
+            }
+
+            if ($request->hasFile('premium_cheque_image')) {
+                $data['premium_cheque_image_path'] = $request->file('premium_cheque_image')
+                    ->store('premium_cheque_images', 'public');
+            }
+            if ($request->hasFile('premium_online_payment_image')) {
+                $data['premium_online_payment_image_path'] = $request->file('premium_online_payment_image')
+                    ->store('premium_online_payment_images', 'public');
+            }
+            if ($request->hasFile('premium_bank_transfer_image')) {
+                $data['premium_bank_transfer_image_path'] = $request->file('premium_bank_transfer_image')
+                    ->store('premium_bank_transfer_images', 'public');
+            }
+        }
 
         $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'old_loan_close_amount_display', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
 
@@ -206,10 +271,6 @@ class LeadController extends Controller
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
         }
 
-        if ($request->hasFile('salary_slip')) {
-            $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
-        }
-
         if ($request->hasFile('itr_document')) {
             $data['itr_document_path'] = $request->file('itr_document')->store('itr_docs', 'public');
         }
@@ -223,6 +284,12 @@ class LeadController extends Controller
         }
 
         $lead = Lead::create($data);
+
+        if ($request->hasFile('salary_slip')) {
+            $lead->addMedia($request->file('salary_slip'))
+                ->usingName('Salary Slip')
+                ->toMediaCollection('salary_slip');
+        }
 
         if ($request->hasFile('current_address_proof')) {
             foreach ($request->file('current_address_proof') as $file) {
@@ -297,8 +364,22 @@ class LeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:20',
+            'lead_type' => 'nullable|in:Loan,RTO,Insurance',
             'profile_picture' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'proof_id_type' => 'nullable|string|max:255',
+            'premium_amount_collected' => 'required_if:lead_type,Insurance|in:Yes,No',
+            'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
+            'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
+            'premium_online_payment_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'premium_account_holder_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_account_number' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_name' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_ifsc_code' => 'required_if:premium_payment_type,Bank Transfer|nullable|string|max:255',
+            'premium_bank_transfer_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'current_address_proof.*' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'itr_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
             'business_proof_document' => 'nullable|mimes:jpg,jpeg,png,pdf|max:5120',
@@ -321,6 +402,60 @@ class LeadController extends Controller
         }
 
         $data = $this->mapLeadTypeData($data);
+
+        // Normalize premium payment fields based on selection (Insurance lead type).
+        if (($data['lead_type'] ?? null) === 'Insurance') {
+            if (($data['premium_amount_collected'] ?? 'No') === 'No') {
+                $data['premium_payment_type'] = null;
+                $data['premium_payment_amount'] = null;
+                $data['premium_payment_date'] = null;
+                $data['premium_cheque_number'] = null;
+                $data['premium_cheque_image_path'] = null;
+                $data['premium_upi_id'] = null;
+                $data['premium_online_payment_image_path'] = null;
+                $data['premium_account_holder_name'] = null;
+                $data['premium_account_number'] = null;
+                $data['premium_bank_name'] = null;
+                $data['premium_ifsc_code'] = null;
+                $data['premium_bank_transfer_image_path'] = null;
+            } else {
+                $type = $data['premium_payment_type'] ?? null;
+                if ($type !== 'Cheque') {
+                    $data['premium_cheque_number'] = null;
+                    $data['premium_cheque_image_path'] = null;
+                }
+                if ($type !== 'Online') {
+                    $data['premium_upi_id'] = null;
+                    $data['premium_online_payment_image_path'] = null;
+                }
+                if ($type !== 'Bank Transfer') {
+                    $data['premium_account_holder_name'] = null;
+                    $data['premium_account_number'] = null;
+                    $data['premium_bank_name'] = null;
+                    $data['premium_ifsc_code'] = null;
+                    $data['premium_bank_transfer_image_path'] = null;
+                }
+                if ($type === 'Bank Transfer') {
+                    $data['premium_payment_amount'] = null;
+                }
+            }
+
+            if ($request->hasFile('premium_cheque_image')) {
+                if ($lead->premium_cheque_image_path) Storage::disk('public')->delete($lead->premium_cheque_image_path);
+                $data['premium_cheque_image_path'] = $request->file('premium_cheque_image')
+                    ->store('premium_cheque_images', 'public');
+            }
+            if ($request->hasFile('premium_online_payment_image')) {
+                if ($lead->premium_online_payment_image_path) Storage::disk('public')->delete($lead->premium_online_payment_image_path);
+                $data['premium_online_payment_image_path'] = $request->file('premium_online_payment_image')
+                    ->store('premium_online_payment_images', 'public');
+            }
+            if ($request->hasFile('premium_bank_transfer_image')) {
+                if ($lead->premium_bank_transfer_image_path) Storage::disk('public')->delete($lead->premium_bank_transfer_image_path);
+                $data['premium_bank_transfer_image_path'] = $request->file('premium_bank_transfer_image')
+                    ->store('premium_bank_transfer_images', 'public');
+            }
+        }
 
         $numericFields = ['old_loan_close_amount', 'required_in_hand_amount', 'total_loan_amount', 'itr_amount', 'approx_income', 'showroom_price', 'on_road_price', 'insurance_amount', 'old_loan_close_amount_display', 'co_itr_amount', 'co_approx_income', 'guarantor_itr_amount', 'guarantor_approx_income', 'property_approx_value', 'last_month_salary'];
 
@@ -345,11 +480,6 @@ class LeadController extends Controller
         if ($request->hasFile('profile_picture')) {
             if ($lead->profile_picture_path) Storage::disk('public')->delete($lead->profile_picture_path);
             $data['profile_picture_path'] = $request->file('profile_picture')->store('profile_pictures', 'public');
-        }
-
-        if ($request->hasFile('salary_slip')) {
-            if ($lead->salary_slip_path) Storage::disk('public')->delete($lead->salary_slip_path);
-            $data['salary_slip_path'] = $request->file('salary_slip')->store('salary_slips', 'public');
         }
 
         if ($request->hasFile('itr_document')) {
@@ -394,6 +524,12 @@ class LeadController extends Controller
         }
 
         $lead->update($data);
+
+        if ($request->hasFile('salary_slip')) {
+            $lead->addMedia($request->file('salary_slip'))
+                ->usingName('Salary Slip')
+                ->toMediaCollection('salary_slip');
+        }
 
         if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
             ReferralLog::firstOrCreate(
@@ -657,5 +793,21 @@ class LeadController extends Controller
             }
         }
         return $data;
+    }
+
+    public function getManagersByUser(User $user)
+    {
+        $role = $user->roles()->first();
+
+        if (!$role) {
+            return response()->json([]);
+        }
+
+        $managers = User::where('id', '!=', $user->id)
+            ->whereHas('roles', function ($query) use ($role) {
+                $query->where('position', '<=', $role->position);
+            })->select('id', 'name')->get();
+
+        return response()->json($managers);
     }
 }

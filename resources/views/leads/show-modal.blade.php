@@ -54,8 +54,9 @@
         @elseif($lead->job_profile == 'Salaried')
             <p><strong>Salaried Type:</strong> {{ $lead->salaried_type }}</p>
             <p><strong>Last Month Salary:</strong> {{ $lead->last_month_salary ?? '-' }}</p>
-            @if($lead->salary_slip_path)
-                <p><strong>Salary Slip:</strong> <a href="{{ asset('storage/' . $lead->salary_slip_path) }}" target="_blank" class="btn btn-xs btn-info">View Salary Slip</a></p>
+            @php($salarySlipUrl = $lead->getFirstMediaUrl('salary_slip'))
+            @if($salarySlipUrl)
+                <p><strong>Salary Slip:</strong> <a href="{{ $salarySlipUrl }}" target="_blank" class="btn btn-xs btn-info">View Salary Slip</a></p>
             @endif
         @endif
 

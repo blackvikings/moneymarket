@@ -66,7 +66,7 @@ class ReferralLogController extends Controller
 
         $request->validate([
             'payment_mode' => 'required|in:Cash,Cheque,Online,Bank Transfer',
-            'amount' => 'required_if:payment_mode,Cash|numeric',
+            'amount' => 'required_if:payment_mode,Cash|numeric|min:0',
             'payment_date' => 'required|date',
             'cheque_number' => 'required_if:payment_mode,Cheque',
             'cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',

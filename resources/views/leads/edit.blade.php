@@ -480,7 +480,8 @@
                                     <label>Salary Slip</label>
                                     <input type="file" name="salary_slip" class="form-control-file @error('salary_slip') is-invalid @enderror">
                                     @error('salary_slip') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                    @if($lead->salary_slip_path) <small><a href="{{ asset('storage/' . $lead->salary_slip_path) }}" target="_blank">View Current</a></small> @endif
+                                    @php($salarySlipUrl = $lead->getFirstMediaUrl('salary_slip'))
+                                    @if($salarySlipUrl) <small><a href="{{ $salarySlipUrl }}" target="_blank">View Current</a></small> @endif
                                 </div>
                             </div>
                             <div class="form-group">
@@ -671,6 +672,8 @@
                                         <option value="Commercial Vehicle" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == 'Commercial Vehicle' ? 'selected' : '' }}>Commercial Vehicle</option>
                                         <option value="Construction Equipment" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == 'Construction Equipment' ? 'selected' : '' }}>Construction Equipment</option>
                                         <option value="Tractor" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == 'Tractor' ? 'selected' : '' }}>Tractor</option>
+                                        <option value="2 Wheeler" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == '2 Wheeler' ? 'selected' : '' }}>2 Wheeler</option>
+                                        <option value="3 Wheeler" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == '3 Wheeler' ? 'selected' : '' }}>3 Wheeler</option>
                                         <option value="Other" {{ old('vehicle_loan_type', $lead->vehicle_loan_type) == 'Other' ? 'selected' : '' }}>Other</option>
                                     </select>
                                     @error('vehicle_loan_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
@@ -1176,6 +1179,37 @@
                             </div>
                         </div>
                     </div>
+
+                    <hr>
+                    <h6>Premium Amount Collected</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label>Premium Amount Collected? <span class="text-danger">*</span></label>
+                                <select name="premium_amount_collected" id="premium_amount_collected" class="form-control @error('premium_amount_collected') is-invalid @enderror">
+                                    <option value="">Select</option>
+                                    <option value="Yes" {{ old('premium_amount_collected', $lead->premium_amount_collected) == 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="No" {{ old('premium_amount_collected', $lead->premium_amount_collected ?? 'No') == 'No' ? 'selected' : '' }}>No</option>
+                                </select>
+                                @error('premium_amount_collected') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="premium_payment_type_div" style="display:none;">
+                            <div class="form-group">
+                                <label>Payment Type <span class="text-danger">*</span></label>
+                                <select name="premium_payment_type" id="premium_payment_type" class="form-control @error('premium_payment_type') is-invalid @enderror">
+                                    <option value="">Select</option>
+                                    <option value="Cash" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cash' ? 'selected' : '' }}>Cash</option>
+                                    <option value="Cheque" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cheque' ? 'selected' : '' }}>Cheque</option>
+                                    <option value="Online" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Online' ? 'selected' : '' }}>Online</option>
+                                    <option value="Bank Transfer" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                </select>
+                                @error('premium_payment_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="premium_payment_fields"></div>
                 </div>
 
                 <hr>
@@ -1233,10 +1267,7 @@
                         <div class="form-group">
                             <label>Reporting Manager</label>
                             <select name="reporting_manager_id" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_id') is-invalid @enderror">
-                                <option value="">Select Manager</option>
-                                @foreach($managers as $manager)
-                                    <option value="{{ $manager->id }}" {{ old('reporting_manager_id', $lead->reporting_manager_id) == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
-                                @endforeach
+                                <option value="">Select an employee first</option>
                             </select>
                             @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
@@ -1642,28 +1673,44 @@
                 }
             });
 
-            // --- Firm to Employee Logic ---
-            function loadEmployees() {
-                let assignedToSelect = $('#assigned_to');
-                if (assignedToSelect.length > 0) {
-                    assignedToSelect.empty().append('<option value="">Loading...</option>');
+            // --- Reporting Manager Logic ---
+            function populateManagers(userId, selectedManagerId) {
+                let managerSelect = $('#reporting_manager_id');
+                managerSelect.empty().append('<option value="">Loading...</option>');
+
+                if (userId) {
                     $.ajax({
-                        url: '{{ route("get-employees-by-firm") }}',
+                        url: '{{ url("admin/get-managers-by-user") }}/' + userId,
                         type: 'GET',
                         success: function(data) {
-                            assignedToSelect.empty().append('<option value="">Select User</option>');
-                            $.each(data, function(key, user) {
-                                // For edit form, we pre-select the user based on the current assigned_to
-                                let selected = ('{{ $lead->assigned_to }}' == user.id) ? 'selected' : '';
-                                assignedToSelect.append('<option value="' + user.id + '" ' + selected + '>' + user.name + '</option>');
+                            managerSelect.empty().append('<option value="">Select Manager</option>');
+                            $.each(data, function(index, manager) {
+                                let isSelected = (manager.id == selectedManagerId) ? 'selected' : '';
+                                managerSelect.append('<option value="' + manager.id + '" ' + isSelected + '>' + manager.name + '</option>');
                             });
+                        },
+                        error: function() {
+                            managerSelect.empty().append('<option value="">Error loading managers</option>');
                         }
                     });
+                } else {
+                    managerSelect.empty().append('<option value="">Select an employee first</option>');
                 }
             }
 
-            // Load employees on document ready
-            loadEmployees();
+            // On change
+            $('#assigned_to').change(function() {
+                let userId = $(this).val();
+                populateManagers(userId, null); // No pre-selected manager on change
+            });
+
+            // On page load
+            let initialUserId = $('#assigned_to').val();
+            if (initialUserId) {
+                let initialManagerId = '{{ old('reporting_manager_id', $lead->reporting_manager_id) }}';
+                populateManagers(initialUserId, initialManagerId);
+            }
+
 
             // --- Location Scripts ---
             function populateStates(selector, selectedState = null) {
@@ -2161,6 +2208,152 @@
                     $('#lead_source_person_name_div').hide();
                 }
             }).trigger('change');
+
+            // --- Premium Amount Collected (Insurance) ---
+            function renderPremiumPaymentFields() {
+                const type = ($('#premium_payment_type').val() || '').trim();
+                let fields = '';
+
+                if (type === 'Cash') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ old('premium_payment_amount', $lead->premium_payment_amount) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date', $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else if (type === 'Cheque') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Cheque Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_cheque_number" class="form-control" value="{{ old('premium_cheque_number', $lead->premium_cheque_number) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ old('premium_payment_amount', $lead->premium_payment_amount) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date', $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_cheque_image" class="form-control-file">
+                        </div>
+                    `;
+                } else if (type === 'Online') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>UPI ID <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_upi_id" class="form-control" value="{{ old('premium_upi_id', $lead->premium_upi_id) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ old('premium_payment_amount', $lead->premium_payment_amount) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date', $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_online_payment_image" class="form-control-file">
+                        </div>
+                    `;
+                } else if (type === 'Bank Transfer') {
+                    fields = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Account Holder Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_account_holder_name" class="form-control" value="{{ old('premium_account_holder_name', $lead->premium_account_holder_name) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Account Number <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_account_number" class="form-control" value="{{ old('premium_account_number', $lead->premium_account_number) }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Bank Name <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_bank_name" class="form-control" value="{{ old('premium_bank_name', $lead->premium_bank_name) }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>IFSC Code <span class="text-danger">*</span></label>
+                                    <input type="text" name="premium_ifsc_code" class="form-control" value="{{ old('premium_ifsc_code', $lead->premium_ifsc_code) }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date', $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label>Upload Image</label>
+                                    <input type="file" name="premium_bank_transfer_image" class="form-control-file">
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                $('#premium_payment_fields').html(fields);
+            }
+
+            function togglePremiumSection() {
+                const collected = ($('#premium_amount_collected').val() || '').trim();
+                if (collected === 'Yes') {
+                    $('#premium_payment_type_div').show();
+                    $('#premium_payment_type').prop('disabled', false);
+                    if (!$('#premium_payment_type').val()) {
+                        $('#premium_payment_type').val('Cash');
+                    }
+                    renderPremiumPaymentFields();
+                } else {
+                    $('#premium_payment_type_div').hide();
+                    $('#premium_payment_type').val('').prop('disabled', true);
+                    $('#premium_payment_fields').html('');
+                }
+            }
+
+            $('#premium_amount_collected').on('change', togglePremiumSection);
+            $('#premium_payment_type').on('change', renderPremiumPaymentFields);
+            togglePremiumSection();
 
             // --- Add Manufacture AJAX ---
             $(document).on('click', '.add-variant', function() {

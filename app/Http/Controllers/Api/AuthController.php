@@ -20,15 +20,20 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
+            // Prefer employee_id login for employees. Keep email as a fallback for older clients.
+            'employee_id' => 'required_without:email|string',
+            'email' => 'nullable|email',
+            'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $request->email)->first();
+        $loginField = $request->filled('employee_id') ? 'employee_id' : 'email';
+        $loginValue = $request->filled('employee_id') ? $request->employee_id : $request->email;
+
+        $user = User::where($loginField, $loginValue)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'email' => ['The provided credentials do not match our records.'],
+                $loginField => ['The provided credentials do not match our records.'],
             ]);
         }
 

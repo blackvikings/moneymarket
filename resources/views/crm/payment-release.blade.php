@@ -54,7 +54,7 @@
                         </tr>
 
                         <!-- Payment Modal -->
-                        <div class="modal fade" id="paymentModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                        <div class="modal fade payment-release-modal" id="paymentModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -63,17 +63,22 @@
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <form action="{{ route(get_route_prefix() . 'payment-release.store-details', $lead->id) }}" method="POST">
+                                    <form action="{{ route(get_route_prefix() . 'payment-release.store-details', $lead->id) }}" method="POST" enctype="multipart/form-data">
                                         @csrf
                                         <div class="modal-body">
                                             <div class="form-group">
-                                                <label>Payment Amount <span class="text-danger">*</span></label>
-                                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                                                <label>Payment Type <span class="text-danger">*</span></label>
+                                                <select name="payment_type" class="form-control payment-type" required>
+                                                    <option value="">Select Type</option>
+                                                    <option value="Cash">Cash</option>
+                                                    <option value="Cheque">Cheque</option>
+                                                    <option value="Online">Online</option>
+                                                    <option value="Bank Transfer">Bank Transfer</option>
+                                                </select>
                                             </div>
-                                            <div class="form-group">
-                                                <label>Payment Date <span class="text-danger">*</span></label>
-                                                <input type="date" name="payment_date" class="form-control" required>
-                                            </div>
+
+                                            <div class="payment-type-fields"></div>
+
                                             <div class="form-group">
                                                 <label>Remarks</label>
                                                 <textarea name="payment_remarks" class="form-control" rows="3"></textarea>
@@ -97,4 +102,154 @@
             {{ $leads->links() }}
         </div>
     </div>
+
+    <script>
+        function renderPaymentTypeFields($select) {
+            const type = ($select.val() || '').trim();
+            const $container = $select.closest('.modal-body').find('.payment-type-fields');
+
+            let fields = '';
+            if (type === 'Cash') {
+                fields = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Date <span class="text-danger">*</span></label>
+                                <input type="date" name="payment_date" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Cheque') {
+                fields = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Cheque Number <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_cheque_number" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Date <span class="text-danger">*</span></label>
+                                <input type="date" name="payment_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Upload Image</label>
+                                <input type="file" name="payment_cheque_image" class="form-control-file">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Online') {
+                fields = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>UPI ID <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_upi_id" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Amount <span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" name="payment_amount" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Date <span class="text-danger">*</span></label>
+                                <input type="date" name="payment_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Upload Image</label>
+                                <input type="file" name="payment_online_payment_image" class="form-control-file">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'Bank Transfer') {
+                fields = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Account Holder Name <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_account_holder_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Account Number <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_account_number" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Bank Name <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_bank_name" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>IFSC Code <span class="text-danger">*</span></label>
+                                <input type="text" name="payment_ifsc_code" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Date <span class="text-danger">*</span></label>
+                                <input type="date" name="payment_date" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Upload Image</label>
+                                <input type="file" name="payment_bank_transfer_image" class="form-control-file">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                fields = '';
+            }
+
+            $container.html(fields);
+        }
+
+        $(document).on('change', '.payment-type', function () {
+            renderPaymentTypeFields($(this));
+        });
+
+        $(document).on('shown.bs.modal', '.payment-release-modal', function () {
+            const $select = $(this).find('.payment-type');
+            if (!$select.val()) {
+                $select.val('Cash');
+            }
+            renderPaymentTypeFields($select);
+        });
+    </script>
 @stop
