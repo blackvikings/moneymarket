@@ -87,11 +87,156 @@
                                                 </select>
                                             </div>
 
-                                            <div class="payment-type-fields"></div>
+                                            <div class="payment-type-fields">
+                                                <div class="payment-type-section" data-type="Cash" style="display:none;">
+                                                    <fieldset class="payment-type-fieldset" disabled>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Amount <span class="text-danger">*</span></label>
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="payment_date" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </fieldset>
+                                                </div>
+
+                                                <div class="payment-type-section" data-type="Cheque" style="display:none;">
+                                                    <fieldset class="payment-type-fieldset" disabled>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Cheque Number <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_cheque_number" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_cheque_number') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Amount <span class="text-danger">*</span></label>
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="payment_date" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Upload Image</label>
+                                                                <input type="file" name="payment_cheque_image" class="form-control-file">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </fieldset>
+                                                </div>
+
+                                                <div class="payment-type-section" data-type="Online" style="display:none;">
+                                                    <fieldset class="payment-type-fieldset" disabled>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>UPI ID <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_upi_id" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_upi_id') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Amount <span class="text-danger">*</span></label>
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="payment_date" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Upload Image</label>
+                                                                <input type="file" name="payment_online_payment_image" class="form-control-file">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </fieldset>
+                                                </div>
+
+                                                <div class="payment-type-section" data-type="Bank Transfer" style="display:none;">
+                                                    <fieldset class="payment-type-fieldset" disabled>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Account Holder Name <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_account_holder_name" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_account_holder_name') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Account Number <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_account_number" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_account_number') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Bank Name <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_bank_name" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_bank_name') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>IFSC Code <span class="text-danger">*</span></label>
+                                                                <input type="text" name="payment_ifsc_code" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_ifsc_code') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Date <span class="text-danger">*</span></label>
+                                                                <input type="date" name="payment_date" class="form-control"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label>Upload Image</label>
+                                                                <input type="file" name="payment_bank_transfer_image" class="form-control-file">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    </fieldset>
+                                                </div>
+                                            </div>
 
                                             <div class="form-group">
                                                 <label>Remarks</label>
-                                                <textarea name="payment_remarks" class="form-control" rows="3"></textarea>
+                                                <textarea name="payment_remarks" class="form-control" rows="3">{{ session('payment_release_lead_id') == $lead->id ? old('payment_remarks') : '' }}</textarea>
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -116,172 +261,28 @@
 
 @section('js')
     <script>
-        function paymentReleaseOldValue(field, leadId) {
-            const activeLeadId = '{{ session('payment_release_lead_id') }}';
-            if (!activeLeadId || String(activeLeadId) !== String(leadId)) {
-                return '';
-            }
-
-            const values = {
-                payment_amount: @json(old('payment_amount')),
-                payment_date: @json(old('payment_date')),
-                payment_cheque_number: @json(old('payment_cheque_number')),
-                payment_upi_id: @json(old('payment_upi_id')),
-                payment_account_holder_name: @json(old('payment_account_holder_name')),
-                payment_account_number: @json(old('payment_account_number')),
-                payment_bank_name: @json(old('payment_bank_name')),
-                payment_ifsc_code: @json(old('payment_ifsc_code'))
-            };
-
-            return values[field] || '';
-        }
-
-        function renderPaymentTypeFields($select) {
+        function togglePaymentTypeFields($select) {
             const type = ($select.val() || '').trim();
             const $modal = $select.closest('.payment-release-modal');
-            const leadId = $modal.attr('id').replace('paymentModal', '');
-            const $container = $modal.find('.payment-type-fields');
 
-            let fields = '';
-            if (type === 'Cash') {
-                fields = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'Cheque') {
-                fields = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Cheque Number <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_cheque_number" class="form-control" value="${paymentReleaseOldValue('payment_cheque_number', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Upload Image</label>
-                                <input type="file" name="payment_cheque_image" class="form-control-file">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'Online') {
-                fields = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>UPI ID <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_upi_id" class="form-control" value="${paymentReleaseOldValue('payment_upi_id', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Amount <span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="payment_amount" class="form-control" value="${paymentReleaseOldValue('payment_amount', leadId)}" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Upload Image</label>
-                                <input type="file" name="payment_online_payment_image" class="form-control-file">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'Bank Transfer') {
-                fields = `
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Account Holder Name <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_account_holder_name" class="form-control" value="${paymentReleaseOldValue('payment_account_holder_name', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Account Number <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_account_number" class="form-control" value="${paymentReleaseOldValue('payment_account_number', leadId)}" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Bank Name <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_bank_name" class="form-control" value="${paymentReleaseOldValue('payment_bank_name', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>IFSC Code <span class="text-danger">*</span></label>
-                                <input type="text" name="payment_ifsc_code" class="form-control" value="${paymentReleaseOldValue('payment_ifsc_code', leadId)}" required>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Date <span class="text-danger">*</span></label>
-                                <input type="date" name="payment_date" class="form-control" value="${paymentReleaseOldValue('payment_date', leadId)}" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Upload Image</label>
-                                <input type="file" name="payment_bank_transfer_image" class="form-control-file">
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            const $sections = $modal.find('.payment-type-section');
+            // Disable all controls for inactive sections so only the active section submits values.
+            $sections.hide().find('.payment-type-fieldset').prop('disabled', true);
 
-            $container.html(fields);
+            const $active = $sections.filter(`[data-type="${type}"]`);
+            $active.show().find('.payment-type-fieldset').prop('disabled', false);
         }
 
         $(document).on('change', '.payment-type', function () {
-            renderPaymentTypeFields($(this));
+            togglePaymentTypeFields($(this));
         });
 
-        $(document).on('shown.bs.modal', '.payment-release-modal', function () {
+        $(document).on('show.bs.modal', '.payment-release-modal', function () {
             const $select = $(this).find('.payment-type');
             if (!$select.val()) {
                 $select.val('Cash');
             }
-            renderPaymentTypeFields($select);
+            togglePaymentTypeFields($select);
         });
 
         $(function () {
