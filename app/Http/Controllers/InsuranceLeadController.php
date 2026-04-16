@@ -63,6 +63,8 @@ class InsuranceLeadController extends Controller
         $request->validate([
             'customer_name' => 'required|string|max:255',
             'contact_number' => 'required|string|max:50',
+            'insurance_premium_amount' => 'nullable|numeric',
+            'insurance_idv_amount' => 'nullable|numeric',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
             'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
@@ -90,6 +92,8 @@ class InsuranceLeadController extends Controller
         $data['insurance_lead_stage'] = 'New';
         $data['lead_type'] = 'Insurance';
         $data['insurance_lead_status'] = 'In Progress'; // Default
+        $data['insurance_premium_amount'] = $request->input('insurance_premium_amount');
+        $data['insurance_idv_amount'] = $request->input('insurance_idv_amount');
 
         // Map vehicle details if provided
         if ($request->has('manufacture_id')) {
@@ -206,6 +210,9 @@ class InsuranceLeadController extends Controller
             'model_name' => 'nullable|string|max:255',
             'variant' => 'nullable|string|max:255',
             'vehicle_name_id' => 'nullable|exists:vehicle_names,id',
+            'insurance_premium_amount' => 'nullable|numeric',
+            'insurance_idv_amount' => 'nullable|numeric',
+            'insurance_lead_status' => 'nullable|in:In Progress,Done',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
             'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
@@ -231,6 +238,9 @@ class InsuranceLeadController extends Controller
         if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;
         }
+
+        $data['insurance_premium_amount'] = $request->input('insurance_premium_amount');
+        $data['insurance_idv_amount'] = $request->input('insurance_idv_amount');
 
         // Normalize premium fields based on selection to avoid stale values.
         if ($request->premium_amount_collected === 'No') {

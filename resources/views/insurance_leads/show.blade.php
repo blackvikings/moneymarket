@@ -319,13 +319,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>Premium Amount</label>
-                            <input type="number" step="0.01" name="insurance_premium_amount" class="form-control" value="{{ $lead->insurance_premium_amount }}" required>
+                            <input type="number" step="0.01" name="insurance_premium_amount" class="form-control" value="{{ old('insurance_premium_amount', $lead->insurance_premium_amount ?? $lead->insurance_amount) }}" required>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label>IDV (Insured Declared Value)</label>
-                            <input type="number" step="0.01" name="insurance_idv_amount" class="form-control" value="{{ $lead->insurance_idv_amount }}" required>
+                            <input type="number" step="0.01" name="insurance_idv_amount" class="form-control" value="{{ old('insurance_idv_amount', $lead->insurance_idv_amount) }}" required>
                         </div>
                     </div>
                 </div>

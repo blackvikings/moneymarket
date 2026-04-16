@@ -39,8 +39,8 @@
                 <p><strong>Type:</strong> {{ $lead->insurance_type_of_insurance }}</p>
             </div>
             <div class="col-md-6">
-                <p><strong>Premium Amount:</strong> {{ number_format($lead->insurance_premium_amount, 2) }}</p>
-                <p><strong>IDV Amount:</strong> {{ number_format($lead->insurance_idv_amount, 2) }}</p>
+                <p><strong>Premium Amount:</strong> {{ $lead->insurance_premium_amount !== null ? number_format((float) $lead->insurance_premium_amount, 2) : '-' }}</p>
+                <p><strong>IDV Amount:</strong> {{ $lead->insurance_idv_amount !== null ? number_format((float) $lead->insurance_idv_amount, 2) : '-' }}</p>
             </div>
         </div>
     @else
