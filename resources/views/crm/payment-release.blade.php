@@ -47,6 +47,9 @@
                                 </span>
                             </td>
                             <td>
+                                <a href="{{ route(get_route_prefix() . 'payment-release.show', $lead->id) }}" class="btn btn-info btn-sm">
+                                    View Details
+                                </a>
                                 @if($lead->payment_release_status === 'Done')
                                     <span class="text-success small">Completed</span>
                                 @elseif($lead->payment_release_status === 'Pending' || is_null($lead->payment_release_status))

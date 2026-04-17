@@ -10,8 +10,25 @@ class PaymentReleaseController extends Controller
 {
     public function index()
     {
-        $leads = Lead::where('crm_stage', 'Disbursal')->paginate(10);
+        $leads = Lead::with(['bank', 'bankBranch'])
+            ->where('crm_stage', 'Disbursal')
+            ->paginate(10);
         return view('crm.payment-release', compact('leads'));
+    }
+
+    public function show(Lead $lead)
+    {
+        $lead->load([
+            'assignedTo',
+            'bank',
+            'bankBranch',
+            'createdBy',
+            'currentCity',
+            'currentState',
+            'statusLogs.user',
+        ]);
+
+        return view('crm.payment-release-show', compact('lead'));
     }
 
     public function toggleStatus(Request $request, Lead $lead)

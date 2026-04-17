@@ -52,11 +52,6 @@ class MenuServiceProvider extends ServiceProvider
                             'can' => 'view crm',
                         ],
                         [
-                            'text' => 'Payment Release',
-                            'route' => $prefix . 'payment-release.index',
-                            'can' => 'view crm', // Assuming same permission as crm
-                        ],
-                        [
                             'text' => 'RTO',
                             'route' => $prefix . 'rto.index',
                             'can' => 'view rto',
@@ -97,6 +92,16 @@ class MenuServiceProvider extends ServiceProvider
                     'icon' => 'fas fa-fw fa-user-friends',
                     'route' => $prefix . 'referral-persons.index',
                     'can' => 'view referral log', // Assuming same permission
+                ]);
+            }
+
+            // Payment Release as a standalone menu item at the bottom
+            if ($user->hasRole('admin') || $user->can('view crm')) {
+                $event->menu->add([
+                    'text' => 'Payment Release',
+                    'icon' => 'fas fa-fw fa-hand-holding-usd',
+                    'route' => $prefix . 'payment-release.index',
+                    'can' => 'view crm',
                 ]);
             }
 

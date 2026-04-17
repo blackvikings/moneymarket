@@ -122,6 +122,7 @@ Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.ti
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
     Route::get('payment-release', [PaymentReleaseController::class, 'index'])->name('payment-release.index');
+    Route::get('payment-release/{lead}', [PaymentReleaseController::class, 'show'])->name('payment-release.show');
     Route::post('payment-release/{lead}/toggle-status', [PaymentReleaseController::class, 'toggleStatus'])->name('payment-release.toggle-status');
     Route::post('payment-release/{lead}/store-details', [PaymentReleaseController::class, 'storeDetails'])->name('payment-release.store-details');
 
@@ -195,6 +196,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
     Route::get('payment-release', [PaymentReleaseController::class, 'index'])->name('payment-release.index');
+    Route::get('payment-release/{lead}', [PaymentReleaseController::class, 'show'])->name('payment-release.show');
     Route::post('payment-release/{lead}/toggle-status', [PaymentReleaseController::class, 'toggleStatus'])->name('payment-release.toggle-status');
     Route::post('payment-release/{lead}/store-details', [PaymentReleaseController::class, 'storeDetails'])->name('payment-release.store-details');
 
