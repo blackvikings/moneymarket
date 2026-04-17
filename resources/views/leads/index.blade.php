@@ -294,11 +294,15 @@
                             </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
+                                @php
+                                    $hideActionButton = !empty($lead->insurance_lead_stage)
+                                        && (($lead->crm_stage ?? 'New') === 'New' || $lead->crm_stage === null);
+                                @endphp
                                 <button type="button" class="btn btn-info btn-sm view-lead-btn" data-id="{{ $lead->id }}">View</button>
                                 @can('edit lead')
                                     <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                 @endcan
-                                @if($lead->status !== 'Rejected' && $lead->status !== 'Bank Assign')
+                                @if($lead->status !== 'Rejected' && $lead->status !== 'Bank Assign' && !$hideActionButton)
                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
                                         Action
                                     </button>

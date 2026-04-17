@@ -2,15 +2,24 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
+        DB::statement('ALTER TABLE `leads` ROW_FORMAT=DYNAMIC');
+
+        if (Schema::hasColumn('leads', 'payment_type')) {
+            DB::statement(
+                "ALTER TABLE `leads` MODIFY `payment_type` ENUM('Cash', 'Cheque', 'Online', 'Bank Transfer') NULL AFTER `payment_date`"
+            );
+        }
+
         Schema::table('leads', function (Blueprint $table) {
             if (!Schema::hasColumn('leads', 'payment_type')) {
-                $table->string('payment_type')->nullable()->after('payment_date');
+                $table->enum('payment_type', ['Cash', 'Cheque', 'Online', 'Bank Transfer'])->nullable()->after('payment_date');
             }
             if (!Schema::hasColumn('leads', 'payment_cheque_number')) {
                 $table->text('payment_cheque_number')->nullable()->after('payment_type');
@@ -64,4 +73,3 @@ return new class extends Migration
         });
     }
 };
-

@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::table('leads', function (Blueprint $table) {
             if (!Schema::hasColumn('leads', 'bank_executive_name')) {
-                $table->string('bank_executive_name')->nullable()->after('bank_branch_id');
+                $table->text('bank_executive_name')->nullable()->after('bank_branch_id');
             }
         });
     }

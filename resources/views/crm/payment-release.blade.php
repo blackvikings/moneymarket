@@ -47,7 +47,9 @@
                                 </span>
                             </td>
                             <td>
-                                @if($lead->payment_release_status === 'Pending' || is_null($lead->payment_release_status))
+                                @if($lead->payment_release_status === 'Done')
+                                    <span class="text-success small">Completed</span>
+                                @elseif($lead->payment_release_status === 'Pending' || is_null($lead->payment_release_status))
                                     <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#paymentModal{{ $lead->id }}">
                                         Mark as Done
                                     </button>
