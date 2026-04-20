@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.upload-doc', $lead->id) }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route(get_route_prefix() . 'rto.upload-doc', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Proceed to verification?">
     @csrf
     <div class="form-group">
         <label>Upload RTO Document (Optional)</label>

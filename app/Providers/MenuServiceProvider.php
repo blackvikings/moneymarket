@@ -88,7 +88,7 @@ class MenuServiceProvider extends ServiceProvider
             // Add Referral Person Menu (Admin Only)
             if ($user->hasRole('admin')) {
                 $event->menu->add([
-                    'text' => 'Referral Persons',
+                    'text' => 'Referral',
                     'icon' => 'fas fa-fw fa-user-friends',
                     'route' => $prefix . 'referral-persons.index',
                     'can' => 'view referral log', // Assuming same permission

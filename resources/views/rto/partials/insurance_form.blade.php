@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix(). 'rto.update-insurance-details', $lead->id) }}" method="POST" class="rto-insurance-form">
+<form action="{{ route(get_route_prefix(). 'rto.update-insurance-details', $lead->id) }}" method="POST" class="rto-insurance-form" data-confirm-message="Save these insurance details?">
     @csrf
     <h5>Vehicle Details</h5>
     <p><strong>Model:</strong> {{ $lead->vehicleName->name ?? 'N/A' }} | <strong>RC Number:</strong> {{ $lead->rc_number ?? 'N/A' }}</p>

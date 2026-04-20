@@ -54,10 +54,10 @@
             <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>#</th>
-                        <th>Lead Customer</th>
+                        <th>S.no.</th>
+                        <th>Lead Name</th>
                         <th>Service Type</th>
-                        <th>Amount</th>
+                        <th>Ref. Amount</th>
                         <th>Status</th>
                         <th>Referral Person</th>
                         <th>Payment Date</th>
@@ -90,8 +90,8 @@
                             <td>{{ $referral->paidBy ? $referral->paidBy->name : '-' }}</td>
                             <td>
                                 @if($referral->status == 'Pending')
-                                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#paymentModal{{ $referral->id }}">
-                                        Mark as Paid
+                                    <button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#paymentModal{{ $referral->id }}" title="Mark as Paid" aria-label="Mark as Paid">
+                                        <i class="fas fa-money-bill-wave"></i>
                                     </button>
                                 @else
                                     -
@@ -133,8 +133,8 @@
                                         <option value="">Select Mode</option>
                                         <option value="Cash">Cash</option>
                                         <option value="Cheque">Cheque</option>
-                                        <option value="Online">Online</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
+                                        <option value="Online">UPI/QR</option>
+                                        <option value="Bank Transfer">NEFT/RTGS</option>
                                     </select>
                                 </div>
 
@@ -235,7 +235,7 @@
             } else if (mode === 'Online') {
                 fields = `
                     <div class="form-group">
-                        <label>UPI ID <span class="text-danger">*</span></label>
+                        <label>UPI / QR Ref. <span class="text-danger">*</span></label>
                         <input type="text" name="upi_id" class="form-control" required>
                     </div>
                     <div class="form-group">

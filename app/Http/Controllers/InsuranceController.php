@@ -7,6 +7,7 @@ use App\Models\InsuranceType;
 use App\Models\InsuranceSubType;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use App\Exports\InsuranceExport;
 
 class InsuranceController extends Controller
@@ -48,13 +49,25 @@ class InsuranceController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'company_name' => 'required|unique:insurances,company_name',
             'agent_name' => 'required',
             'vehicle_type' => 'required|in:2 Wheeler,3 Wheeler,4 Wheeler,Commercial',
             'types' => 'nullable|array',
             'types.*.name' => 'required_with:types|string',
         ]);
+
+        if ($validator->fails()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed.',
+                    'errors' => $validator->errors(),
+                ], 422);
+            }
+
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
 
         $insurance = Insurance::create([
             'company_name' => $request->company_name,
@@ -68,6 +81,17 @@ class InsuranceController extends Controller
                     $insurance->types()->create(['name' => $typeData['name']]);
                 }
             }
+        }
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Insurance created successfully',
+                'insurance' => [
+                    'id' => $insurance->id,
+                    'company_name' => $insurance->company_name,
+                ],
+            ]);
         }
 
         return redirect()->route('admin.insurances.index')->with('success', 'Insurance created successfully');

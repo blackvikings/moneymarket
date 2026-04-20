@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.update-rto-done', $lead->id) }}" method="POST" enctype="multipart/form-data">
+<form action="{{ route(get_route_prefix() . 'rto.update-rto-done', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Save this RTO document or move the lead to Insurance?">
     @csrf
     <div class="form-group">
         <label>Upload Approved RTO Document <span class="text-danger">*</span> <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>

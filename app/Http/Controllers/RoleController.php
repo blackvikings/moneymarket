@@ -18,23 +18,26 @@ class RoleController extends Controller
 
     public function index()
     {
-        $roles = Role::orderBy('position')->get();
+        $roles = Role::where('name', '!=', 'admin')->orderBy('position')->get();
         return view('roles.index', compact('roles'));
     }
 
     public function create()
     {
         $permissions = Permission::all();
-        return view('roles.create', compact('permissions'));
+        $nextPosition = ((int) Role::where('name', '!=', 'admin')->max('position')) + 1;
+        return view('roles.create', compact('permissions', 'nextPosition'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'name' => 'required|unique:roles,name',
-            'position' => 'required|integer',
+            'position' => 'required|integer|min:1|unique:roles,position',
             'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
+        ], [
+            'position.unique' => 'This position is already assigned to another role.',
         ]);
 
         $role = Role::create(['name' => $request->name, 'position' => $request->position]);
@@ -91,6 +94,10 @@ class RoleController extends Controller
 
     public function edit(Role $role)
     {
+        if ($role->name === 'admin') {
+            return redirect()->route('admin.roles.index')->with('error', 'Admin role cannot be edited.');
+        }
+
         $permissions = Permission::all();
         return view('roles.edit', compact('role', 'permissions'));
     }
@@ -103,9 +110,11 @@ class RoleController extends Controller
 
         $request->validate([
             'name' => 'required|unique:roles,name,'.$role->id,
-            'position' => 'required|integer',
+            'position' => 'required|integer|min:1|unique:roles,position,'.$role->id,
             'permissions' => 'required|array',
             'permissions.*' => 'exists:permissions,id',
+        ], [
+            'position.unique' => 'This position is already assigned to another role.',
         ]);
 
         $role->update(['name' => $request->name, 'position' => $request->position]);
@@ -168,5 +177,39 @@ class RoleController extends Controller
 
         $role->delete();
         return redirect()->route('admin.roles.index')->with('success', 'Role deleted successfully');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'integer|exists:roles,id',
+        ]);
+
+        $roleIds = collect($request->roles)
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $roles = Role::whereIn('id', $roleIds)
+            ->where('name', '!=', 'admin')
+            ->get()
+            ->keyBy('id');
+
+        $position = 1;
+        foreach ($roleIds as $roleId) {
+            if (!isset($roles[$roleId])) {
+                continue;
+            }
+
+            $roles[$roleId]->update(['position' => $position]);
+            $position++;
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Role positions updated successfully.',
+        ]);
     }
 }

@@ -43,7 +43,8 @@
 
                 <div class="form-group">
                     <label for="position">Position <span class="text-danger">*</span></label>
-                    <input type="number" name="position" id="position" class="form-control @error('position') is-invalid @enderror" value="{{ old('position', 0) }}" required>
+                    <input type="number" name="position" id="position" class="form-control @error('position') is-invalid @enderror" value="{{ old('position', $nextPosition ?? 1) }}" min="1" required>
+                    <small class="text-muted">Use a unique position number. The next suggested value is prefilled.</small>
                     @error('position') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 

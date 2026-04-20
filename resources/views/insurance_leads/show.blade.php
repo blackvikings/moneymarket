@@ -352,8 +352,8 @@
                                     <option value="">Select Payment Type</option>
                                     <option value="Cash" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cash' ? 'selected' : '' }}>Cash</option>
                                     <option value="Cheque" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Cheque' ? 'selected' : '' }}>Cheque</option>
-                                    <option value="Online" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Online' ? 'selected' : '' }}>Online</option>
-                                    <option value="Bank Transfer" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                    <option value="Online" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Online' ? 'selected' : '' }}>UPI/QR</option>
+                                    <option value="Bank Transfer" {{ old('premium_payment_type', $lead->premium_payment_type) == 'Bank Transfer' ? 'selected' : '' }}>NEFT/RTGS</option>
                                 </select>
                             </div>
                         </div>
@@ -771,7 +771,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>UPI ID <span class="text-danger">*</span></label>
+                                    <label>UPI / QR Ref. <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_upi_id" class="form-control" value="{{ $lead->premium_upi_id }}" required>
                                 </div>
                             </div>
@@ -796,13 +796,19 @@
                 } else if (type === 'Bank Transfer') {
                     fields = `
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Holder Name <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_holder_name" class="form-control" value="{{ $lead->premium_account_holder_name }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Number <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_number" class="form-control" value="{{ $lead->premium_account_number }}" required>
@@ -810,32 +816,28 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Bank Name <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_bank_name" class="form-control" value="{{ $lead->premium_bank_name }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>IFSC Code <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_ifsc_code" class="form-control" value="{{ $lead->premium_ifsc_code }}" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Date <span class="text-danger">*</span></label>
                                     <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Upload Image</label>
-                                    <input type="file" name="premium_bank_transfer_image" class="form-control-file">
-                                </div>
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_bank_transfer_image" class="form-control-file">
                         </div>
                     `;
                 }

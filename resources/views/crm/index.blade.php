@@ -127,6 +127,135 @@
                flex-wrap: wrap;
             }
         }
+        .icon-action-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+        .select2-container {
+            width: 100% !important;
+        }
+        .move-to-rto-modal .modal-dialog {
+            max-width: 560px;
+        }
+        .move-to-rto-modal .modal-content {
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+        }
+        .move-to-rto-modal .modal-header {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            color: #fff;
+            border-bottom: 0;
+            padding: 1rem 1.25rem;
+        }
+        .move-to-rto-modal .modal-header .close {
+            color: #fff;
+            opacity: 1;
+            text-shadow: none;
+        }
+        .move-to-rto-modal .modal-body {
+            padding: 1.25rem;
+            background: #fff;
+        }
+        .move-to-rto-modal .modal-footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem 1.25rem;
+            background: #fff;
+            gap: 0.5rem;
+        }
+        .move-to-rto-modal .form-group {
+            margin-bottom: 0;
+        }
+        .move-to-rto-modal .form-control {
+            min-height: 44px;
+        }
+        .move-to-rto-modal .select2-container--default .select2-selection--single {
+            min-height: 44px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 6px 12px;
+        }
+        .move-to-rto-modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 30px;
+            color: #111827;
+            padding-left: 0;
+        }
+        .move-to-rto-modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 42px;
+            right: 8px;
+        }
+        .move-to-rto-modal .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #9ca3af;
+        }
+        .move-to-rto-modal .select2-container--open {
+            z-index: 99999;
+        }
+        .move-to-insurance-modal .modal-dialog {
+            max-width: 560px;
+        }
+        .move-to-insurance-modal .modal-content {
+            border: 0;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+        }
+        .move-to-insurance-modal .modal-header {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border-bottom: 0;
+            padding: 1rem 1.25rem;
+        }
+        .move-to-insurance-modal .modal-header .close {
+            color: #fff;
+            opacity: 1;
+            text-shadow: none;
+        }
+        .move-to-insurance-modal .modal-body {
+            padding: 1.25rem;
+            background: #fff;
+        }
+        .move-to-insurance-modal .modal-footer {
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem 1.25rem;
+            background: #fff;
+            gap: 0.5rem;
+        }
+        .move-to-insurance-modal .form-group {
+            margin-bottom: 0;
+        }
+        .move-to-insurance-modal .form-control {
+            min-height: 44px;
+        }
+        .move-to-insurance-modal .select2-container--default .select2-selection--single {
+            min-height: 44px;
+            border: 1px solid #d1d5db;
+            border-radius: 10px;
+            padding: 6px 12px;
+        }
+        .move-to-insurance-modal .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 30px;
+            color: #111827;
+            padding-left: 0;
+        }
+        .move-to-insurance-modal .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 42px;
+            right: 8px;
+        }
+        .move-to-insurance-modal .select2-container--default .select2-selection--single .select2-selection__placeholder {
+            color: #9ca3af;
+        }
+        .move-to-insurance-modal .select2-container--open {
+            z-index: 99999;
+        }
+        .move-to-rto-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
     </style>
 
     <div class="card">
@@ -188,21 +317,98 @@
                             <td>{{ $lead->ageing }}</td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                              <td>
-                                 <button type="button" class="btn btn-info btn-sm view-crm-btn" data-id="{{ $lead->id }}">View</button>
-                                 @if($lead->crm_stage !== 'Disbursal')
-                                     <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                         Action
-                                     </button>
-                                 @else
+                                 <div class="move-to-rto-actions">
+                                     <button type="button" class="btn btn-info btn-sm icon-action-btn view-crm-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
+                                     <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                     @if($lead->status === 'Bank Assign')
+                                         <button type="button" class="btn btn-warning btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToRtoModal{{ $lead->id }}" title="Move to RTO" aria-label="Move to RTO">
+                                             <i class="fas fa-share"></i>
+                                         </button>
+                                         <button type="button" class="btn btn-success btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToInsuranceModal{{ $lead->id }}" title="Move to Insurance" aria-label="Move to Insurance">
+                                             <i class="fas fa-shield-alt"></i>
+                                         </button>
+                                     @endif
+                                     @if($lead->crm_stage !== 'Disbursal')
+                                         <button type="button" class="btn btn-primary btn-sm icon-action-btn" data-toggle="modal" data-target="#actionModal{{ $lead->id }}" title="Update Stage" aria-label="Update Stage">
+                                             <i class="fas fa-ellipsis-h"></i>
+                                         </button>
+                                     @else
                                      @if($lead->rto_stage && (auth()->user()->hasRole('admin') || auth()->user()->can('view rto')))
                                          <button type="button"
-                                                 class="btn btn-warning btn-sm view-rto-btn"
+                                                 class="btn btn-warning btn-sm icon-action-btn view-rto-btn"
                                                  data-url="{{ route(get_route_prefix() . 'rto.show', $lead->id) }}">
-                                             RTO
+                                             <i class="fas fa-car-side"></i>
                                          </button>
                                      @endif
                                      @if($lead->rto_stage === 'New') <span class="text-success small">Moved to RTO</span> @endif
                                      @if($lead->insurance_lead_stage === 'New') <span class="text-success small">Moved to Insurance</span> @endif
+                                     @endif
+                                 </div>
+
+                                 @if($lead->status === 'Bank Assign')
+                                 <div class="modal fade move-to-rto-modal" id="moveToRtoModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Move to RTO: {{ $lead->customer_name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" class="move-to-rto-form" data-confirm-message="Move this lead to RTO?">
+                                                @csrf
+                                                <input type="hidden" name="action" value="move_to_rto">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Bank Assign lead ko RTO me move karne ke liye ek team member select karein.</div>
+                                                    </div>
+                                                    <div class="form-group mb-0">
+                                                        <label class="font-weight-bold mb-2">Assign RTO Team Member <span class="text-danger">*</span></label>
+                                                        <select name="rto_assigned_to" class="form-control rto-team-select" data-placeholder="Search employee..."></select>
+                                                        <small class="text-muted d-block mt-2">Type employee name or ID to search.</small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-light border" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-warning text-white">Move to RTO</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                 </div>
+                                 @endif
+
+                                 @if($lead->status === 'Bank Assign')
+                                 <div class="modal fade move-to-insurance-modal" id="moveToInsuranceModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Move to Insurance: {{ $lead->customer_name }}</h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" class="move-to-insurance-form" data-confirm-message="Move this lead to Insurance?">
+                                                @csrf
+                                                <input type="hidden" name="action" value="move_to_insurance">
+                                                <div class="modal-body">
+                                                    <div class="mb-3">
+                                                        <div class="text-muted small">Bank Assign lead ko Insurance module me move karne ke liye ek team member select karein.</div>
+                                                    </div>
+                                                    <div class="form-group mb-0">
+                                                        <label class="font-weight-bold mb-2">Assign Insurance Team Member <span class="text-danger">*</span></label>
+                                                        <select name="insurance_assigned_to" class="form-control insurance-team-select" data-placeholder="Search employee..."></select>
+                                                        <small class="text-muted d-block mt-2">Type employee name or ID to search.</small>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-light border" data-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-success">Move to Insurance</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                 </div>
                                  @endif
 
                                  <!-- Action Modal -->
@@ -216,7 +422,7 @@
                                                 </button>
                                             </div>
 
-                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" id="updateStageForm{{ $lead->id }}">
+                                            <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" id="updateStageForm{{ $lead->id }}" data-confirm-message="Update the CRM stage for this lead?">
                                                 @csrf
                                                 {{-- Removed: <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}"> --}}
 
@@ -368,6 +574,90 @@
                 });
             });
 
+            function initRtoTeamSelects(context) {
+                $(context).find('.rto-team-select').each(function() {
+                    const select = $(this);
+
+                    if (select.data('select2')) {
+                        return;
+                    }
+
+                    const modal = select.closest('.modal');
+
+                    select.select2({
+                        width: '100%',
+                        placeholder: select.data('placeholder') || 'Search employee...',
+                        minimumInputLength: 1,
+                        dropdownParent: modal.length ? modal : $(document.body),
+                        ajax: {
+                            url: "{{ route(get_route_prefix() . 'crm.search-employees') }}",
+                            dataType: 'json',
+                            delay: 250,
+                            data: function(params) {
+                                return { q: params.term || '' };
+                            },
+                            processResults: function(data) {
+                                return { results: data };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    select.on('select2:open', function() {
+                        const search = $('.select2-container--open .select2-search__field');
+                        if (search.length) {
+                            search[0].focus();
+                        }
+                    });
+                });
+            }
+
+            function initInsuranceTeamSelects(context) {
+                $(context).find('.insurance-team-select').each(function() {
+                    const select = $(this);
+
+                    if (select.data('select2')) {
+                        return;
+                    }
+
+                    const modal = select.closest('.modal');
+
+                    select.select2({
+                        width: '100%',
+                        placeholder: select.data('placeholder') || 'Search employee...',
+                        minimumInputLength: 1,
+                        dropdownParent: modal.length ? modal : $(document.body),
+                        ajax: {
+                            url: "{{ route(get_route_prefix() . 'crm.search-employees') }}",
+                            dataType: 'json',
+                            delay: 250,
+                            data: function(params) {
+                                return { q: params.term || '' };
+                            },
+                            processResults: function(data) {
+                                return { results: data };
+                            },
+                            cache: true
+                        }
+                    });
+
+                    select.on('select2:open', function() {
+                        const search = $('.select2-container--open .select2-search__field');
+                        if (search.length) {
+                            search[0].focus();
+                        }
+                    });
+                });
+            }
+
+            $(document).on('shown.bs.modal', '[id^="moveToRtoModal"]', function() {
+                initRtoTeamSelects(this);
+            });
+
+            $(document).on('shown.bs.modal', '[id^="moveToInsuranceModal"]', function() {
+                initInsuranceTeamSelects(this);
+            });
+
              // Attach submit handler to each form dynamically
              $('[id^="actionModal"]').on('shown.bs.modal', function () {
                  let leadId = $(this).attr('id').replace('actionModal', '');
@@ -463,6 +753,81 @@
                 } else {
                     $(target).addClass('d-none');
                     $(target).find('input').prop('required', false);
+                }
+            });
+
+            $(document).on('submit', '.move-to-rto-form', function(event) {
+                event.preventDefault();
+
+                const form = $(this);
+                const modal = form.closest('.modal');
+                const leadId = modal.attr('id').replace('moveToRtoModal', '');
+                const formEl = form.get(0);
+
+                if (formEl && formEl.checkValidity && !formEl.checkValidity()) {
+                    if (formEl.reportValidity) formEl.reportValidity();
+                    return;
+                }
+
+                $.ajax({
+                    url: form.attr('action'),
+                    method: form.attr('method'),
+                    data: form.serialize(),
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    },
+                    success: function() {
+                        $('#moveToRtoModal' + leadId).modal('hide');
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Error moving lead to RTO: ' + (xhr.responseJSON?.message || xhr.responseText));
+                    }
+                });
+            });
+
+            $(document).on('submit', '.move-to-insurance-form', function(event) {
+                event.preventDefault();
+
+                const form = $(this);
+                const modal = form.closest('.modal');
+                const leadId = modal.attr('id').replace('moveToInsuranceModal', '');
+                const formEl = form.get(0);
+
+                if (formEl && formEl.checkValidity && !formEl.checkValidity()) {
+                    if (formEl.reportValidity) formEl.reportValidity();
+                    return;
+                }
+
+                $.ajax({
+                    url: form.attr('action'),
+                    method: form.attr('method'),
+                    data: form.serialize(),
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                        'Accept': 'application/json'
+                    },
+                    success: function() {
+                        $('#moveToInsuranceModal' + leadId).modal('hide');
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Error moving lead to Insurance: ' + (xhr.responseJSON?.message || xhr.responseText));
+                    }
+                });
+            });
+
+            $(document).on('submit', 'form[data-confirm-message]', function(event) {
+                const message = $(this).data('confirm-message');
+                if (!message) {
+                    return;
+                }
+
+                if (!window.confirm(message)) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return false;
                 }
             });
         });

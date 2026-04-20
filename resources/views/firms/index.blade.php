@@ -73,14 +73,14 @@
                             <td>
                                 <div class="btn-group">
                                     @can('view firm')
-                                        <button type="button" class="btn btn-sm btn-info view-firm-btn mr-1" data-id="{{ $firm->id }}">View</button>
+                                        <button type="button" class="btn btn-sm btn-info view-firm-btn mr-1" data-id="{{ $firm->id }}" title="View Firm" aria-label="View Firm"><i class="fas fa-eye"></i></button>
                                     @endcan
                                     @can('edit firm')
-                                        <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                        <a href="{{ route('admin.firms.edit', $firm->id) }}" class="btn btn-sm btn-primary mr-1" title="Edit Firm" aria-label="Edit Firm"><i class="fas fa-pen"></i></a>
                                         <form action="{{ route('admin.firms.toggle-status', $firm->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}">
-                                                {{ $firm->is_active ? 'Block' : 'Unblock' }}
+                                            <button type="submit" class="btn btn-sm {{ $firm->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $firm->is_active ? 'Block Firm' : 'Unblock Firm' }}" aria-label="{{ $firm->is_active ? 'Block Firm' : 'Unblock Firm' }}">
+                                                <i class="fas {{ $firm->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                             </button>
                                         </form>
                                     @endcan

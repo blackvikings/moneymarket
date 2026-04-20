@@ -117,11 +117,80 @@
             margin: 0 auto;
         }
 
+        .icon-action-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .leads-filter-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem 1rem;
+            align-items: end;
+        }
+
+        .leads-filter-form .form-group {
+            margin-bottom: 0;
+        }
+
+        .leads-table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .leads-table-wrap table {
+            width: 100%;
+            min-width: 1100px;
+        }
+
+        @media (max-width: 768px) {
+            .leads-filter-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .leads-filter-form .form-group,
+            .leads-filter-form .btn {
+                width: 100%;
+            }
+
+            .leads-filter-form .mr-2,
+            .leads-filter-form .ml-2 {
+                margin-right: 0 !important;
+                margin-left: 0 !important;
+            }
+
+            .leads-filter-form .form-group {
+                margin-bottom: 0.25rem;
+            }
+
+            .leads-tab-container {
+                min-width: 96px;
+            }
+
+            .leads-tab-content {
+                height: 3.5rem;
+                padding-right: 0.5rem;
+            }
+
+            .leads-tab-title {
+                font-size: 0.72rem;
+            }
+
+            .leads-tab-subtitle {
+                font-size: 1rem;
+            }
+        }
+
     </style>
 
     <div class="card mb-3">
         <div class="card-body p-2">
-            <form action="{{ route(get_route_prefix() . 'leads.index') }}" method="GET" class="form-inline">
+            <form action="{{ route(get_route_prefix() . 'leads.index') }}" method="GET" class="leads-filter-form">
                 <input type="hidden" name="status" value="{{ request('status') }}">
                 <div class="form-group mr-2">
                     <label for="start_date" class="mr-2">Start Date:</label>
@@ -217,12 +286,20 @@
                 </form>
             @endif
 
-            <table class="table table-bordered table-hover">
+            @php
+                $showBankExecutiveColumn = request('status') === 'Bank Assign' || $leads->contains(fn ($lead) => $lead->status === 'Bank Assign');
+            @endphp
+
+            <div class="leads-table-wrap">
+            <table class="table table-bordered table-hover table-responsive-sm mb-0">
                 <thead>
                     <tr>
                         @if(auth()->user()->hasRole('admin'))
                             <th><input type="checkbox" id="selectAll" form="bulkAssignForm"></th>
                         @endif
+                        @php
+                            $hideFollowUpColumn = in_array(request('status'), ['Lead', 'Bank Assign', 'Rejected', 'Not_Active'], true);
+                        @endphp
                         <th>ID</th>
                         <th>Created At</th>
                         <th>Customer Name</th>
@@ -230,7 +307,12 @@
                         <th>Lead Type</th>
                         <th>Status</th>
                         <th>Assigned To</th>
-                        <th>Follow Up</th>
+                        @unless($hideFollowUpColumn)
+                            <th>Follow Up</th>
+                        @endunless
+                        @if($showBankExecutiveColumn)
+                            <th>Bank Executive</th>
+                        @endif
                         <th>City</th>
                         <th>Actions</th>
                     </tr>
@@ -285,26 +367,44 @@
                                 </span>
                             </td>
                             <td>{{ $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned' }}</td>
-                            <td>
-                                @if($lead->follow_up_date)
-                                    {{ \Carbon\Carbon::parse($lead->follow_up_date)->format('d-m-Y') }} {{ $lead->follow_up_time }}
-                                @else
-                                    -
-                                @endif
-                            </td>
+                            @unless($hideFollowUpColumn)
+                                <td>
+                                    @if($lead->follow_up_date)
+                                        {{ \Carbon\Carbon::parse($lead->follow_up_date)->format('d-m-Y') }} {{ $lead->follow_up_time }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            @endunless
+                            @if($showBankExecutiveColumn)
+                                <td>
+                                    @if($lead->status === 'Bank Assign')
+                                        {{ $lead->bank_executive_name ?? '-' }}
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            @endif
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
                                 @php
                                     $hideActionButton = !empty($lead->insurance_lead_stage)
                                         && (($lead->crm_stage ?? 'New') === 'New' || $lead->crm_stage === null);
                                 @endphp
-                                <button type="button" class="btn btn-info btn-sm view-lead-btn" data-id="{{ $lead->id }}">View</button>
+                                <button type="button" class="btn btn-info btn-sm icon-action-btn view-lead-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details">
+                                    <i class="fas fa-file-alt"></i>
+                                </a>
                                 @can('edit lead')
-                                    <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                    <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm icon-action-btn" title="Edit Lead" aria-label="Edit Lead">
+                                        <i class="fas fa-pen"></i>
+                                    </a>
                                 @endcan
                                 @if($lead->status !== 'Rejected' && $lead->status !== 'Bank Assign' && !$hideActionButton)
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                        Action
+                                    <button type="button" class="btn btn-primary btn-sm icon-action-btn" data-toggle="modal" data-target="#actionModal{{ $lead->id }}" title="Lead Actions" aria-label="Lead Actions">
+                                        <i class="fas fa-ellipsis-h"></i>
                                     </button>
                                 @endif
 
@@ -510,6 +610,7 @@
                     @endforeach
                 </tbody>
             </table>
+            </div>
             {{ $leads->links() }}
         </div>
     </div>

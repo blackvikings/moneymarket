@@ -168,20 +168,25 @@
                                 <option value="">Select Source</option>
                                 <option value="Self" {{ old('lead_source') == 'Self' ? 'selected' : '' }}>Self</option>
                                 <option value="Social media" {{ old('lead_source') == 'Social media' ? 'selected' : '' }}>Social media</option>
-                                <option value="Any person" {{ old('lead_source') == 'Any person' ? 'selected' : '' }}>Any person</option>
+                                <option value="Referral" {{ in_array(strtolower((string) old('lead_source')), ['any person', 'referral person', 'referral']) ? 'selected' : '' }}>Referral</option>
+                                <option value="Employee" {{ old('lead_source') == 'Employee' ? 'selected' : '' }}>Employee</option>
+                                <option value="Other" {{ old('lead_source') == 'Other' ? 'selected' : '' }}>Other</option>
                             </select>
                             @error('lead_source') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                     <div class="col-md-4" id="lead_source_person_name_div" style="display:none;">
                         <div class="form-group">
-                            <label>Person Name</label>
-                            <div class="input-group">
+                            <label id="lead_source_person_name_label">Referral Person Name</label>
+                            <div class="input-group" id="lead_source_person_name_input_group">
                                 <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2 @error('lead_source_person_name') is-invalid @enderror">
+                                    @if(old('lead_source_person_name'))
+                                        <option value="{{ old('lead_source_person_name') }}" selected>{{ old('lead_source_person_name') }}</option>
+                                    @endif
                                     {{-- Options populated via Select2 AJAX --}}
                                 </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                <div class="input-group-append" id="lead_source_person_name_add_btn_wrap">
+                                    <button class="btn btn-outline-secondary" type="button" id="lead_source_person_name_add_btn" data-toggle="modal" data-target="#addReferralPersonModal">
                                         <i class="fas fa-plus"></i>
                                     </button>
                                 </div>
@@ -662,7 +667,7 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Showroom Price</label>
+                                        <label>Ex-showroom Price</label>
                                         <input type="number" step="0.01" name="showroom_price" class="form-control @error('showroom_price') is-invalid @enderror" value="{{ old('showroom_price') }}">
                                         @error('showroom_price') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
@@ -742,7 +747,12 @@
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>Insurance Company</label>
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <label class="mb-0">Insurance Company</label>
+                                                    <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
+                                                        <i class="fas fa-plus-circle"></i>
+                                                    </button>
+                                                </div>
                                                 <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                                     <option value="">Select Insurance Company</option>
                                                     @foreach($insurances as $ins)
@@ -894,7 +904,12 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Insurance Company</label>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <label class="mb-0">Insurance Company</label>
+                                            <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
+                                                <i class="fas fa-plus-circle"></i>
+                                            </button>
+                                        </div>
                                         <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                             <option value="">Select Insurance Company</option>
                                             @foreach($insurances as $ins)
@@ -1117,8 +1132,8 @@
                                     <option value="">Select</option>
                                     <option value="Cash" {{ old('premium_payment_type') == 'Cash' ? 'selected' : '' }}>Cash</option>
                                     <option value="Cheque" {{ old('premium_payment_type') == 'Cheque' ? 'selected' : '' }}>Cheque</option>
-                                    <option value="Online" {{ old('premium_payment_type') == 'Online' ? 'selected' : '' }}>Online</option>
-                                    <option value="Bank Transfer" {{ old('premium_payment_type') == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                        <option value="Online" {{ old('premium_payment_type') == 'Online' ? 'selected' : '' }}>UPI/QR</option>
+                                        <option value="Bank Transfer" {{ old('premium_payment_type') == 'Bank Transfer' ? 'selected' : '' }}>NEFT/RTGS</option>
                                 </select>
                                 @error('premium_payment_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
@@ -1166,9 +1181,9 @@
 
                 <hr>
                 @if(auth()->user()->can('assign lead'))
-                <div class="row">
+                <div class="row" id="assignment_section">
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group" id="assigned_to_group">
                             <label>Assign To employee </label>
                             <select name="assigned_to" id="assigned_to" class="form-control @error('assigned_to') is-invalid @enderror" >
                                 <option value="">Select User</option>
@@ -1180,7 +1195,7 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="form-group">
+                        <div class="form-group" id="reporting_manager_group">
                             <label>Reporting Manager</label>
                             <select name="reporting_manager_id" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_id') is-invalid @enderror">
                                 <option value="">Select an employee first</option>
@@ -1276,6 +1291,46 @@
             </div>
         </div>
     </div>
+
+    <!-- Add Insurance Company Modal -->
+    <div class="modal fade" id="addInsuranceCompanyModal" tabindex="-1" role="dialog" aria-labelledby="addInsuranceCompanyModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addInsuranceCompanyModalLabel">Add New Insurance Company</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addInsuranceCompanyForm">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Company Name <span class="text-danger">*</span></label>
+                            <input type="text" name="company_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Agent Name <span class="text-danger">*</span></label>
+                            <input type="text" name="agent_name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Vehicle Type <span class="text-danger">*</span></label>
+                            <select name="vehicle_type" class="form-control" required>
+                                <option value="2 Wheeler">2 Wheeler</option>
+                                <option value="3 Wheeler">3 Wheeler</option>
+                                <option value="4 Wheeler" selected>4 Wheeler</option>
+                                <option value="Commercial">Commercial</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Insurance Company</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @stop
 
 @section('js')
@@ -1288,28 +1343,129 @@
         Dropzone.autoDiscover = false;
 
         $(document).ready(function() {
-            $('.select2').select2();
-            // --- Month/Year Datepicker ---
-            $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
-                format: "mm-yyyy",
-                startView: "months",
-                minViewMode: "months",
-                autoclose: true
-            });
+            const currentUser = {
+                id: {{ auth()->id() }},
+                name: @json(auth()->user()->name),
+                reporting_manager_id: @json(auth()->user()->reporting_manager_id),
+            };
+            let activeInsuranceCompanySelect = null;
 
-            // --- Business Stability Year Picker ---
-            $('#business_stability_datepicker').datepicker({
-                format: "yyyy",
-                startView: "years",
-                minViewMode: "years",
-                autoclose: true
-            });
+            function normalizedLeadSourceValue() {
+                const value = ($('#lead_source').val() || '').trim().toLowerCase();
+
+                if (['referral person', 'referral', 'any person'].includes(value)) {
+                    return 'referral';
+                }
+
+                return value;
+            }
+
+            function getLeadSourceConfig() {
+                const source = normalizedLeadSourceValue();
+
+                if (source === 'self') {
+                    return {
+                        showAssignment: false,
+                        showPersonName: false,
+                        label: 'Referral Person Name',
+                        placeholder: 'Search referral person...',
+                        showAddButton: true,
+                    };
+                }
+
+                if (source === 'referral') {
+                    return {
+                        showAssignment: true,
+                        showPersonName: true,
+                        label: 'Referral Person Name',
+                        placeholder: 'Search referral person or type name...',
+                        showAddButton: true,
+                    };
+                }
+
+                if (source === 'other') {
+                    return {
+                        showAssignment: true,
+                        showPersonName: true,
+                        label: 'Name',
+                        placeholder: 'Enter name',
+                        showAddButton: false,
+                    };
+                }
+
+                return {
+                    showAssignment: true,
+                    showPersonName: false,
+                    label: 'Referral Person Name',
+                    placeholder: 'Search referral person...',
+                    showAddButton: true,
+                };
+            }
+
+            function ensureCurrentUserOption() {
+                const assignedToSelect = $('#assigned_to');
+                if (!assignedToSelect.find('option[value="' + currentUser.id + '"]').length) {
+                    assignedToSelect.append(new Option(currentUser.name, currentUser.id, true, true));
+                }
+            }
+
+            function updateLeadSourcePersonUI() {
+                const config = getLeadSourceConfig();
+                const source = normalizedLeadSourceValue();
+                const personDiv = $('#lead_source_person_name_div');
+                const label = $('#lead_source_person_name_label');
+
+                label.text(config.label);
+                if (config.showPersonName) {
+                    personDiv.show();
+                } else {
+                    personDiv.hide();
+                }
+            }
+
+            function populateManagers(userId, selectedManagerId = null) {
+                let managerSelect = $('#reporting_manager_id');
+                managerSelect.empty().append('<option value="">Loading...</option>');
+
+                if (userId) {
+                    $.ajax({
+                        url: '{{ url("admin/get-managers-by-user") }}/' + userId,
+                        type: 'GET',
+                        success: function(data) {
+                            managerSelect.empty().append('<option value="">Select Manager</option>');
+                            $.each(data, function(index, manager) {
+                                let isSelected = (manager.id == selectedManagerId) ? 'selected' : '';
+                                managerSelect.append('<option value="' + manager.id + '" ' + isSelected + '>' + manager.name + '</option>');
+                            });
+                        },
+                        error: function() {
+                            managerSelect.empty().append('<option value="">Error loading managers</option>');
+                        }
+                    });
+                } else {
+                    managerSelect.empty().append('<option value="">Select an employee first</option>');
+                }
+            }
+
+            function syncAssignmentSection() {
+                const config = getLeadSourceConfig();
+
+                if (!config.showAssignment) {
+                    ensureCurrentUserOption();
+                    $('#assigned_to').val(String(currentUser.id));
+                    populateManagers(currentUser.id, currentUser.reporting_manager_id);
+                    $('#assignment_section').hide();
+                } else {
+                    $('#assignment_section').show();
+                }
+
+                updateLeadSourcePersonUI();
+            }
 
             // --- Select2 for Lead Source Person ---
             $('#lead_source_person_name').select2({
                 placeholder: 'Search for a person...',
                 minimumInputLength: 2,
-                width: '100%',
                 ajax: {
                     url: "{{ route('lead-source-persons.search') }}",
                     dataType: 'json',
@@ -1326,6 +1482,21 @@
                     },
                     cache: true
                 }
+            });
+            // --- Month/Year Datepicker ---
+            $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
+                format: "mm-yyyy",
+                startView: "months",
+                minViewMode: "months",
+                autoclose: true
+            });
+
+            // --- Business Stability Year Picker ---
+            $('#business_stability_datepicker').datepicker({
+                format: "yyyy",
+                startView: "years",
+                minViewMode: "years",
+                autoclose: true
             });
 
             // --- Add Referral Person AJAX ---
@@ -1347,6 +1518,38 @@
                     },
                     error: function(xhr) {
                         alert('Error adding person. Please check inputs.');
+                    }
+                });
+            });
+
+            $(document).on('click', '.add-insurance-company-btn', function() {
+                activeInsuranceCompanySelect = $(this).closest('.form-group').find('select[name="insurance_id"]');
+                $('#addInsuranceCompanyModal').modal('show');
+            });
+
+            $('#addInsuranceCompanyForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: "{{ route(get_route_prefix() . 'insurances.store') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success) {
+                            let newOption = new Option(response.insurance.company_name, response.insurance.id, true, true);
+                            if (activeInsuranceCompanySelect && activeInsuranceCompanySelect.length) {
+                                activeInsuranceCompanySelect.append(newOption).trigger('change');
+                            } else {
+                                $('select[name="insurance_id"]').append(newOption).trigger('change');
+                            }
+                            $('#addInsuranceCompanyModal').modal('hide');
+                            $('#addInsuranceCompanyForm')[0].reset();
+                            $('#addInsuranceCompanyForm select[name="vehicle_type"]').val('4 Wheeler');
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON?.message || 'Error adding insurance company. Please check inputs.');
                     }
                 });
             });
@@ -1487,6 +1690,21 @@
                             return $("#has_guarantor").val() == '1';
                         }
                     },
+                    assigned_to: {
+                        required: function(element) {
+                            return $('#assigned_to').length > 0 && $('#assignment_section').is(':visible');
+                        }
+                    },
+                    reporting_manager_id: {
+                        required: function(element) {
+                            return $('#reporting_manager_id').length > 0 && $('#assignment_section').is(':visible');
+                        }
+                    },
+                    lead_source_person_name: {
+                        required: function(element) {
+                            return ['referral', 'other'].includes(normalizedLeadSourceValue());
+                        }
+                    },
                     // Loan Specific
                     loan_type: {
                         required: function(element) {
@@ -1573,6 +1791,7 @@
                             $.each(data, function(key, user) {
                                 assignedToSelect.append('<option value="' + user.id + '">' + user.name + '</option>');
                             });
+                            syncAssignmentSection();
                         }
                     });
                 }
@@ -1580,29 +1799,23 @@
             loadEmployees();
 
             // --- Reporting Manager Logic ---
-            $('#assigned_to').change(function() {
-                let userId = $(this).val();
-                let managerSelect = $('#reporting_manager_id');
-                managerSelect.empty().append('<option value="">Loading...</option>');
-
-                if (userId) {
-                    $.ajax({
-                        url: '{{ url("admin/get-managers-by-user") }}/' + userId,
-                        type: 'GET',
-                        success: function(data) {
-                            managerSelect.empty().append('<option value="">Select Manager</option>');
-                            $.each(data, function(index, manager) {
-                                managerSelect.append('<option value="' + manager.id + '">' + manager.name + '</option>');
-                            });
-                        },
-                        error: function() {
-                            managerSelect.empty().append('<option value="">Error loading managers</option>');
-                        }
-                    });
-                } else {
-                    managerSelect.empty().append('<option value="">Select an employee first</option>');
+            $('#lead_source').on('change', function() {
+                syncAssignmentSection();
+                if ($('#assignment_section').is(':visible')) {
+                    populateManagers($('#assigned_to').val());
                 }
-            }).trigger('change');
+            });
+
+            $('#assigned_to').change(function() {
+                if ($('#assignment_section').is(':visible')) {
+                    populateManagers($(this).val());
+                }
+            });
+
+            syncAssignmentSection();
+            if ($('#assignment_section').is(':visible') && $('#assigned_to').val()) {
+                populateManagers($('#assigned_to').val());
+            }
 
             // --- Location Scripts ---
             function populateStates(selector) {
@@ -2050,19 +2263,6 @@
                 return false;
             });
 
-            // --- Lead Source Person Name Logic ---
-            $('#lead_source').change(function() {
-                if ($(this).val()) {
-                    if ($(this).val().toLowerCase() === 'any person') {
-                        $('#lead_source_person_name_div').show();
-                    } else {
-                        $('#lead_source_person_name_div').hide();
-                    }
-                } else {
-                    $('#lead_source_person_name_div').hide();
-                }
-            }).trigger('change');
-
             // --- Premium Amount Collected (Insurance) ---
             function renderPremiumPaymentFields() {
                 const type = ($('#premium_payment_type').val() || '').trim();
@@ -2117,7 +2317,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>UPI ID <span class="text-danger">*</span></label>
+                                    <label>UPI / QR Ref. <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_upi_id" class="form-control" value="{{ old('premium_upi_id') }}" required>
                                 </div>
                             </div>
@@ -2142,16 +2342,28 @@
                 } else if (type === 'Bank Transfer') {
                     fields = `
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ old('premium_payment_amount') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Holder Name <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_holder_name" class="form-control" value="{{ old('premium_account_holder_name') }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Number <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_number" class="form-control" value="{{ old('premium_account_number') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Date <span class="text-danger">*</span></label>
+                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date') }}" required>
                                 </div>
                             </div>
                         </div>
@@ -2169,19 +2381,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ old('premium_payment_date') }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Upload Image</label>
-                                    <input type="file" name="premium_bank_transfer_image" class="form-control-file">
-                                </div>
-                            </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_bank_transfer_image" class="form-control-file">
                         </div>
                     `;
                 }

@@ -77,14 +77,14 @@
                             </td>
                             <td>
                                 @can('view bank')
-                                    <button type="button" class="btn btn-sm btn-info view-bank-btn mr-1" data-id="{{ $bank->id }}">View</button>
+                                    <button type="button" class="btn btn-sm btn-info view-bank-btn mr-1" data-id="{{ $bank->id }}" title="View Bank" aria-label="View Bank"><i class="fas fa-eye"></i></button>
                                 @endcan
                                 @can('edit bank')
-                                    <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                    <a href="{{ route('admin.banks.edit', $bank->id) }}" class="btn btn-sm btn-primary mr-1" title="Edit Bank" aria-label="Edit Bank"><i class="fas fa-pen"></i></a>
                                     <form action="{{ route('admin.banks.toggle-status', $bank->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm {{ $bank->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $bank->is_active ? 'Block' : 'Unblock' }}
+                                        <button type="submit" class="btn btn-sm {{ $bank->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $bank->is_active ? 'Block Bank' : 'Unblock Bank' }}" aria-label="{{ $bank->is_active ? 'Block Bank' : 'Unblock Bank' }}">
+                                            <i class="fas {{ $bank->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                         </button>
                                     </form>
                                 @endcan

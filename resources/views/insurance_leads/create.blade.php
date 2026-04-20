@@ -317,8 +317,8 @@
                                     <option value="">Select Payment Type</option>
                                     <option value="Cash">Cash</option>
                                     <option value="Cheque">Cheque</option>
-                                    <option value="Online">Online</option>
-                                    <option value="Bank Transfer">Bank Transfer</option>
+                                                    <option value="Online">UPI/QR</option>
+                                                    <option value="Bank Transfer">NEFT/RTGS</option>
                                 </select>
                             </div>
                         </div>
@@ -798,7 +798,7 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>UPI ID <span class="text-danger">*</span></label>
+                                    <label>UPI / QR Ref. <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_upi_id" class="form-control" required>
                                 </div>
                             </div>
@@ -823,13 +823,19 @@
                 } else if (type === 'Bank Transfer') {
                     fields = `
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Holder Name <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_holder_name" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Number <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_account_number" class="form-control" required>
@@ -837,32 +843,28 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Bank Name <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_bank_name" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>IFSC Code <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_ifsc_code" class="form-control" required>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Date <span class="text-danger">*</span></label>
                                     <input type="date" name="premium_payment_date" class="form-control" required>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Upload Image</label>
-                                    <input type="file" name="premium_bank_transfer_image" class="form-control-file">
-                                </div>
-                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Upload Image</label>
+                            <input type="file" name="premium_bank_transfer_image" class="form-control-file">
                         </div>
                     `;
                 }

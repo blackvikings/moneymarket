@@ -47,8 +47,11 @@
                                 </span>
                             </td>
                             <td>
+                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn mr-1" title="Full Details" aria-label="Full Details">
+                                    <i class="fas fa-file-alt"></i>
+                                </a>
                                 <a href="{{ route(get_route_prefix() . 'payment-release.show', $lead->id) }}" class="btn btn-info btn-sm">
-                                    View Details
+                                    Payment Release Details
                                 </a>
                                 @if($lead->payment_release_status === 'Done')
                                     <span class="text-success small">Completed</span>
@@ -57,7 +60,7 @@
                                         Mark as Done
                                     </button>
                                 @else
-                                    <form action="{{ route(get_route_prefix() . 'payment-release.toggle-status', $lead->id) }}" method="POST">
+                                    <form action="{{ route(get_route_prefix() . 'payment-release.toggle-status', $lead->id) }}" method="POST" data-confirm-message="Mark this payment release as pending?">
                                         @csrf
                                         <input type="hidden" name="status" value="Pending">
                                         <button type="submit" class="btn btn-warning btn-sm">
@@ -78,17 +81,20 @@
                                             <span aria-hidden="true">&times;</span>
                                         </button>
                                     </div>
-                                    <form action="{{ route(get_route_prefix() . 'payment-release.store-details', $lead->id) }}" method="POST" enctype="multipart/form-data">
+                                    <form action="{{ route(get_route_prefix() . 'payment-release.store-details', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Save these payment release details?">
                                         @csrf
                                         <div class="modal-body">
+                                            <div class="alert alert-info py-2">
+                                                Release amount is locked to disbursal amount: <strong>{{ number_format((float) $lead->disbursal_amount, 2) }}</strong>
+                                            </div>
                                             <div class="form-group">
                                                 <label>Payment Type <span class="text-danger">*</span></label>
                                                 <select name="payment_type" class="form-control payment-type" required>
                                                     <option value="">Select Type</option>
                                                     <option value="Cash" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Cash' ? 'selected' : '' }}>Cash</option>
                                                     <option value="Cheque" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Cheque' ? 'selected' : '' }}>Cheque</option>
-                                                    <option value="Online" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Online' ? 'selected' : '' }}>Online</option>
-                                                    <option value="Bank Transfer" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                                    <option value="Online" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Online' ? 'selected' : '' }}>UPI/QR</option>
+                                                    <option value="Bank Transfer" {{ session('payment_release_lead_id') == $lead->id && old('payment_type') === 'Bank Transfer' ? 'selected' : '' }}>NEFT/RTGS</option>
                                                 </select>
                                             </div>
 
@@ -100,7 +106,7 @@
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
                                                                 <input type="number" step="0.01" name="payment_amount" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                                    value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -128,7 +134,7 @@
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
                                                                 <input type="number" step="0.01" name="payment_amount" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                                    value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -155,7 +161,7 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label>UPI ID <span class="text-danger">*</span></label>
+                                                                <label>UPI / QR Ref. <span class="text-danger">*</span></label>
                                                                 <input type="text" name="payment_upi_id" class="form-control"
                                                                     value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_upi_id') : '' }}" required>
                                                             </div>
@@ -164,7 +170,7 @@
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
                                                                 <input type="number" step="0.01" name="payment_amount" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_amount') : '' }}" required>
+                                                                    value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -189,14 +195,21 @@
                                                 <div class="payment-type-section" data-type="Bank Transfer" style="display:none;">
                                                     <fieldset class="payment-type-fieldset" disabled>
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
+                                                            <div class="form-group">
+                                                                <label>Amount <span class="text-danger">*</span></label>
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                    value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Account Holder Name <span class="text-danger">*</span></label>
                                                                 <input type="text" name="payment_account_holder_name" class="form-control"
                                                                     value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_account_holder_name') : '' }}" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Account Number <span class="text-danger">*</span></label>
                                                                 <input type="text" name="payment_account_number" class="form-control"
@@ -205,35 +218,31 @@
                                                         </div>
                                                     </div>
                                                     <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Bank Name <span class="text-danger">*</span></label>
                                                                 <input type="text" name="payment_bank_name" class="form-control"
                                                                     value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_bank_name') : '' }}" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>IFSC Code <span class="text-danger">*</span></label>
                                                                 <input type="text" name="payment_ifsc_code" class="form-control"
                                                                     value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_ifsc_code') : '' }}" required>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div class="row">
-                                                        <div class="col-md-6">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Date <span class="text-danger">*</span></label>
                                                                 <input type="date" name="payment_date" class="form-control"
                                                                     value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
                                                             </div>
                                                         </div>
-                                                        <div class="col-md-6">
-                                                            <div class="form-group">
-                                                                <label>Upload Image</label>
-                                                                <input type="file" name="payment_bank_transfer_image" class="form-control-file">
-                                                            </div>
-                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label>Upload Image</label>
+                                                        <input type="file" name="payment_bank_transfer_image" class="form-control-file">
                                                     </div>
                                                     </fieldset>
                                                 </div>
@@ -288,6 +297,15 @@
                 $select.val('Cash');
             }
             togglePaymentTypeFields($select);
+        });
+
+        $(document).on('submit', 'form[data-confirm-message]', function(event) {
+            const message = $(this).data('confirm-message');
+            if (message && !window.confirm(message)) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
+                return false;
+            }
         });
 
         $(function () {

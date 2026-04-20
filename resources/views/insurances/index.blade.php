@@ -86,14 +86,14 @@
                             <td>
                                 <div class="btn-group">
                                     @can('view insurance')
-                                        <button type="button" class="btn btn-sm btn-info view-insurance-btn mr-1" data-id="{{ $insurance->id }}">View</button>
+                                        <button type="button" class="btn btn-sm btn-info view-insurance-btn mr-1" data-id="{{ $insurance->id }}" title="View Insurance" aria-label="View Insurance"><i class="fas fa-eye"></i></button>
                                     @endcan
                                     @can('edit insurance')
-                                        <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                        <a href="{{ route(get_route_prefix(). 'insurances.edit', $insurance->id) }}" class="btn btn-sm btn-primary mr-1" title="Edit Insurance" aria-label="Edit Insurance"><i class="fas fa-pen"></i></a>
                                         <form action="{{ route(get_route_prefix(). 'insurances.toggle-status', $insurance->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}">
-                                                {{ $insurance->is_active ? 'Block' : 'Unblock' }}
+                                            <button type="submit" class="btn btn-sm {{ $insurance->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $insurance->is_active ? 'Block Insurance' : 'Unblock Insurance' }}" aria-label="{{ $insurance->is_active ? 'Block Insurance' : 'Unblock Insurance' }}">
+                                                <i class="fas {{ $insurance->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                             </button>
                                         </form>
                                     @endcan

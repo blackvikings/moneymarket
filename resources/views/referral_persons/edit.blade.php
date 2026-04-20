@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Edit Referral Person')
+@section('title', 'Edit Referral')
 
 @section('content_header')
-    <h1>Edit Referral Person</h1>
+    <h1>Edit Referral</h1>
 @stop
 
 @section('content')
@@ -28,7 +28,7 @@
                     <label>Address</label>
                     <textarea name="address" class="form-control" rows="3">{{ $referralPerson->address }}</textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Update Person</button>
+                <button type="submit" class="btn btn-primary">Update Referral</button>
             </form>
         </div>
     </div>

@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.update-work-checklist', $lead->id) }}" method="POST">
+<form action="{{ route(get_route_prefix() . 'rto.update-work-checklist', $lead->id) }}" method="POST" data-confirm-message="Save these pending work changes?">
     @csrf
     @php
         $isSelected = function ($current, $option) {

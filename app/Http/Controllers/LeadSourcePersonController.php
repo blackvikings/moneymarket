@@ -27,10 +27,11 @@ class LeadSourcePersonController extends Controller
 
         foreach ($employees as $emp) {
             $results[] = [
-                'id' => $emp->name, // Using name as ID for the lead_source_person_name field
+                'id' => 'employee:' . $emp->id,
                 'text' => $emp->name . " (Employee - " . $emp->employee_id . ")",
                 'type' => 'Employee',
-                'name' => $emp->name
+                'name' => $emp->name,
+                'value' => $emp->name,
             ];
         }
 
@@ -42,10 +43,11 @@ class LeadSourcePersonController extends Controller
 
         foreach ($pastLeads as $lead) {
             $results[] = [
-                'id' => $lead->customer_name,
+                'id' => 'lead:' . $lead->id,
                 'text' => $lead->customer_name . " (Lead Customer - " . $lead->contact_number . ")",
                 'type' => 'Lead',
-                'name' => $lead->customer_name
+                'name' => $lead->customer_name,
+                'value' => $lead->customer_name,
             ];
         }
 
@@ -57,10 +59,11 @@ class LeadSourcePersonController extends Controller
 
         foreach ($referrals as $ref) {
             $results[] = [
-                'id' => $ref->name,
+                'id' => 'referral:' . $ref->id,
                 'text' => $ref->name . " (Referral - " . $ref->contact_number . ")",
                 'type' => 'Referral',
-                'name' => $ref->name
+                'name' => $ref->name,
+                'value' => $ref->name,
             ];
         }
 

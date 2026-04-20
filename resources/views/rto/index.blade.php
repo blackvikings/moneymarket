@@ -26,6 +26,10 @@
             min-width: 120px;
             margin-left: -1rem;
             z-index: 1;
+            transition: z-index 0s;
+        }
+        .rto-tab-container:hover {
+            z-index: 20;
         }
         .rto-tab-container:first-child {
             margin-left: 0;
@@ -51,12 +55,15 @@
             justify-content: center;
             padding-right: 1rem;
             cursor: pointer;
-            transition: background-color 0.15s ease-in-out;
+            transition: background-color 0.12s ease-in-out, color 0.12s ease-in-out, border-color 0.12s ease-in-out;
             text-decoration: none !important;
             color: #4b5563;
             background-color: white;
             border: 1px solid #d1d5db;
             border-right: none;
+            will-change: background-color, color, border-color, transform;
+            backface-visibility: hidden;
+            transform: translateZ(0);
         }
 
         .rto-tab-container:last-child .rto-tab-content {
@@ -100,6 +107,9 @@
         .clip-chevron {
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%, 15px 50%);
         }
+        .rto-tab-content:hover.clip-chevron {
+            clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%, 15px 50%);
+        }
         .rto-tab-container:first-child .clip-chevron {
             clip-path: polygon(0% 0%, calc(100% - 15px) 0%, 100% 50%, calc(100% - 15px) 100%, 0% 100%);
         }
@@ -111,6 +121,14 @@
             background-color: #2563eb;
             padding-bottom: 2px;
             margin: 0 auto;
+        }
+        .icon-action-btn {
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
     </style>
 
@@ -164,6 +182,7 @@
                         <th>Customer Name</th>
                         <th>Contact</th>
                         <th>RTO Stage</th>
+                        <th>RTO Agent</th>
                         <th>Pending Work</th>
                         <th>Aging</th>
                         <th>City</th>
@@ -196,6 +215,7 @@
                             <td>{{ $lead->customer_name }}</td>
                             <td>{{ $lead->contact_number }}</td>
                             <td><span class="badge badge-info">{{ $lead->rto_stage ?? 'New' }}</span></td>
+                            <td>{{ $lead->rtoAgent->name ?? '-' }}</td>
                             <td>
                                 @if(!empty($pendingWork))
                                     <span class="badge badge-warning">{{ implode(', ', $pendingWork) }}</span>
@@ -215,10 +235,22 @@
                             </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
-                                <button type="button" class="btn btn-info btn-sm view-rto-btn" data-id="{{ $lead->id }}">View</button>
-                                @if($lead->rto_stage == 'RTO Done')
-                                    <button type="button" class="btn btn-primary btn-sm" data-toggle="modal" data-target="#actionModal{{ $lead->id }}">
-                                        Action
+                                @if(!empty($lead->insurance_lead_stage))
+                                    <span class="badge badge-success mr-1">Already moved to Insurance</span>
+                                    <button type="button"
+                                            class="btn btn-outline-info btn-sm icon-action-btn view-crm-details-btn"
+                                            data-url="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}"
+                                            title="Lead Details"
+                                            aria-label="Lead Details">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                @else
+                                    <button type="button" class="btn btn-info btn-sm icon-action-btn view-rto-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
+                                @endif
+                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                @if($lead->rto_stage == 'RTO Done' && empty($lead->insurance_lead_stage))
+                                    <button type="button" class="btn btn-primary btn-sm icon-action-btn" data-toggle="modal" data-target="#actionModal{{ $lead->id }}" title="Lead Actions" aria-label="Lead Actions">
+                                        <i class="fas fa-ellipsis-h"></i>
                                     </button>
 
                                     <!-- Modal -->
@@ -260,7 +292,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center">No leads found.</td></tr>
+                        <tr><td colspan="9" class="text-center">No leads found.</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -285,6 +317,25 @@
                 let url = '{{ route(get_route_prefix() . "rto.show", ":id") }}'.replace(':id', leadId);
                 $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i></div>');
                 $('#globalViewModal').modal('show');
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function(response) {
+                        $('#globalViewModalContent').html(response);
+                    },
+                    error: function() {
+                        $('#globalViewModalContent').html('<div class="alert alert-danger m-3">Failed to load lead details.</div>');
+                    }
+                });
+            });
+
+            $(document).on('click', '.view-crm-details-btn', function() {
+                let url = $(this).data('url');
+                if (!url) return;
+
+                $('#globalViewModalContent').html('<div class="p-5 text-center"><i class="fas fa-spinner fa-spin fa-3x"></i><p class="mt-2">Loading lead details...</p></div>');
+                $('#globalViewModal').modal('show');
+
                 $.ajax({
                     url: url,
                     type: 'GET',
@@ -372,6 +423,15 @@
                     $(remarkTargetId).show();
                 } else {
                     $(remarkTargetId).hide();
+                }
+            });
+
+            $(document).on('submit', 'form[data-confirm-message]', function(event) {
+                const message = $(this).data('confirm-message');
+                if (message && !window.confirm(message)) {
+                    event.preventDefault();
+                    event.stopImmediatePropagation();
+                    return false;
                 }
             });
 

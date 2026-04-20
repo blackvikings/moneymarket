@@ -84,14 +84,14 @@
                                     </td>
                                     <td rowspan="{{ $groupedVehicles->count() }}">
                                         @can('view vehicle manufacture')
-                                            <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}">View</button>
+                                            <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}" title="View Manufacture" aria-label="View Manufacture"><i class="fas fa-eye"></i></button>
                                         @endcan
                                         @can('edit vehicle manufacture')
-                                            <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                            <a href="{{ route(get_route_prefix(). 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary" title="Edit Manufacture" aria-label="Edit Manufacture"><i class="fas fa-pen"></i></a>
                                             <form action="{{ route(get_route_prefix(). 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
                                                 @csrf
-                                                <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
-                                                    {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
+                                                <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $manufacture->is_active ? 'Block Manufacture' : 'Unblock Manufacture' }}" aria-label="{{ $manufacture->is_active ? 'Block Manufacture' : 'Unblock Manufacture' }}">
+                                                    <i class="fas {{ $manufacture->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                                 </button>
                                             </form>
                                         @endcan
@@ -112,14 +112,14 @@
                                 </td>
                                 <td>
                                     @can('view vehicle manufacture')
-                                        <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}">View</button>
+                                        <button type="button" class="btn btn-sm btn-info view-manufacture-btn" data-id="{{ $manufacture->id }}" title="View Manufacture" aria-label="View Manufacture"><i class="fas fa-eye"></i></button>
                                     @endcan
                                     @can('edit vehicle manufacture')
-                                        <a href="{{ route(get_route_prefix() . 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                        <a href="{{ route(get_route_prefix() . 'vehicle-manufactures.edit', $manufacture->id) }}" class="btn btn-sm btn-primary" title="Edit Manufacture" aria-label="Edit Manufacture"><i class="fas fa-pen"></i></a>
                                         <form action="{{ route(get_route_prefix() . 'vehicle-manufactures.toggle-status', $manufacture->id) }}" method="POST" class="d-inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}">
-                                                {{ $manufacture->is_active ? 'Block' : 'Unblock' }}
+                                            <button type="submit" class="btn btn-sm {{ $manufacture->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $manufacture->is_active ? 'Block Manufacture' : 'Unblock Manufacture' }}" aria-label="{{ $manufacture->is_active ? 'Block Manufacture' : 'Unblock Manufacture' }}">
+                                                <i class="fas {{ $manufacture->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                             </button>
                                         </form>
                                     @endcan

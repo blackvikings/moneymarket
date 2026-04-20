@@ -47,12 +47,24 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            <div class="detail-label">Payment Type</div>
-                            <div class="detail-value">{{ $lead->payment_type ?? '-' }}</div>
+            <div class="detail-label">Payment Type</div>
+            <div class="detail-value">
+                @if($lead->payment_type === 'Online')
+                    UPI/QR
+                @elseif($lead->payment_type === 'Bank Transfer')
+                    NEFT/RTGS
+                @else
+                    {{ $lead->payment_type ?? '-' }}
+                @endif
+            </div>
                         </div>
                         <div class="col-md-4">
                             <div class="detail-label">Payment Amount</div>
                             <div class="detail-value">{{ $lead->payment_amount !== null ? number_format($lead->payment_amount, 2) : '-' }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="detail-label">Disbursal Amount</div>
+                            <div class="detail-value">{{ $lead->disbursal_amount !== null ? number_format($lead->disbursal_amount, 2) : '-' }}</div>
                         </div>
                         <div class="col-md-4">
                             <div class="detail-label">Payment Date</div>
@@ -104,8 +116,8 @@
                             </div>
                         @elseif($lead->payment_type === 'Online')
                             <div class="col-md-6">
-                                <div class="detail-label">UPI ID</div>
-                                <div class="detail-value">{{ $lead->payment_upi_id ?? '-' }}</div>
+                            <div class="detail-label">UPI / QR Ref.</div>
+                            <div class="detail-value">{{ $lead->payment_upi_id ?? '-' }}</div>
                             </div>
                             <div class="col-md-6">
                                 <div class="detail-label">Online Payment Proof</div>

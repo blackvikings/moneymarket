@@ -158,9 +158,10 @@
     @endif
 </div>
 <div class="modal-footer">
+    <button type="button" class="btn btn-outline-primary" id="printLeadDetailsBtn">Print</button>
     @if($lead->crm_stage == 'Disbursal')
         @if(!$lead->rto_stage)
-            <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" class="d-inline">
+            <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" class="d-inline" data-confirm-message="Move this lead to RTO?">
                 @csrf
                 <input type="hidden" name="disbursal_date" value="{{ $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '' }}">
                 <input type="hidden" name="finance_amount" value="{{ $lead->finance_amount }}">
@@ -193,7 +194,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST">
+            <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" data-confirm-message="Move this lead to Insurance?">
                 @csrf
                 <div class="modal-body">
                     <input type="hidden" name="disbursal_date" value="{{ $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '' }}">
@@ -216,6 +217,52 @@
 </div>
 
 <script>
+    $(document).off('click.printLeadDetails').on('click.printLeadDetails', '#printLeadDetailsBtn', function() {
+        const source = document.getElementById('globalViewModalContent');
+        if (!source) return;
+
+        const printWindow = window.open('', '_blank', 'width=1100,height=800');
+        if (!printWindow) return;
+
+        const styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
+            .map(node => node.outerHTML)
+            .join('\n');
+
+        const content = source.cloneNode(true);
+        const footer = content.querySelector('.modal-footer');
+        if (footer) {
+            footer.remove();
+        }
+        const closeBtn = content.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.remove();
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(`<!doctype html>
+<html>
+<head>
+    <title>Lead Details - {{ $lead->customer_name }}</title>
+    ${styles}
+    <style>
+        body { padding: 20px; background: #fff; }
+        .modal-content { border: 0 !important; box-shadow: none !important; }
+        .modal-header, .modal-body { display: block; }
+        .btn, .modal-footer { display: none !important; }
+    </style>
+</head>
+<body>
+    ${content.outerHTML}
+</body>
+</html>`);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.onload = function() {
+            printWindow.print();
+            printWindow.close();
+        };
+    });
+
     // From within CRM modal, allow opening the RTO flow modal (same global modal container).
     // Note: the global modal container exists on CRM index page where this partial is used.
     $('.crm-view-rto-btn').click(function() {

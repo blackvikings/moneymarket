@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Lead;
 use App\Models\ReferralLog;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Schema;
@@ -89,6 +90,44 @@ class CrmController extends Controller
 
     public function updateStage(Request $request, Lead $lead)
     {
+        if ($request->input('action') === 'move_to_rto') {
+            $request->validate([
+                'rto_assigned_to' => 'required|exists:users,id',
+            ]);
+
+            $lead->update([
+                'status' => 'RTO',
+                'rto_stage' => 'New',
+                'rto_new_at' => now(),
+                'assigned_to' => $request->rto_assigned_to,
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Lead moved to RTO.', 'lead' => $lead]);
+            }
+
+            return redirect()->back()->with('success', 'Lead moved to RTO.');
+        }
+
+        if ($request->input('action') === 'move_to_insurance') {
+            $request->validate([
+                'insurance_assigned_to' => 'required|exists:users,id',
+            ]);
+
+            $lead->update([
+                'status' => 'Insurance',
+                'insurance_lead_stage' => 'New',
+                'insurance_lead_status' => 'In Progress',
+                'assigned_to' => $request->insurance_assigned_to,
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'Lead moved to Insurance.', 'lead' => $lead]);
+            }
+
+            return redirect()->back()->with('success', 'Lead moved to Insurance.');
+        }
+
         // Validate only completed_stages, as action and current_stage are no longer sent directly
         $request->validate([
             'completed_stages' => 'nullable|array', // Allow array of stages, can be empty
@@ -245,6 +284,33 @@ class CrmController extends Controller
 
 
         return redirect()->route(get_route_prefix() . 'crm.index', $lead)->with('success', implode(' ', $messages));
+    }
+
+    public function searchEmployees(Request $request)
+    {
+        $query = trim((string) $request->input('q', ''));
+
+        $employees = User::query()
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'admin');
+            })
+            ->when($query !== '', function ($q) use ($query) {
+                $q->where(function ($sub) use ($query) {
+                    $sub->where('name', 'like', "%{$query}%")
+                        ->orWhere('employee_id', 'like', "%{$query}%");
+                });
+            })
+            ->orderBy('name')
+            ->limit(20)
+            ->get()
+            ->map(function (User $user) {
+                return [
+                    'id' => $user->id,
+                    'text' => $user->name . ($user->employee_id ? " ({$user->employee_id})" : ''),
+                ];
+            });
+
+        return response()->json($employees);
     }
 
     public function export(Request $request)

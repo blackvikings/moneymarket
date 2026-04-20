@@ -71,14 +71,14 @@
                             </td>
                             <td>
                                 @can('view rto agent')
-                                    <button type="button" class="btn btn-sm btn-info view-agent-btn" data-id="{{ $agent->id }}">View</button>
+                                    <button type="button" class="btn btn-sm btn-info view-agent-btn" data-id="{{ $agent->id }}" title="View Agent" aria-label="View Agent"><i class="fas fa-eye"></i></button>
                                 @endcan
                                 @can('edit rto agent')
-                                    <a href="{{ route('admin.rto-agents.edit', $agent->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('admin.rto-agents.edit', $agent->id) }}" class="btn btn-sm btn-primary" title="Edit Agent" aria-label="Edit Agent"><i class="fas fa-pen"></i></a>
                                     <form action="{{ route('admin.rto-agents.toggle-status', $agent->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm {{ $agent->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $agent->is_active ? 'Block' : 'Unblock' }}
+                                        <button type="submit" class="btn btn-sm {{ $agent->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $agent->is_active ? 'Block Agent' : 'Unblock Agent' }}" aria-label="{{ $agent->is_active ? 'Block Agent' : 'Unblock Agent' }}">
+                                            <i class="fas {{ $agent->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                         </button>
                                     </form>
                                 @endcan

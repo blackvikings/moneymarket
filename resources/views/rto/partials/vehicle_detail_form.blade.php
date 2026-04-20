@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form" enctype="multipart/form-data">
+<form action="{{ route(get_route_prefix() . 'rto.update-vehicle-detail', $lead->id) }}" method="POST" class="rto-vehicle-detail-form" enctype="multipart/form-data" data-confirm-message="Save these vehicle details?">
     @csrf
     @php
         $rtoVehicleType = $lead->rto_vehicle_type;

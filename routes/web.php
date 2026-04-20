@@ -70,6 +70,7 @@ Route::post('logout', function () {
 
 // Admin Routes
 Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.timeout'], 'prefix' => 'admin', 'as' => 'admin.'], function () {
+    Route::post('roles/reorder', [RoleController::class, 'reorder'])->name('roles.reorder');
     Route::resource('roles', RoleController::class);
     Route::resource('permissions', PermissionController::class);
 
@@ -114,10 +115,12 @@ Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.ti
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::delete('leads/media/{mediaId}', [LeadController::class, 'deleteMedia'])->name('leads.delete-media');
+    Route::get('leads/{lead}/full-details', [LeadController::class, 'fullDetails'])->name('leads.full-details');
     Route::resource('leads', LeadController::class);
 
     Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
     Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
+    Route::get('crm/search-employees', [CrmController::class, 'searchEmployees'])->name('crm.search-employees');
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');
@@ -188,10 +191,12 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('leads/{lead}/update-status', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::post('leads/{lead}/assign-bank', [LeadController::class, 'assignBank'])->name('leads.assign-bank');
     Route::delete('leads/media/{mediaId}', [LeadController::class, 'deleteMedia'])->name('leads.delete-media');
+    Route::get('leads/{lead}/full-details', [LeadController::class, 'fullDetails'])->name('leads.full-details');
     Route::resource('leads', LeadController::class);
 
     Route::get('crm/export', [CrmController::class, 'export'])->name('crm.export');
     Route::get('crm', [CrmController::class, 'index'])->name('crm.index');
+    Route::get('crm/search-employees', [CrmController::class, 'searchEmployees'])->name('crm.search-employees');
     Route::get('crm/{lead}', [CrmController::class, 'show'])->name('crm.show');
     Route::post('crm/{lead}/update-stage', [CrmController::class, 'updateStage'])->name('crm.update-stage');
     Route::post('crm/{lead}/store-disbursal', [CrmController::class, 'storeDisbursal'])->name('crm.store-disbursal');

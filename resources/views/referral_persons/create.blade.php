@@ -1,9 +1,9 @@
 @extends('adminlte::page')
 
-@section('title', 'Create Referral Person')
+@section('title', 'Create Referral')
 
 @section('content_header')
-    <h1>Create Referral Person</h1>
+    <h1>Create Referral</h1>
 @stop
 
 @section('content')
@@ -27,7 +27,7 @@
                     <label>Address</label>
                     <textarea name="address" class="form-control" rows="3"></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary">Save Person</button>
+                <button type="submit" class="btn btn-primary">Save Referral</button>
             </form>
         </div>
     </div>

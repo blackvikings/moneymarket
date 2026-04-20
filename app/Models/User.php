@@ -123,6 +123,10 @@ class User extends Authenticatable
      */
     public function hasPermissionTo($permission, $guardName = null): bool
     {
+        if ($this->hasRole('admin')) {
+            return true;
+        }
+
         $permissionClass = $this->getPermissionClass();
 
         // First, resolve the permission object/name/id

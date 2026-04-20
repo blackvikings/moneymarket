@@ -82,10 +82,10 @@
                                 @if(!$employee->hasRole('admin'))
                                     <div>
                                         @can('view employee')
-                                            <button type="button" class="btn btn-sm btn-info view-employee-btn mr-1" data-id="{{ $employee->id }}">View</button>
+                                            <button type="button" class="btn btn-sm btn-info view-employee-btn mr-1" data-id="{{ $employee->id }}" title="View Employee" aria-label="View Employee"><i class="fas fa-eye"></i></button>
                                         @endcan
                                         @can('edit employee')
-                                            <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-sm btn-primary mr-1">Edit</a>
+                                            <a href="{{ route('admin.employees.edit', $employee->id) }}" class="btn btn-sm btn-primary mr-1" title="Edit Employee" aria-label="Edit Employee"><i class="fas fa-pen"></i></a>
 
                                             {{-- Block/Unblock Button --}}
                                             @if($employee->status == 'Active')
@@ -93,14 +93,14 @@
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="status" value="Blocked">
-                                                    <button type="submit" class="btn btn-sm btn-warning mr-1" onclick="return confirm('Are you sure you want to block this employee?')">Block</button>
+                                                    <button type="submit" class="btn btn-sm btn-warning mr-1" title="Block Employee" aria-label="Block Employee" onclick="return confirm('Are you sure you want to block this employee?')"><i class="fas fa-ban"></i></button>
                                                 </form>
                                             @elseif($employee->status == 'Blocked')
                                                 <form action="{{ route('admin.employees.update-status', $employee->id) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('PUT')
                                                     <input type="hidden" name="status" value="Active">
-                                                    <button type="submit" class="btn btn-sm btn-success mr-1" onclick="return confirm('Are you sure you want to unblock this employee?')">Unblock</button>
+                                                    <button type="submit" class="btn btn-sm btn-success mr-1" title="Unblock Employee" aria-label="Unblock Employee" onclick="return confirm('Are you sure you want to unblock this employee?')"><i class="fas fa-check"></i></button>
                                                 </form>
                                             @endif
                                         @endcan

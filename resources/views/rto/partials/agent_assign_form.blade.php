@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.assign-agent', $lead->id) }}" method="POST">
+<form action="{{ route(get_route_prefix() . 'rto.assign-agent', $lead->id) }}" method="POST" data-confirm-message="Assign this RTO agent?">
     @csrf
     <div class="form-group">
         <label>Assign RTO Agent</label>

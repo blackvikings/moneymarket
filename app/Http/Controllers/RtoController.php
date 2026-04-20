@@ -41,7 +41,7 @@ class RtoController extends Controller
     {
         // Only show leads that are actually in the RTO workflow.
         // Reaching CRM Disbursal does NOT automatically mean "moved to RTO".
-        $query = Lead::with(['vehicleName', 'manufacture'])->where(function($q) {
+        $query = Lead::with(['vehicleName', 'manufacture', 'rtoAgent'])->where(function($q) {
             $q->whereNotNull('rto_stage')
               ->orWhere('lead_type', 'RTO');
         });
@@ -293,7 +293,11 @@ class RtoController extends Controller
 
     public function updateApproval(Request $request, Lead $lead)
     {
-        $lead->update(['rto_stage' => 'RTO Done', 'rto_approval_at' => now()]);
+        $lead->update([
+            'rto_stage' => 'RTO Done',
+            'rto_approval_status' => true,
+            'rto_approval_at' => now(),
+        ]);
         return redirect()->back()->with('success', 'RTO Approved.');
     }
 
@@ -313,6 +317,7 @@ class RtoController extends Controller
         if ($request->input('action_type') === 'move_to_insurance') {
             $updateData['insurance_lead_stage'] = 'New';
             $updateData['lead_type'] = 'Insurance'; // Update lead type to Insurance if needed, depending on business logic
+            $updateData['rto_stage'] = null;
             $lead->update($updateData);
             return redirect()->back()->with('success', 'Final document uploaded. RTO process complete and moved to Insurance.');
         } else {

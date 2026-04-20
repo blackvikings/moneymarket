@@ -35,7 +35,7 @@
                             </td>
                             <td>
                                 @can('edit user')
-                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('users.edit', $user->id) }}" class="btn btn-sm btn-primary" title="Edit User" aria-label="Edit User"><i class="fas fa-pen"></i></a>
                                 @endcan
                             </td>
                         </tr>

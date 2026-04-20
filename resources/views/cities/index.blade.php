@@ -61,11 +61,11 @@
                             </td>
                             <td>
                                 @can('edit city')
-                                    <a href="{{ route('cities.edit', $city->id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                    <a href="{{ route('cities.edit', $city->id) }}" class="btn btn-sm btn-primary" title="Edit City" aria-label="Edit City"><i class="fas fa-pen"></i></a>
                                     <form action="{{ route('cities.toggle-status', $city->id) }}" method="POST" class="d-inline">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm {{ $city->is_active ? 'btn-warning' : 'btn-success' }}">
-                                            {{ $city->is_active ? 'Block' : 'Unblock' }}
+                                        <button type="submit" class="btn btn-sm {{ $city->is_active ? 'btn-warning' : 'btn-success' }}" title="{{ $city->is_active ? 'Block City' : 'Unblock City' }}" aria-label="{{ $city->is_active ? 'Block City' : 'Unblock City' }}">
+                                            <i class="fas {{ $city->is_active ? 'fa-ban' : 'fa-check' }}"></i>
                                         </button>
                                     </form>
                                 @endcan

@@ -35,6 +35,9 @@ class PaymentReleaseController extends Controller
     {
         $status = $request->input('status');
         if (in_array($status, ['Pending', 'Done'])) {
+            if ($lead->payment_release_status === 'Done' && $status === 'Pending') {
+                return back()->with('error', 'This payment release is already completed and cannot be reopened.');
+            }
             $lead->payment_release_status = $status;
             $lead->save();
             return back()->with('success', 'Status updated successfully.');
@@ -44,9 +47,17 @@ class PaymentReleaseController extends Controller
 
     public function storeDetails(Request $request, Lead $lead)
     {
+        if ($lead->payment_release_status === 'Done') {
+            return back()->with('error', 'Payment release is already completed for this lead.');
+        }
+
+        if ($lead->disbursal_amount === null) {
+            return back()->with('error', 'Disbursal amount is missing for this lead.');
+        }
+
         $validator = Validator::make($request->all(), [
             'payment_type' => 'required|in:Cash,Cheque,Online,Bank Transfer',
-            'payment_amount' => 'required_if:payment_type,Cash,Cheque,Online|nullable|numeric',
+            'payment_amount' => 'required_if:payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
             'payment_date' => 'required|date',
             'payment_remarks' => 'nullable|string',
             'payment_cheque_number' => 'required_if:payment_type,Cheque|nullable|string|max:255',
@@ -67,6 +78,13 @@ class PaymentReleaseController extends Controller
                 ->with('payment_release_lead_id', $lead->id);
         }
 
+        if (round((float) $request->payment_amount, 2) !== round((float) $lead->disbursal_amount, 2)) {
+            return back()
+                ->withErrors(['payment_amount' => 'Payment amount must match the disbursal amount of ' . number_format((float) $lead->disbursal_amount, 2) . '.'])
+                ->withInput()
+                ->with('payment_release_lead_id', $lead->id);
+        }
+
         // Reset all mode-specific fields to avoid stale data if a lead is edited later.
         $lead->payment_type = $request->payment_type;
         $lead->payment_cheque_number = null;
@@ -79,9 +97,7 @@ class PaymentReleaseController extends Controller
         $lead->payment_ifsc_code = null;
         $lead->payment_bank_transfer_image_path = null;
 
-        $lead->payment_amount = in_array($request->payment_type, ['Cash', 'Cheque', 'Online'], true)
-            ? $request->payment_amount
-            : null;
+        $lead->payment_amount = (float) $request->payment_amount;
         $lead->payment_date = $request->payment_date;
         $lead->payment_remarks = $request->payment_remarks;
 

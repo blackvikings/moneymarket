@@ -34,7 +34,7 @@ class InsuranceLeadController extends Controller
             $query->where('premium_amount_collected', $request->premium_status);
         }
 
-        $leads = $query->latest()->paginate(10);
+        $leads = $query->with(['currentCity'])->latest()->paginate(10);
 
         return view('insurance_leads.index', compact('leads'));
     }
@@ -67,7 +67,7 @@ class InsuranceLeadController extends Controller
             'insurance_idv_amount' => 'nullable|numeric',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
             'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -134,9 +134,6 @@ class InsuranceLeadController extends Controller
                 $data['premium_bank_name'] = null;
                 $data['premium_ifsc_code'] = null;
                 $data['premium_bank_transfer_image_path'] = null;
-            }
-            if ($type === 'Bank Transfer') {
-                $data['premium_payment_amount'] = null;
             }
         }
 
@@ -215,7 +212,7 @@ class InsuranceLeadController extends Controller
             'insurance_lead_status' => 'nullable|in:In Progress,Done',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
             'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -272,9 +269,6 @@ class InsuranceLeadController extends Controller
                 $data['premium_bank_name'] = null;
                 $data['premium_ifsc_code'] = null;
                 $data['premium_bank_transfer_image_path'] = null;
-            }
-            if ($type === 'Bank Transfer') {
-                $data['premium_payment_amount'] = null;
             }
         }
 

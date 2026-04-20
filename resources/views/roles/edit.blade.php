@@ -59,7 +59,8 @@
 
                 <div class="form-group mb-4">
                     <label for="position" class="font-weight-bold">Position</label>
-                    <input type="number" name="position" id="position" class="form-control form-control-lg @error('position') is-invalid @enderror" value="{{ old('position', $role->position) }}" required>
+                    <input type="number" name="position" id="position" class="form-control form-control-lg @error('position') is-invalid @enderror" value="{{ old('position', $role->position) }}" min="1" required>
+                    <small class="text-muted">Position must be unique across roles.</small>
                     @error('position') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 

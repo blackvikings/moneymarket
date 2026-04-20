@@ -51,6 +51,10 @@ class LeadController extends Controller
             return true;
         }
 
+        if ((int) $assigneeId === (int) $actor->id) {
+            return true;
+        }
+
         return $this->getAssignableUsersFor($actor)
             ->whereKey($assigneeId)
             ->exists();
@@ -69,9 +73,63 @@ class LeadController extends Controller
         }
     }
 
+    private function normalizedLeadSource(?string $leadSource): string
+    {
+        $normalized = strtolower(trim((string) $leadSource));
+
+        return match ($normalized) {
+            'referral person', 'any person' => 'referral',
+            default => $normalized,
+        };
+    }
+
+    private function isSelfLeadSource(?string $leadSource): bool
+    {
+        return $this->normalizedLeadSource($leadSource) === 'self';
+    }
+
+    private function sourceNeedsPersonName(?string $leadSource): bool
+    {
+        return in_array($this->normalizedLeadSource($leadSource), ['referral', 'other'], true);
+    }
+
+    private function isReferralLeadSource(?string $leadSource): bool
+    {
+        return $this->normalizedLeadSource($leadSource) === 'referral';
+    }
+
+    private function normalizeLeadSourcePersonName(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        if (preg_match('/^(employee|lead|referral):(\\d+)$/i', $value, $matches)) {
+            $type = strtolower($matches[1]);
+            $id = (int) $matches[2];
+
+            return match ($type) {
+                'employee' => User::find($id)?->name ?? $value,
+                'lead' => Lead::find($id)?->customer_name ?? $value,
+                'referral' => \App\Models\ReferralPerson::find($id)?->name ?? $value,
+                default => $value,
+            };
+        }
+
+        return $value;
+    }
+
+    private function applySelfLeadAssignment(array &$data): void
+    {
+        $data['assigned_to'] = Auth::id();
+        $data['reporting_manager_id'] = Auth::user()->reporting_manager_id;
+    }
+
     public function __construct()
     {
-        $this->middleware('permission:view lead', ['only' => ['index', 'show']]);
+        $this->middleware('permission:view lead', ['only' => ['index', 'show', 'fullDetails']]);
         $this->middleware('permission:create lead', ['only' => ['create', 'store', 'import', 'downloadSample']]);
         $this->middleware('permission:edit lead', ['only' => ['edit', 'update', 'updateStatus', 'bulkAssign', 'assignBank']]);
         $this->middleware('permission:delete lead', ['only' => ['destroy']]);
@@ -195,7 +253,7 @@ class LeadController extends Controller
             'proof_id_type' => 'nullable|string|max:255',
             'premium_amount_collected' => 'required_if:lead_type,Insurance|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
             'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -220,10 +278,41 @@ class LeadController extends Controller
         ]);
 
         $data = $request->all();
+
+        if ($this->isSelfLeadSource($data['lead_source'] ?? null)) {
+            $this->applySelfLeadAssignment($data);
+        }
+
         $this->validateLeadAssignment(Auth::user(), $data);
 
-        if (($data['lead_source'] ?? '') !== 'Any person') {
+        if (!$this->sourceNeedsPersonName($data['lead_source'] ?? null)) {
             $data['lead_source_person_name'] = null;
+        }
+
+        if ($this->sourceNeedsPersonName($data['lead_source'] ?? null) && empty(trim((string) ($data['lead_source_person_name'] ?? '')))) {
+            throw ValidationException::withMessages([
+                'lead_source_person_name' => 'Please enter the source name.',
+            ]);
+        }
+
+        if ($this->sourceNeedsPersonName($data['lead_source'] ?? null)) {
+            $data['lead_source_person_name'] = $this->normalizeLeadSourcePersonName($data['lead_source_person_name'] ?? null);
+        }
+
+        if (!$this->isSelfLeadSource($data['lead_source'] ?? null)) {
+            if (auth()->user()->can('assign lead')) {
+                if (empty($data['assigned_to'])) {
+                    throw ValidationException::withMessages([
+                        'assigned_to' => 'Please select a user to assign the lead to.',
+                    ]);
+                }
+
+                if (empty($data['reporting_manager_id'])) {
+                    throw ValidationException::withMessages([
+                        'reporting_manager_id' => 'Please select a reporting manager.',
+                    ]);
+                }
+            }
         }
 
         $data = $this->mapLeadTypeData($data);
@@ -259,9 +348,6 @@ class LeadController extends Controller
                     $data['premium_bank_name'] = null;
                     $data['premium_ifsc_code'] = null;
                     $data['premium_bank_transfer_image_path'] = null;
-                }
-                if ($type === 'Bank Transfer') {
-                    $data['premium_payment_amount'] = null;
                 }
             }
 
@@ -336,7 +422,7 @@ class LeadController extends Controller
             'created_by' => Auth::id(),
         ]);
 
-        if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
+        if ($this->isReferralLeadSource($request->input('lead_source')) && !empty($request->input('lead_source_person_name'))) {
             ReferralLog::create([
                 'lead_id' => $lead->id,
                 'amount' => 0,
@@ -362,6 +448,52 @@ class LeadController extends Controller
             }
         }
         return view('leads.show-modal', compact('lead', 'branches'))->render();
+    }
+
+    public function fullDetails(Lead $lead)
+    {
+        $user = Auth::user();
+
+        if (!$user->hasRole('admin')) {
+            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id');
+            $isVisible = Lead::whereKey($lead->id)->where(function ($q) use ($user, $subordinateIds) {
+                $q->where('assigned_to', $user->id)
+                    ->orWhereIn('assigned_to', $subordinateIds)
+                    ->orWhere('reporting_manager_id', $user->id);
+            })->exists();
+
+            if (!$isVisible) {
+                abort(403, 'Unauthorized action.');
+            }
+        }
+
+        $lead->load([
+            'assignedTo',
+            'createdBy',
+            'bank',
+            'bankBranch',
+            'firm',
+            'manufacture',
+            'vehicleName',
+            'insurance',
+            'rtoAgent',
+            'currentCity',
+            'currentState',
+            'permanentCity',
+            'permanentState',
+            'statusLogs.user',
+            'media',
+        ]);
+
+        $branches = [];
+        if ($lead->bank_id) {
+            $bank = Bank::find($lead->bank_id);
+            if ($bank) {
+                $branches = $bank->branches;
+            }
+        }
+
+        return view('leads.show', compact('lead', 'branches'));
     }
 
     public function edit(Lead $lead)
@@ -392,7 +524,7 @@ class LeadController extends Controller
             'proof_id_type' => 'nullable|string|max:255',
             'premium_amount_collected' => 'required_if:lead_type,Insurance|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online|nullable|numeric',
+            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
             'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -419,10 +551,41 @@ class LeadController extends Controller
         ]);
 
         $data = $request->all();
+
+        if ($this->isSelfLeadSource($data['lead_source'] ?? null)) {
+            $this->applySelfLeadAssignment($data);
+        }
+
         $this->validateLeadAssignment(Auth::user(), $data);
 
-        if (($data['lead_source'] ?? '') !== 'Any person') {
+        if (!$this->sourceNeedsPersonName($data['lead_source'] ?? null)) {
             $data['lead_source_person_name'] = null;
+        }
+
+        if ($this->sourceNeedsPersonName($data['lead_source'] ?? null) && empty(trim((string) ($data['lead_source_person_name'] ?? '')))) {
+            throw ValidationException::withMessages([
+                'lead_source_person_name' => 'Please enter the source name.',
+            ]);
+        }
+
+        if ($this->sourceNeedsPersonName($data['lead_source'] ?? null)) {
+            $data['lead_source_person_name'] = $this->normalizeLeadSourcePersonName($data['lead_source_person_name'] ?? null);
+        }
+
+        if (!$this->isSelfLeadSource($data['lead_source'] ?? null)) {
+            if (auth()->user()->can('assign lead')) {
+                if (empty($data['assigned_to'])) {
+                    throw ValidationException::withMessages([
+                        'assigned_to' => 'Please select a user to assign the lead to.',
+                    ]);
+                }
+
+                if (empty($data['reporting_manager_id'])) {
+                    throw ValidationException::withMessages([
+                        'reporting_manager_id' => 'Please select a reporting manager.',
+                    ]);
+                }
+            }
         }
 
         $data = $this->mapLeadTypeData($data);
@@ -458,9 +621,6 @@ class LeadController extends Controller
                     $data['premium_bank_name'] = null;
                     $data['premium_ifsc_code'] = null;
                     $data['premium_bank_transfer_image_path'] = null;
-                }
-                if ($type === 'Bank Transfer') {
-                    $data['premium_payment_amount'] = null;
                 }
             }
 
@@ -555,7 +715,7 @@ class LeadController extends Controller
                 ->toMediaCollection('salary_slip');
         }
 
-        if ($request->input('lead_source') === 'Any person' && !empty($request->input('lead_source_person_name'))) {
+        if ($this->isReferralLeadSource($request->input('lead_source')) && !empty($request->input('lead_source_person_name'))) {
             ReferralLog::firstOrCreate(
                 ['lead_id' => $lead->id],
                 ['amount' => 0, 'status' => 'Pending']

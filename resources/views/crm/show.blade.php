@@ -115,7 +115,18 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </div>
+</div>
+
+<script>
+    $(document).on('submit', 'form[data-confirm-message]', function(event) {
+        const message = $(this).data('confirm-message');
+        if (message && !window.confirm(message)) {
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            return false;
+        }
+    });
+</script>
     @endif
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -395,7 +406,7 @@
                         @include('crm.partials.disbursal_form', ['lead' => $lead])
                     </div>
                 @elseif($lead->crm_stage == 'Disbursal')
-                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
+                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" data-confirm-message="Close this lead?">
                         @csrf
                         <div class="modal-body">
                             <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
@@ -408,7 +419,7 @@
                         </div>
                     </form>
                 @else
-                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST">
+                    <form action="{{ route(get_route_prefix() . 'crm.update-stage', $lead->id) }}" method="POST" data-confirm-message="Update this lead stage?">
                         @csrf
                         <div class="modal-body">
                             <input type="hidden" name="current_stage" value="{{ $lead->crm_stage }}">
