@@ -1,4 +1,4 @@
-name: 🚀 Deploy Money Market
+name: Deploy Money Market
 
 on:
   push:
@@ -10,62 +10,62 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🚚 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔑 Setup SSH
+      - name: Setup SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
-      # ✅ TEST STEP (to debug SSH)
-      - name: ✅ Test SSH Connection
+      # TEST STEP (to debug SSH)
+      - name: Test SSH Connection
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo SSH SUCCESS"
 
-      # 🚀 ACTUAL DEPLOYMENT
-      - name: 🚀 Deploy to Server
+      # ACTUAL DEPLOYMENT
+      - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
 
-          echo "📂 Going to project folder"
+          echo "Going to project folder"
           cd ${{ secrets.PROJECT_PATH }}
 
-          echo "🔄 Pull latest code"
+          echo "Pull latest code"
           git pull origin master
 
-          echo "📦 Install PHP dependencies"
+          echo "Install PHP dependencies"
           composer install --no-dev --optimize-autoloader
 
-          echo "📁 Fix permissions"
+          echo "Fix permissions"
           sudo chown -R www-data:www-data storage bootstrap/cache
           sudo chmod -R 775 storage bootstrap/cache
 
-          echo "⚙️ Laravel cleanup"
+          echo "Laravel cleanup"
           php artisan config:clear
           php artisan cache:clear
           php artisan view:clear
           php artisan route:clear
 
-          echo "🗄️ Run migrations"
+          echo "Run migrations"
           php artisan migrate --force
 
-          echo "🌱 Seed (optional)"
+          echo "Seed (optional)"
           php artisan db:seed --force || true
 
-          echo "📦 Install Node deps & build"
+          echo "Install Node deps & build"
           npm install
           npm run build
 
-          echo "⚡ Cache for production"
+          echo "Cache for production"
           php artisan config:cache
           php artisan route:cache
           php artisan view:cache
 
-          echo "🔄 Restart services"
+          echo "Restart services"
           sudo systemctl restart php8.2-fpm
           sudo systemctl restart nginx
 
-          echo "✅ Deployment finished"
+          echo "Deployment finished"
 
           EOF
