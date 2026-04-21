@@ -1,4 +1,4 @@
-- name: Test SSH
+name: Test SSH
   run: |
     ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo SSH SUCCESS"
 
