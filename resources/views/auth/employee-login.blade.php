@@ -26,13 +26,14 @@
 
         {{-- Password field --}}
         <div class="input-group mb-3">
-            <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
+            <input type="password" name="password" id="employee-password" class="form-control @error('password') is-invalid @enderror"
                    placeholder="{{ __('adminlte::adminlte.password') }}">
 
             <div class="input-group-append">
-                <div class="input-group-text">
-                    <span class="fas fa-lock {{ config('adminlte.classes_auth_icon', '') }}"></span>
-                </div>
+                <button type="button" class="btn btn-outline-secondary border-left-0" id="toggle-employee-password"
+                        aria-label="Show password" aria-pressed="false">
+                    <span class="fas fa-eye"></span>
+                </button>
             </div>
 
             @error('password')
@@ -46,7 +47,7 @@
         <div class="row">
             <div class="col-7">
                 <div class="icheck-primary" title="{{ __('adminlte::adminlte.remember_me_hint') }}">
-                    <input type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                    <input type="checkbox" name="remember" id="remember" {{ old('remember', true) ? 'checked' : '' }}>
 
                     <label for="remember">
                         {{ __('adminlte::adminlte.remember_me') }}
@@ -63,4 +64,26 @@
         </div>
 
     </form>
+@stop
+
+@section('js')
+    @parent
+    <script>
+        (function () {
+            const passwordInput = document.getElementById('employee-password');
+            const toggleButton = document.getElementById('toggle-employee-password');
+
+            if (!passwordInput || !toggleButton) {
+                return;
+            }
+
+            toggleButton.addEventListener('click', function () {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                toggleButton.setAttribute('aria-pressed', String(isPassword));
+                toggleButton.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+                toggleButton.querySelector('span').className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+            });
+        })();
+    </script>
 @stop
