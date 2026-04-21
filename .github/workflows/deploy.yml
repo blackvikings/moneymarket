@@ -1,35 +1,36 @@
-name: Deploy Money Market
+name: Deploy Laravel App
 
 on:
   push:
     branches:
-      - master   # change if needed
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
+      - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SERVER_SSH_KEY }}
 
-      # TEST STEP (to debug SSH)
       - name: Test SSH Connection
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "echo SSH SUCCESS"
 
-      # ACTUAL DEPLOYMENT
       - name: Deploy to Server
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
 
-          echo "Going to project folder"
-          cd ${{ secrets.PROJECT_PATH }}
+          echo "Go to project"
+          cd /var/www/money-market
+
+          echo "Fix git safe directory"
+          git config --global --add safe.directory /var/www/money-market
 
           echo "Pull latest code"
           git pull origin master
@@ -38,8 +39,8 @@ jobs:
           composer install --no-dev --optimize-autoloader
 
           echo "Fix permissions"
-          sudo chown -R www-data:www-data storage bootstrap/cache
-          sudo chmod -R 775 storage bootstrap/cache
+          chown -R devops:www-data storage bootstrap/cache
+          chmod -R 775 storage bootstrap/cache
 
           echo "Laravel cleanup"
           php artisan config:clear
@@ -53,8 +54,10 @@ jobs:
           echo "Seed (optional)"
           php artisan db:seed --force || true
 
-          echo "Install Node deps & build"
+          echo "Install Node dependencies"
           npm install
+
+          echo "Build frontend"
           npm run build
 
           echo "Cache for production"
@@ -66,6 +69,6 @@ jobs:
           sudo systemctl restart php8.2-fpm
           sudo systemctl restart nginx
 
-          echo "Deployment finished"
+          echo "Deployment completed"
 
           EOF
