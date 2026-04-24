@@ -1224,39 +1224,41 @@
                     <div id="premium_payment_fields"></div>
                 </div>
 
-                <hr>
-                {{-- Co-Applicant --}}
-                <h5>Co-Applicant Details</h5>
-                <div class="form-group">
-                    <label>Has Co-Applicant?</label>
-                    <select name="has_co_applicant" id="has_co_applicant" class="form-control @error('has_co_applicant') is-invalid @enderror" style="width: 200px;">
-                        <option value="0" {{ old('has_co_applicant', $lead->has_co_applicant) == 0 ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('has_co_applicant', $lead->has_co_applicant) == 1 ? 'selected' : '' }}>Yes</option>
-                    </select>
-                    @error('has_co_applicant') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                </div>
-                <div id="co_applicant_div" style="display:none;">
-                    <div class="row">
-                        <div class="col-md-4"><div class="form-group"><label>Co-Applicant Name</label><input type="text" name="co_name" class="form-control @error('co_name') is-invalid @enderror" value="{{ old('co_name', $lead->co_name) }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-4"><div class="form-group"><label>Co-Applicant Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation') is-invalid @enderror" value="{{ old('co_relation', $lead->co_relation) }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                <div id="co_guarantor_section">
+                    <hr>
+                    {{-- Co-Applicant --}}
+                    <h5>Co-Applicant Details</h5>
+                    <div class="form-group">
+                        <label>Has Co-Applicant?</label>
+                        <select name="has_co_applicant" id="has_co_applicant" class="form-control @error('has_co_applicant') is-invalid @enderror" style="width: 200px;">
+                            <option value="0" {{ old('has_co_applicant', $lead->has_co_applicant) == 0 ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ old('has_co_applicant', $lead->has_co_applicant) == 1 ? 'selected' : '' }}>Yes</option>
+                        </select>
+                        @error('has_co_applicant') <span class="invalid-feedback">{{ $message }}</span> @enderror
                     </div>
-                </div>
+                    <div id="co_applicant_div" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-4"><div class="form-group"><label>Co-Applicant Name</label><input type="text" name="co_name" class="form-control @error('co_name') is-invalid @enderror" value="{{ old('co_name', $lead->co_name) }}">@error('co_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            <div class="col-md-4"><div class="form-group"><label>Co-Applicant Relation</label><input type="text" name="co_relation" class="form-control @error('co_relation') is-invalid @enderror" value="{{ old('co_relation', $lead->co_relation) }}">@error('co_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        </div>
+                    </div>
 
-                <hr>
-                {{-- Guarantor --}}
-                <h5>Guarantor Details</h5>
-                <div class="form-group">
-                    <label>Has Guarantor?</label>
-                    <select name="has_guarantor" id="has_guarantor" class="form-control @error('has_guarantor') is-invalid @enderror" style="width: 200px;">
-                        <option value="0" {{ old('has_guarantor', $lead->has_guarantor) == 0 ? 'selected' : '' }}>No</option>
-                        <option value="1" {{ old('has_guarantor', $lead->has_guarantor) == 1 ? 'selected' : '' }}>Yes</option>
-                    </select>
-                    @error('has_guarantor') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                </div>
-                <div id="guarantor_div" style="display:none;">
-                    <div class="row">
-                        <div class="col-md-4"><div class="form-group"><label>Guarantor Name</label><input type="text" name="guarantor_name" class="form-control @error('guarantor_name') is-invalid @enderror" value="{{ old('guarantor_name', $lead->guarantor_name) }}">@error('guarantor_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
-                        <div class="col-md-4"><div class="form-group"><label>Guarantor Relation</label><input type="text" name="guarantor_relation" class="form-control @error('guarantor_relation') is-invalid @enderror" value="{{ old('guarantor_relation', $lead->guarantor_relation) }}">@error('guarantor_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                    <hr>
+                    {{-- Guarantor --}}
+                    <h5>Guarantor Details</h5>
+                    <div class="form-group">
+                        <label>Has Guarantor?</label>
+                        <select name="has_guarantor" id="has_guarantor" class="form-control @error('has_guarantor') is-invalid @enderror" style="width: 200px;">
+                            <option value="0" {{ old('has_guarantor', $lead->has_guarantor) == 0 ? 'selected' : '' }}>No</option>
+                            <option value="1" {{ old('has_guarantor', $lead->has_guarantor) == 1 ? 'selected' : '' }}>Yes</option>
+                        </select>
+                        @error('has_guarantor') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    </div>
+                    <div id="guarantor_div" style="display:none;">
+                        <div class="row">
+                            <div class="col-md-4"><div class="form-group"><label>Guarantor Name</label><input type="text" name="guarantor_name" class="form-control @error('guarantor_name') is-invalid @enderror" value="{{ old('guarantor_name', $lead->guarantor_name) }}">@error('guarantor_name') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                            <div class="col-md-4"><div class="form-group"><label>Guarantor Relation</label><input type="text" name="guarantor_relation" class="form-control @error('guarantor_relation') is-invalid @enderror" value="{{ old('guarantor_relation', $lead->guarantor_relation) }}">@error('guarantor_relation') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
+                        </div>
                     </div>
                 </div>
 
@@ -2282,6 +2284,8 @@
                 if (val !== 'Personal Loan' && val !== 'Business Loan') {
                     $('#loan_purchase_type').val('New').trigger('change');
                 }
+
+                toggleCoGuarantorSection();
             }).trigger('change');
 
             $('#loan_purchase_type').change(function() {
@@ -2360,13 +2364,42 @@
             }).trigger('change');
 
 
+            function toggleCoGuarantorSection() {
+                const isInsurance = $('#loan_type_select').val() === 'Insurance';
+
+                if (isInsurance) {
+                    $('#co_guarantor_section').hide();
+                    $('#has_co_applicant').val('0');
+                    $('#co_applicant_div').hide();
+                    $('#has_guarantor').val('0');
+                    $('#guarantor_div').hide();
+                    return;
+                }
+
+                $('#co_guarantor_section').show();
+                $('#co_applicant_div').toggle($('#has_co_applicant').val() == '1');
+                $('#guarantor_div').toggle($('#has_guarantor').val() == '1');
+            }
+
             $('#has_co_applicant').change(function() {
+                if ($('#loan_type_select').val() === 'Insurance') {
+                    $(this).val('0');
+                    $('#co_applicant_div').hide();
+                    return;
+                }
                 $('#co_applicant_div').toggle($(this).val() == '1');
             }).trigger('change');
 
             $('#has_guarantor').change(function() {
+                if ($('#loan_type_select').val() === 'Insurance') {
+                    $(this).val('0');
+                    $('#guarantor_div').hide();
+                    return;
+                }
                 $('#guarantor_div').toggle($(this).val() == '1');
             }).trigger('change');
+
+            toggleCoGuarantorSection();
 
             function calculateTotal() {
                 let oldLoan = 0;

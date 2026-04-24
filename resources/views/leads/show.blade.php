@@ -126,8 +126,98 @@
         $leadTypeLabel = $lead->lead_type ?: '-';
         $assignedName = $lead->assignedTo ? $lead->assignedTo->name : 'Unassigned';
         $createdName = $lead->createdBy ? $lead->createdBy->name : 'Unknown';
+        $displayedRawKeys = [
+            'customer_name',
+            'father_name',
+            'contact_number',
+            'email',
+            'firm_id',
+            'residence_type',
+            'current_address_line',
+            'current_address_pincode',
+            'current_address_city',
+            'current_address_state',
+            'permanent_address_line',
+            'permanent_address_pincode',
+            'permanent_address_city',
+            'permanent_address_state',
+            'profile_picture_path',
+            'lead_source',
+            'lead_source_person_name',
+            'job_profile',
+            'income_proof_available',
+            'nature_of_work',
+            'salaried_type',
+            'designation',
+            'other_company_name',
+            'itr_amount',
+            'approx_income',
+            'itr_document_path',
+            'loan_type',
+            'other_loan_name',
+            'vehicle_loan_type',
+            'other_vehicle_loan_name',
+            'vehicle_purchase_type',
+            'total_loan_amount',
+            'old_loan_close_amount',
+            'required_in_hand_amount',
+            'old_financer',
+            'close_amount',
+            'has_co_applicant',
+            'co_name',
+            'co_relation',
+            'has_guarantor',
+            'guarantor_name',
+            'guarantor_relation',
+            'status',
+            'lead_type',
+            'assigned_to',
+            'created_by',
+            'bank_id',
+            'bank_branch_id',
+            'bank_executive_name',
+            'crm_stage',
+            'payment_release_status',
+            'rto_hypothecation_status',
+            'rto_loan_closed_status',
+            'rto_hp_termination_status',
+            'rto_challan_verified',
+            'rto_verification_status',
+            'rto_approval_status',
+            'reporting_manager_id',
+            'insurance_available',
+            'insurance_id',
+            'insurance_start_date',
+            'insurance_end_date',
+            'insurance_amount',
+            'insurance_type',
+            'insurance_coverage_type',
+            'insurance_addon_description',
+            'health_policy_type',
+            'insurance_lead_stage',
+            'insurance_sub_type',
+            'insurance_company',
+            'policy_number',
+            'insurance_premium',
+            'insurance_premium_amount',
+            'insurance_idv_amount',
+            'insurance_proof_type',
+            'premium_amount_collected',
+            'premium_payment_type',
+            'premium_payment_amount',
+            'premium_payment_date',
+            'premium_cheque_number',
+            'premium_cheque_image_path',
+            'premium_upi_id',
+            'premium_online_payment_image_path',
+            'premium_account_holder_name',
+            'premium_account_number',
+            'premium_bank_name',
+            'premium_ifsc_code',
+            'premium_bank_transfer_image_path',
+        ];
         $rawAttributes = collect($lead->getAttributes())
-            ->except(['id', 'created_at', 'updated_at', 'deleted_at'])
+            ->except(array_merge(['id', 'created_at', 'updated_at', 'deleted_at'], $displayedRawKeys))
             ->filter(fn ($value) => !is_null($value) && $value !== '');
         $crmStages = [
             'New' => 'crm_new_at',
@@ -351,31 +441,28 @@
                 </div>
 
                 <div class="card mb-3">
-                    <div class="card-header"><h3 class="card-title mb-0">Raw Stored Data</h3></div>
-                    <div class="card-body p-0">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">Raw Stored Data</h3>
+                        <span class="badge badge-secondary">{{ $rawAttributes->count() }} fields</span>
+                    </div>
+                    <div class="card-body">
                         @if($rawAttributes->count())
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped mb-0 raw-table">
-                                    <tbody>
-                                        @foreach($rawAttributes as $key => $value)
-                                            <tr>
-                                                <th>{{ \Illuminate\Support\Str::headline($key) }}</th>
-                                                <td>
-                                                    @if(is_array($value))
-                                                        {{ json_encode($value) }}
-                                                    @elseif(is_bool($value))
-                                                        {{ $value ? 'Yes' : 'No' }}
-                                                    @else
-                                                        {{ $value }}
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    </tbody>
-                                </table>
+                            <div class="detail-grid">
+                                @foreach($rawAttributes as $key => $value)
+                                    <div class="detail-item">
+                                        <strong>{{ \Illuminate\Support\Str::headline($key) }}:</strong>
+                                        @if(is_array($value))
+                                            {{ json_encode($value) }}
+                                        @elseif(is_bool($value))
+                                            {{ $value ? 'Yes' : 'No' }}
+                                        @else
+                                            {{ $value }}
+                                        @endif
+                                    </div>
+                                @endforeach
                             </div>
                         @else
-                            <div class="p-3 text-muted">No additional raw fields stored yet.</div>
+                            <div class="text-muted">No additional raw fields stored yet.</div>
                         @endif
                     </div>
                 </div>
