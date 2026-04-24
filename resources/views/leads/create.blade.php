@@ -2030,18 +2030,28 @@
                 if (val === 'RTO' || val === 'Insurance') {
                     $('#residence_type_div').hide();
                     $('select[name="residence_type"]').prop('disabled', true);
-                    $('#lead_source_div').hide();
-                    $('#lead_source').prop('disabled', true);
-                    $('#lead_source_person_name_div').hide();
-                    $('#lead_source_person_name').prop('disabled', true);
+                    if (val === 'RTO') {
+                        $('#lead_source_div').hide();
+                        $('#lead_source').prop('disabled', true);
+                        $('#lead_source_person_name_div').hide();
+                        $('#lead_source_person_name').prop('disabled', true);
+                    } else {
+                        $('#lead_source_div').show();
+                        $('#lead_source').prop('disabled', false);
+                        $('#lead_source_person_name').prop('disabled', false);
+                    }
                     $('#default_address_proof_div').hide();
                 } else {
                     $('#residence_type_div').show();
                     $('select[name="residence_type"]').prop('disabled', false);
                     $('#lead_source_div').show();
                     $('#lead_source').prop('disabled', false);
+                    $('#lead_source_person_name').prop('disabled', false);
                     $('#default_address_proof_div').show();
                 }
+
+                syncAssignmentSection();
+                toggleCoGuarantorSection();
 
                 if (val === 'Loan') {
                     $('#loan_section, #job_profile_section').show();
@@ -2119,7 +2129,7 @@
             });
 
             function toggleCoGuarantorSection() {
-                const isInsurance = $('#loan_type_select').val() === 'Insurance';
+                const isInsurance = $('#lead_type').val() === 'Insurance' || $('#loan_type_select').val() === 'Insurance';
 
                 if (isInsurance) {
                     $('#co_guarantor_section').hide();
@@ -2253,7 +2263,7 @@
             });
 
             $('#has_co_applicant').change(function() {
-                if ($('#loan_type_select').val() === 'Insurance') {
+                if ($('#lead_type').val() === 'Insurance' || $('#loan_type_select').val() === 'Insurance') {
                     $(this).val('0');
                     $('#co_applicant_div').hide();
                     return;
@@ -2262,7 +2272,7 @@
             });
 
             $('#has_guarantor').change(function() {
-                if ($('#loan_type_select').val() === 'Insurance') {
+                if ($('#lead_type').val() === 'Insurance' || $('#loan_type_select').val() === 'Insurance') {
                     $(this).val('0');
                     $('#guarantor_div').hide();
                     return;

@@ -157,7 +157,7 @@
     @unless(in_array($currentRouteName, $disabledRoutes, true))
         <script>
             (function () {
-                const selector = 'input[type="text"], input[type="search"], input[type="url"], input[type="email"], input:not([type]), textarea';
+                const selector = 'input[type="text"], input[type="search"], input[type="url"], input:not([type]), textarea';
 
                 const capitalizeFirstChar = (value) => {
                     if (!value) {
