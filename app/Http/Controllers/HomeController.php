@@ -45,7 +45,18 @@ class HomeController extends Controller
         $totalLeads = $query->clone()->count();
         $confirmedLeads = $query->clone()->where('status', 'Lead')->count();
         $assignedToBank = $query->clone()->whereNotNull('bank_id')->count();
+        $directRtoLeads = $query->clone()
+            ->where('lead_type', 'RTO')
+            ->where('status', 'Lead')
+            ->count();
+        $directInsuranceLeads = $query->clone()
+            ->where('lead_type', 'Insurance')
+            ->where('status', 'Lead')
+            ->count();
 
-        return view('home', compact('totalLeads', 'confirmedLeads', 'assignedToBank'));
+        return view(
+            'home',
+            compact('totalLeads', 'confirmedLeads', 'assignedToBank', 'directRtoLeads', 'directInsuranceLeads')
+        );
     }
 }
