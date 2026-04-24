@@ -40,7 +40,11 @@ Route::prefix('admin')->group(function () {
 
 // Employee Authentication Routes
 Route::prefix('employee')->group(function () {
-    Route::get('login', [EmployeeLoginController::class, 'showLoginForm'])->name('employee.login');
+    Route::get('/', [EmployeeLoginController::class, 'showLoginForm'])->name('employee.login');
+    Route::post('/', [EmployeeLoginController::class, 'login']);
+    Route::get('login', function () {
+        return redirect()->route('employee.login');
+    });
     Route::post('login', [EmployeeLoginController::class, 'login']);
     Route::post('logout', [EmployeeLoginController::class, 'logout'])->name('employee.logout');
 });

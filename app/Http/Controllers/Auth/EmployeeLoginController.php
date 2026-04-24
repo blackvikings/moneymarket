@@ -53,7 +53,7 @@ class EmployeeLoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/employee/login');
+        return redirect()->route('employee.login');
     }
 
     public function username()
