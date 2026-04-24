@@ -27,20 +27,7 @@ class HomeController extends Controller
     public function index()
     {
         $user = Auth::user();
-        $query = Lead::query();
-
-        // --- Hierarchy Logic ---
-        if ($user->hasRole('admin')) {
-            // Admin sees all leads
-        } elseif ($user->hasRole('Team Lead')) {
-            // Team Lead sees own leads + subordinates' leads
-            $subordinateIds = User::where('reporting_manager_id', $user->id)->pluck('id')->toArray();
-            $subordinateIds[] = $user->id; // Include self
-            $query->whereIn('assigned_to', $subordinateIds);
-        } else {
-            // Other users (Tele Caller, etc.) see only their own leads
-            $query->where('assigned_to', $user->id);
-        }
+        $query = $this->buildDashboardLeadQuery($user);
 
         $totalLeads = $query->clone()->count();
         $confirmedLeads = $query->clone()->where('status', 'Lead')->count();
@@ -58,5 +45,40 @@ class HomeController extends Controller
             'home',
             compact('totalLeads', 'confirmedLeads', 'assignedToBank', 'directRtoLeads', 'directInsuranceLeads')
         );
+    }
+
+    private function buildDashboardLeadQuery(User $user)
+    {
+        $query = Lead::query();
+
+        // Highest access wins when a user has multiple roles.
+        if ($user->hasRole('admin')) {
+            return $query;
+        }
+
+        if ($user->hasAnyRole(['Branch Manager', 'Team Lead'])) {
+            $visibleUserIds = $this->getReportingTreeUserIds($user->id);
+
+            return $query->whereIn('assigned_to', $visibleUserIds);
+        }
+
+        return $query->where('assigned_to', $user->id);
+    }
+
+    private function getReportingTreeUserIds(int $managerId): array
+    {
+        $visibleUserIds = [$managerId];
+        $frontier = [$managerId];
+
+        while (!empty($frontier)) {
+            $children = User::whereIn('reporting_manager_id', $frontier)
+                ->pluck('id')
+                ->all();
+
+            $frontier = array_values(array_diff($children, $visibleUserIds));
+            $visibleUserIds = array_values(array_unique(array_merge($visibleUserIds, $frontier)));
+        }
+
+        return $visibleUserIds;
     }
 }
