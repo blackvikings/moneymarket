@@ -216,9 +216,34 @@
             'premium_ifsc_code',
             'premium_bank_transfer_image_path',
         ];
+        $isBooleanLikeKey = function (string $key): bool {
+            if (\Illuminate\Support\Str::startsWith($key, 'has_')) {
+                return true;
+            }
+
+            return \Illuminate\Support\Str::endsWith($key, ['_status', '_available', '_verified']);
+        };
         $rawAttributes = collect($lead->getAttributes())
             ->except(array_merge(['id', 'created_at', 'updated_at', 'deleted_at'], $displayedRawKeys))
-            ->filter(fn ($value) => !is_null($value) && $value !== '');
+            ->filter(function ($value, $key) use ($isBooleanLikeKey) {
+                if (is_null($value) || $value === '') {
+                    return false;
+                }
+
+                if (\Illuminate\Support\Str::endsWith($key, '_id')) {
+                    return false;
+                }
+
+                if ((is_int($value) || is_float($value)) && (float) $value === 0.0) {
+                    return $isBooleanLikeKey($key);
+                }
+
+                if (is_string($value) && trim($value) === '0') {
+                    return $isBooleanLikeKey($key);
+                }
+
+                return true;
+            });
         $crmStages = [
             'New' => 'crm_new_at',
             'Login' => 'crm_login_at',
@@ -453,6 +478,8 @@
                                         <strong>{{ \Illuminate\Support\Str::headline($key) }}:</strong>
                                         @if(is_array($value))
                                             {{ json_encode($value) }}
+                                        @elseif($isBooleanLikeKey($key) && in_array((string) $value, ['0', '1'], true))
+                                            {{ (string) $value === '1' ? 'Yes' : 'No' }}
                                         @elseif(is_bool($value))
                                             {{ $value ? 'Yes' : 'No' }}
                                         @else
