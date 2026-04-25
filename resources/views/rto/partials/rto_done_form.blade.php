@@ -1,4 +1,4 @@
-<form action="{{ route(get_route_prefix() . 'rto.update-rto-done', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Save this RTO document or move the lead to Insurance?">
+<form action="{{ route(get_route_prefix() . 'rto.update-rto-done', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Submit this RTO final update?">
     @csrf
     <div class="form-group">
         <label>Upload Approved RTO Document <span class="text-danger">*</span> <small class="text-muted">(Max 5MB, JPG, PNG, PDF)</small></label>
@@ -9,10 +9,10 @@
     </div>
     <div class="form-group">
         <label>Remark</label>
-        <textarea name="remark" class="form-control" rows="3" placeholder="Enter any remarks..."></textarea>
+        <textarea name="remark" class="form-control" rows="3" placeholder="Enter remark...">{{ old('remark', $lead->remark) }}</textarea>
     </div>
-    <p class="text-muted">You can either just save this data or move the lead to the Insurance Module.</p>
+    <p class="text-muted">Choose one action for this lead.</p>
 
-    <button type="submit" name="action_type" value="save" class="btn btn-primary mr-2">Save</button>
-    <button type="submit" name="action_type" value="move_to_insurance" class="btn btn-success">Save & Move to Insurance</button>
+    <button type="submit" name="action_type" value="mark_rto_done" class="btn btn-primary mr-2">Mark RTO Done</button>
+    <button type="submit" name="action_type" value="move_to_insurance" class="btn btn-success">Move to Insurance</button>
 </form>

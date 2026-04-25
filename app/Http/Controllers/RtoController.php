@@ -305,6 +305,8 @@ class RtoController extends Controller
     {
         $request->validate([
             'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'remark' => 'nullable|string',
+            'action_type' => 'nullable|in:mark_rto_done,move_to_insurance,save',
         ]);
 
         $path = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
@@ -312,6 +314,7 @@ class RtoController extends Controller
         $updateData = [
             'rto_approved_doc_path' => $path,
             'rto_work_done_at' => now(),
+            'remark' => $request->input('remark'),
         ];
 
         if ($request->input('action_type') === 'move_to_insurance') {
@@ -322,7 +325,7 @@ class RtoController extends Controller
             return redirect()->back()->with('success', 'Final document uploaded. RTO process complete and moved to Insurance.');
         } else {
             $lead->update($updateData);
-            return redirect()->back()->with('success', 'Final document uploaded successfully.');
+            return redirect()->back()->with('success', 'RTO marked as done successfully.');
         }
     }
 

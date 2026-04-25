@@ -62,11 +62,15 @@ class EmployeeController extends Controller
         })->get();
 
         $roles = Role::where('name', '!=', 'admin')->get();
-        $permissions = Permission::all();
-        $admins = User::role('admin')->get();
-        $teamLeads = User::role('Team Lead')->get();
+        if ($roles->isEmpty()) {
+            return redirect()
+                ->route('admin.roles.index')
+                ->with('error', 'No roles found. Please create roles first.');
+        }
 
-        return view('employees.create', compact('firms', 'managers', 'roles', 'permissions', 'admins', 'teamLeads'));
+        $permissions = Permission::all();
+
+        return view('employees.create', compact('firms', 'managers', 'roles', 'permissions'));
     }
 
     public function store(Request $request)

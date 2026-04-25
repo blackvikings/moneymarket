@@ -248,47 +248,6 @@
                                     <button type="button" class="btn btn-info btn-sm icon-action-btn view-rto-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
                                 @endif
                                 <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
-                                @if($lead->rto_stage == 'RTO Done' && empty($lead->insurance_lead_stage))
-                                    <button type="button" class="btn btn-primary btn-sm icon-action-btn" data-toggle="modal" data-target="#actionModal{{ $lead->id }}" title="Lead Actions" aria-label="Lead Actions">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                    </button>
-
-                                    <!-- Modal -->
-                                    <div class="modal fade" id="actionModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-labelledby="actionModalLabel{{ $lead->id }}" aria-hidden="true">
-                                        <div class="modal-dialog modal-lg" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="actionModalLabel{{ $lead->id }}">Action for {{ $lead->customer_name }} ({{ $lead->rto_stage }})</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                   @if($lead->rto_stage == 'RTO Done')
-                                                        @include('rto.partials.rto_done_form', ['lead' => $lead])
-                                                    @else
-                                                        <p class="text-success">This lead has completed the RTO process.</p>
-                                                    @endif
-
-                                                    @if($lead->rto_stage !== 'Loan Return' && $lead->rto_stage !== 'RTO Done')
-                                                        <hr>
-                                                        <button type="button" class="btn btn-danger btn-sm" data-toggle="collapse" data-target="#rejectCollapse{{ $lead->id }}">Reject Loan</button>
-                                                        <div id="rejectCollapse{{ $lead->id }}" class="collapse mt-2">
-                                                            <form action="{{ route(get_route_prefix() . 'rto.reject', $lead->id) }}" method="POST">
-                                                                @csrf
-                                                                <div class="form-group">
-                                                                    <label>Reason for Rejection</label>
-                                                                    <textarea name="rejection_reason" class="form-control" rows="2" required></textarea>
-                                                                </div>
-                                                                <button type="submit" class="btn btn-danger btn-sm">Confirm Reject</button>
-                                                            </form>
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
                             </td>
                         </tr>
                     @empty
