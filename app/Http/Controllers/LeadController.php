@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Spatie\Permission\Models\Media;
 use Spatie\Permission\Models\Role;
 
@@ -124,7 +125,58 @@ class LeadController extends Controller
     private function applySelfLeadAssignment(array &$data): void
     {
         $data['assigned_to'] = Auth::id();
-        $data['reporting_manager_id'] = Auth::user()->reporting_manager_id;
+        $managerId = Auth::user()->reporting_manager_id;
+        $data['reporting_manager_id'] = $managerId;
+        $data['reporting_manager_ids'] = $managerId ? [(int) $managerId] : [];
+    }
+
+    private function normalizeReportingManagerIds(array $data): array
+    {
+        $ids = $data['reporting_manager_ids'] ?? [];
+
+        if (!is_array($ids)) {
+            $ids = [$ids];
+        }
+
+        $normalized = collect($ids)
+            ->map(fn ($id) => (int) $id)
+            ->filter(fn ($id) => $id > 0)
+            ->unique()
+            ->values()
+            ->all();
+
+        if (empty($normalized) && !empty($data['reporting_manager_id'])) {
+            $normalized[] = (int) $data['reporting_manager_id'];
+        }
+
+        return $normalized;
+    }
+
+    private function applyReportingManagerSelection(array &$data): void
+    {
+        $managerIds = $this->normalizeReportingManagerIds($data);
+        $data['reporting_manager_ids'] = $managerIds;
+        $data['reporting_manager_id'] = $managerIds[0] ?? null;
+    }
+
+    private function hasReportingManagerIdsColumn(): bool
+    {
+        static $hasColumn = null;
+
+        if ($hasColumn === null) {
+            $hasColumn = Schema::hasColumn('leads', 'reporting_manager_ids');
+        }
+
+        return $hasColumn;
+    }
+
+    private function applyReportingManagerVisibilityClause($query, int $userId): void
+    {
+        $query->where('reporting_manager_id', $userId);
+
+        if ($this->hasReportingManagerIdsColumn()) {
+            $query->orWhereJsonContains('reporting_manager_ids', $userId);
+        }
     }
 
     public function __construct()
@@ -156,7 +208,9 @@ class LeadController extends Controller
                 $q->orWhereIn('assigned_to', $subordinateIds);
 
                 // Case 3: User is the reporting manager listed on the lead itself
-                $q->orWhere('reporting_manager_id', $user->id);
+                $q->orWhere(function ($managerQuery) use ($user) {
+                    $this->applyReportingManagerVisibilityClause($managerQuery, (int) $user->id);
+                });
             });
         }
 
@@ -275,6 +329,8 @@ class LeadController extends Controller
             'job_profile_type' => 'nullable|string|max:255',
             'has_itr' => 'nullable|boolean',
             'reporting_manager_id' => 'nullable|exists:users,id',
+            'reporting_manager_ids' => 'nullable|array',
+            'reporting_manager_ids.*' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();
@@ -282,6 +338,8 @@ class LeadController extends Controller
         if ($this->isSelfLeadSource($data['lead_source'] ?? null)) {
             $this->applySelfLeadAssignment($data);
         }
+
+        $this->applyReportingManagerSelection($data);
 
         $this->validateLeadAssignment(Auth::user(), $data);
 
@@ -307,9 +365,9 @@ class LeadController extends Controller
                     ]);
                 }
 
-                if (empty($data['reporting_manager_id'])) {
+                if (empty($this->normalizeReportingManagerIds($data))) {
                     throw ValidationException::withMessages([
-                        'reporting_manager_id' => 'Please select a reporting manager.',
+                        'reporting_manager_ids' => 'Please select at least one reporting manager.',
                     ]);
                 }
             }
@@ -459,7 +517,9 @@ class LeadController extends Controller
             $isVisible = Lead::whereKey($lead->id)->where(function ($q) use ($user, $subordinateIds) {
                 $q->where('assigned_to', $user->id)
                     ->orWhereIn('assigned_to', $subordinateIds)
-                    ->orWhere('reporting_manager_id', $user->id);
+                    ->orWhere(function ($managerQuery) use ($user) {
+                        $this->applyReportingManagerVisibilityClause($managerQuery, (int) $user->id);
+                    });
             })->exists();
 
             if (!$isVisible) {
@@ -548,6 +608,8 @@ class LeadController extends Controller
             'job_profile_type' => 'nullable|string|max:255',
             'has_itr' => 'nullable|boolean',
             'reporting_manager_id' => 'nullable|exists:users,id',
+            'reporting_manager_ids' => 'nullable|array',
+            'reporting_manager_ids.*' => 'nullable|exists:users,id',
         ]);
 
         $data = $request->all();
@@ -555,6 +617,8 @@ class LeadController extends Controller
         if ($this->isSelfLeadSource($data['lead_source'] ?? null)) {
             $this->applySelfLeadAssignment($data);
         }
+
+        $this->applyReportingManagerSelection($data);
 
         $this->validateLeadAssignment(Auth::user(), $data);
 
@@ -580,9 +644,9 @@ class LeadController extends Controller
                     ]);
                 }
 
-                if (empty($data['reporting_manager_id'])) {
+                if (empty($this->normalizeReportingManagerIds($data))) {
                     throw ValidationException::withMessages([
-                        'reporting_manager_id' => 'Please select a reporting manager.',
+                        'reporting_manager_ids' => 'Please select at least one reporting manager.',
                     ]);
                 }
             }

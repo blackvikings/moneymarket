@@ -318,8 +318,10 @@
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                              <td>
                                  <div class="move-to-rto-actions">
-                                     <button type="button" class="btn btn-info btn-sm icon-action-btn view-crm-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
-                                     <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                     @can('view lead')
+                                         <button type="button" class="btn btn-info btn-sm icon-action-btn view-crm-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
+                                         <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                     @endcan
                                      @if($lead->status === 'Bank Assign')
                                          <button type="button" class="btn btn-warning btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToRtoModal{{ $lead->id }}" title="Move to RTO" aria-label="Move to RTO">
                                              <i class="fas fa-share"></i>

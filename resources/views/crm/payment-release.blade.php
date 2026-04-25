@@ -47,9 +47,11 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn mr-1" title="Full Details" aria-label="Full Details">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
+                                @can('view lead')
+                                    <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn mr-1" title="Full Details" aria-label="Full Details">
+                                        <i class="fas fa-file-alt"></i>
+                                    </a>
+                                @endcan
                                 <a href="{{ route(get_route_prefix() . 'payment-release.show', $lead->id) }}" class="btn btn-info btn-sm">
                                     Payment Release Details
                                 </a>

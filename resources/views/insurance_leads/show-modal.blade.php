@@ -40,6 +40,14 @@
             </div>
             <div class="col-md-6">
                 <p><strong>Premium Amount:</strong> {{ $lead->insurance_premium_amount !== null ? number_format((float) $lead->insurance_premium_amount, 2) : '-' }}</p>
+                <p><strong>Collected Amount:</strong> {{ $lead->premium_payment_amount !== null ? number_format((float) $lead->premium_payment_amount, 2) : '-' }}</p>
+                <p><strong>Balance Amount:</strong>
+                    @if($lead->insurance_premium_amount !== null)
+                        {{ number_format(max(0, (float) $lead->insurance_premium_amount - (float) ($lead->premium_payment_amount ?? 0)), 2) }}
+                    @else
+                        -
+                    @endif
+                </p>
                 <p><strong>IDV Amount:</strong> {{ $lead->insurance_idv_amount !== null ? number_format((float) $lead->insurance_idv_amount, 2) : '-' }}</p>
             </div>
         </div>

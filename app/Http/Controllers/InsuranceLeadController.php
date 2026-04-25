@@ -67,8 +67,12 @@ class InsuranceLeadController extends Controller
             'insurance_idv_amount' => 'nullable|numeric',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
-            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_payment_amount' => 'nullable|numeric|min:0.01',
+            'premium_payment_date' => 'nullable|date',
+            'premium_payment_part_amount' => 'nullable|array',
+            'premium_payment_part_amount.*' => 'nullable|numeric|min:0.01',
+            'premium_payment_part_date' => 'nullable|array',
+            'premium_payment_part_date.*' => 'nullable|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
@@ -104,10 +108,14 @@ class InsuranceLeadController extends Controller
         $data['model_name'] = $request->model_name ?? $data['model_name'] ?? null;
         $data['variant'] = $request->variant ?? $data['variant'] ?? null;
 
+        $parts = $this->extractPremiumPaymentParts($request);
+        $totalCollected = $this->sumPremiumPaymentParts($parts);
+
         // Normalize premium payment fields based on selection to avoid stale values.
         if (($request->premium_amount_collected ?? 'No') === 'No') {
             $data['premium_payment_type'] = null;
             $data['premium_payment_amount'] = null;
+            $data['premium_payment_parts'] = null;
             $data['premium_payment_date'] = null;
             $data['premium_cheque_number'] = null;
             $data['premium_cheque_image_path'] = null;
@@ -119,7 +127,17 @@ class InsuranceLeadController extends Controller
             $data['premium_ifsc_code'] = null;
             $data['premium_bank_transfer_image_path'] = null;
         } else {
+            if ($totalCollected <= 0) {
+                return redirect()->back()->withInput()->withErrors([
+                    'premium_payment_part_amount' => 'Please add at least one collected amount entry.',
+                ]);
+            }
+
             $type = $request->premium_payment_type;
+            $data['premium_payment_parts'] = $parts;
+            $data['premium_payment_amount'] = $totalCollected;
+            $data['premium_payment_date'] = collect($parts)->pluck('date')->filter()->last() ?: $request->premium_payment_date;
+
             if ($type !== 'Cheque') {
                 $data['premium_cheque_number'] = null;
                 $data['premium_cheque_image_path'] = null;
@@ -212,8 +230,12 @@ class InsuranceLeadController extends Controller
             'insurance_lead_status' => 'nullable|in:In Progress,Done',
             'premium_amount_collected' => 'required|in:Yes,No',
             'premium_payment_type' => 'required_if:premium_amount_collected,Yes|in:Cash,Cheque,Online,Bank Transfer',
-            'premium_payment_amount' => 'required_if:premium_payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
-            'premium_payment_date' => 'required_if:premium_amount_collected,Yes|date',
+            'premium_payment_amount' => 'nullable|numeric|min:0.01',
+            'premium_payment_date' => 'nullable|date',
+            'premium_payment_part_amount' => 'nullable|array',
+            'premium_payment_part_amount.*' => 'nullable|numeric|min:0.01',
+            'premium_payment_part_date' => 'nullable|array',
+            'premium_payment_part_date.*' => 'nullable|date',
             'premium_cheque_number' => 'required_if:premium_payment_type,Cheque|nullable|string|max:255',
             'premium_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'premium_upi_id' => 'required_if:premium_payment_type,Online|nullable|string|max:255',
@@ -239,10 +261,14 @@ class InsuranceLeadController extends Controller
         $data['insurance_premium_amount'] = $request->input('insurance_premium_amount');
         $data['insurance_idv_amount'] = $request->input('insurance_idv_amount');
 
+        $parts = $this->extractPremiumPaymentParts($request);
+        $totalCollected = $this->sumPremiumPaymentParts($parts);
+
         // Normalize premium fields based on selection to avoid stale values.
         if ($request->premium_amount_collected === 'No') {
             $data['premium_payment_type'] = null;
             $data['premium_payment_amount'] = null;
+            $data['premium_payment_parts'] = null;
             $data['premium_payment_date'] = null;
             $data['premium_cheque_number'] = null;
             $data['premium_cheque_image_path'] = null;
@@ -254,7 +280,17 @@ class InsuranceLeadController extends Controller
             $data['premium_ifsc_code'] = null;
             $data['premium_bank_transfer_image_path'] = null;
         } else {
+            if ($totalCollected <= 0) {
+                return redirect()->back()->withInput()->withErrors([
+                    'premium_payment_part_amount' => 'Please add at least one collected amount entry.',
+                ]);
+            }
+
             $type = $request->premium_payment_type;
+            $data['premium_payment_parts'] = $parts;
+            $data['premium_payment_amount'] = $totalCollected;
+            $data['premium_payment_date'] = collect($parts)->pluck('date')->filter()->last() ?: $request->premium_payment_date;
+
             if ($type !== 'Cheque') {
                 $data['premium_cheque_number'] = null;
                 $data['premium_cheque_image_path'] = null;
@@ -313,6 +349,38 @@ class InsuranceLeadController extends Controller
         }
 
         return redirect()->route(get_route_prefix() . 'insurance-leads.index')->with('success', 'Insurance details updated successfully.');
+    }
+
+    private function extractPremiumPaymentParts(Request $request): array
+    {
+        $amounts = $request->input('premium_payment_part_amount', []);
+        $dates = $request->input('premium_payment_part_date', []);
+
+        $parts = [];
+        foreach ((array) $amounts as $idx => $amount) {
+            if ($amount === null || $amount === '') {
+                continue;
+            }
+
+            $amountValue = (float) $amount;
+            if ($amountValue <= 0) {
+                continue;
+            }
+
+            $parts[] = [
+                'amount' => round($amountValue, 2),
+                'date' => $dates[$idx] ?? null,
+            ];
+        }
+
+        return $parts;
+    }
+
+    private function sumPremiumPaymentParts(array $parts): float
+    {
+        return (float) collect($parts)->sum(function ($part) {
+            return (float) ($part['amount'] ?? 0);
+        });
     }
 
     public function deleteDocument(Media $document)

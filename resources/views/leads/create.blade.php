@@ -50,6 +50,45 @@
         .select2-container--default .select2-selection--single .select2-selection__arrow {
             height: 36px !important;
         }
+        .select2-container .select2-selection--multiple {
+            min-height: 38px !important;
+            border: 1px solid #ced4da !important;
+            border-radius: 0.25rem !important;
+            padding: 2px 6px !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background-color: #e9ecef !important;
+            border: 1px solid #ced4da !important;
+            color: #212529 !important;
+            border-radius: 0.2rem !important;
+            margin-top: 4px !important;
+            padding: 2px 24px 2px 8px !important;
+            position: relative;
+            line-height: 1.2 !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: #495057 !important;
+            position: absolute !important;
+            right: 6px !important;
+            left: auto !important;
+            top: 50% !important;
+            transform: translateY(-50%);
+            margin-right: 0 !important;
+            padding: 0 2px !important;
+            border: 0 !important;
+            font-size: 14px !important;
+            line-height: 1 !important;
+        }
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            display: flex !important;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 4px;
+            padding: 0 !important;
+        }
+        .select2-dropdown {
+            z-index: 2000 !important;
+        }
         /* Fix for Select2 inside Input Group to keep button inline */
         .input-group {
             flex-wrap: nowrap;
@@ -1199,10 +1238,10 @@
                     <div class="col-md-6">
                         <div class="form-group" id="reporting_manager_group">
                             <label>Reporting Manager</label>
-                            <select name="reporting_manager_id" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_id') is-invalid @enderror">
+                            <select name="reporting_manager_ids[]" id="reporting_manager_id" class="form-control select2 @error('reporting_manager_ids') is-invalid @enderror" multiple>
                                 <option value="">Select an employee first</option>
                             </select>
-                            @error('reporting_manager_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                            @error('reporting_manager_ids') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
                     </div>
                 </div>
@@ -1349,7 +1388,9 @@
                 id: {{ auth()->id() }},
                 name: @json(auth()->user()->name),
                 reporting_manager_id: @json(auth()->user()->reporting_manager_id),
+                reporting_manager_ids: @json(auth()->user()->reporting_manager_id ? [auth()->user()->reporting_manager_id] : []),
             };
+            const initialReportingManagerIds = @json(collect(old('reporting_manager_ids', old('reporting_manager_id') ? [old('reporting_manager_id')] : []))->map(fn($id) => (int) $id)->filter(fn($id) => $id > 0)->values()->all());
             let activeInsuranceCompanySelect = null;
 
             function normalizedLeadSourceValue() {
@@ -1425,20 +1466,22 @@
                 }
             }
 
-            function populateManagers(userId, selectedManagerId = null) {
+            function populateManagers(userId, selectedManagerIds = []) {
                 let managerSelect = $('#reporting_manager_id');
                 managerSelect.empty().append('<option value="">Loading...</option>');
+                const selectedSet = new Set((selectedManagerIds || []).map(id => String(id)));
 
                 if (userId) {
                     $.ajax({
                         url: '{{ url("admin/get-managers-by-user") }}/' + userId,
                         type: 'GET',
                         success: function(data) {
-                            managerSelect.empty().append('<option value="">Select Manager</option>');
+                            managerSelect.empty();
                             $.each(data, function(index, manager) {
-                                let isSelected = (manager.id == selectedManagerId) ? 'selected' : '';
+                                let isSelected = selectedSet.has(String(manager.id)) ? 'selected' : '';
                                 managerSelect.append('<option value="' + manager.id + '" ' + isSelected + '>' + manager.name + '</option>');
                             });
+                            managerSelect.trigger('change');
                         },
                         error: function() {
                             managerSelect.empty().append('<option value="">Error loading managers</option>');
@@ -1455,7 +1498,7 @@
                 if (!config.showAssignment) {
                     ensureCurrentUserOption();
                     $('#assigned_to').val(String(currentUser.id));
-                    populateManagers(currentUser.id, currentUser.reporting_manager_id);
+                    populateManagers(currentUser.id, currentUser.reporting_manager_ids);
                     $('#assignment_section').hide();
                 } else {
                     $('#assignment_section').show();
@@ -1485,6 +1528,17 @@
                     cache: true
                 }
             });
+
+            // --- Select2 for Reporting Managers (multi-select) ---
+            const reportingManagerSelect = $('#reporting_manager_id');
+            if (reportingManagerSelect.length) {
+                reportingManagerSelect.select2({
+                    placeholder: 'Select Reporting Manager(s)',
+                    width: '100%',
+                    closeOnSelect: true,
+                    allowClear: false
+                });
+            }
             // --- Month/Year Datepicker ---
             $('#mfg_year_datepicker_loan, #mfg_year_datepicker_rto, #ins_mfg_year_datepicker').datepicker({
                 format: "mm-yyyy",
@@ -1697,7 +1751,7 @@
                             return $('#assigned_to').length > 0 && $('#assignment_section').is(':visible');
                         }
                     },
-                    reporting_manager_id: {
+                    'reporting_manager_ids[]': {
                         required: function(element) {
                             return $('#reporting_manager_id').length > 0 && $('#assignment_section').is(':visible');
                         }
@@ -1804,19 +1858,19 @@
             $('#lead_source').on('change', function() {
                 syncAssignmentSection();
                 if ($('#assignment_section').is(':visible')) {
-                    populateManagers($('#assigned_to').val());
+                    populateManagers($('#assigned_to').val(), []);
                 }
             });
 
             $('#assigned_to').change(function() {
                 if ($('#assignment_section').is(':visible')) {
-                    populateManagers($(this).val());
+                    populateManagers($(this).val(), []);
                 }
             });
 
             syncAssignmentSection();
             if ($('#assignment_section').is(':visible') && $('#assigned_to').val()) {
-                populateManagers($('#assigned_to').val());
+                populateManagers($('#assigned_to').val(), initialReportingManagerIds);
             }
 
             // --- Location Scripts ---

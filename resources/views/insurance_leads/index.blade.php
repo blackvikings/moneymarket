@@ -60,7 +60,9 @@
                         <th>Status</th>
                         <th>Premium Status</th>
                         <th>Premium Amount</th>
-                        <th>Collected Date</th>
+                        <th>Collected Amount</th>
+                        <th>Balance Amount</th>
+                        <th>Last Collected Date</th>
                         <th>Expiry Date</th>
                         <th>City</th>
                         <th>Actions</th>
@@ -83,7 +85,15 @@
                                     {{ $lead->premium_amount_collected == 'Yes' ? 'Collected' : 'Not Collected' }}
                                 </span>
                             </td>
-                            <td>{{ $lead->premium_payment_amount !== null ? number_format($lead->premium_payment_amount, 2) : '-' }}</td>
+                            <td>{{ $lead->insurance_premium_amount !== null ? number_format((float) $lead->insurance_premium_amount, 2) : '-' }}</td>
+                            <td>{{ $lead->premium_payment_amount !== null ? number_format((float) $lead->premium_payment_amount, 2) : '-' }}</td>
+                            <td>
+                                @if($lead->insurance_premium_amount !== null)
+                                    {{ number_format(max(0, (float) $lead->insurance_premium_amount - (float) ($lead->premium_payment_amount ?? 0)), 2) }}
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td>{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('d-m-Y') : '-' }}</td>
                             <td>
                                 @if($lead->insurance_end_date)
@@ -94,14 +104,16 @@
                             </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
-                                <button type="button" class="btn btn-info btn-sm icon-action-btn view-insurance-lead-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
-                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                @can('view lead')
+                                    <button type="button" class="btn btn-info btn-sm icon-action-btn view-insurance-lead-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
+                                    <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                @endcan
                                 <a href="{{ route(get_route_prefix() . 'insurance-leads.show', $lead->id) }}" class="btn btn-warning btn-sm icon-action-btn" title="Edit Lead" aria-label="Edit Lead"><i class="fas fa-ellipsis-h"></i></a>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="text-center">No insurance leads found.</td>
+                            <td colspan="13" class="text-center">No insurance leads found.</td>
                         </tr>
                     @endforelse
                 </tbody>

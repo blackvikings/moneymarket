@@ -391,12 +391,14 @@
                                     $hideActionButton = !empty($lead->insurance_lead_stage)
                                         && (($lead->crm_stage ?? 'New') === 'New' || $lead->crm_stage === null);
                                 @endphp
-                                <button type="button" class="btn btn-info btn-sm icon-action-btn view-lead-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details">
-                                    <i class="fas fa-file-alt"></i>
-                                </a>
+                                @can('view lead')
+                                    <button type="button" class="btn btn-info btn-sm icon-action-btn view-lead-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                    <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details">
+                                        <i class="fas fa-file-alt"></i>
+                                    </a>
+                                @endcan
                                 @can('edit lead')
                                     <a href="{{ route(get_route_prefix() . 'leads.edit', $lead->id) }}" class="btn btn-warning btn-sm icon-action-btn" title="Edit Lead" aria-label="Edit Lead">
                                         <i class="fas fa-pen"></i>

@@ -331,7 +331,7 @@
                 </div>
 
                 <hr>
-                <h5>Premium Payment Details</h5>
+                <h5>Premium Collection Amount Details</h5>
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group">
@@ -344,6 +344,68 @@
                     </div>
                 </div>
                 <div id="premium_payment_details_container" style="{{ old('premium_amount_collected', $lead->premium_amount_collected) == 'Yes' ? '' : 'display: none;' }}">
+                    @php
+                        $oldPartAmounts = old('premium_payment_part_amount');
+                        $oldPartDates = old('premium_payment_part_date');
+                        $existingParts = is_array($oldPartAmounts)
+                            ? collect($oldPartAmounts)->map(function ($amount, $idx) use ($oldPartDates) {
+                                return ['amount' => $amount, 'date' => $oldPartDates[$idx] ?? null];
+                            })->all()
+                            : ($lead->premium_payment_parts ?? []);
+
+                        if (empty($existingParts) && !empty($lead->premium_payment_amount)) {
+                            $existingParts = [[
+                                'amount' => $lead->premium_payment_amount,
+                                'date' => optional($lead->premium_payment_date)->format('Y-m-d'),
+                            ]];
+                        }
+                    @endphp
+                    <div class="mb-3">
+                        <label class="d-block">Collected Amount Entries <span class="text-danger">*</span></label>
+                        <div id="premium-payment-parts">
+                            @forelse($existingParts as $part)
+                                <div class="row premium-part-row mb-2">
+                                    <div class="col-md-5">
+                                        <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" value="{{ $part['amount'] ?? '' }}" placeholder="Collected Amount">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="date" name="premium_payment_part_date[]" class="form-control" value="{{ $part['date'] ?? '' }}">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="row premium-part-row mb-2">
+                                    <div class="col-md-5">
+                                        <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <input type="date" name="premium_payment_part_date[]" class="form-control">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+                            @endforelse
+                        </div>
+                        <button type="button" id="add-premium-part" class="btn btn-sm btn-outline-primary mt-1">
+                            <i class="fas fa-plus"></i> Add Part
+                        </button>
+                        @error('premium_payment_part_amount')
+                            <div class="text-danger mt-1">{{ $message }}</div>
+                        @enderror
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label class="mb-1">Total Collected</label>
+                                <input type="number" step="0.01" name="premium_payment_amount" id="premium_payment_amount_total" class="form-control" value="{{ old('premium_payment_amount', $lead->premium_payment_amount) }}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="mb-1">Balance Amount</label>
+                                <input type="number" step="0.01" id="premium_balance_amount_display" class="form-control" readonly>
+                            </div>
+                        </div>
+                    </div>
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
@@ -723,22 +785,7 @@
 
                 let fields = '';
                 if (type === 'Cash') {
-                    fields = `
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Amount <span class="text-danger">*</span></label>
-                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    fields = '';
                 } else if (type === 'Cheque') {
                     fields = `
                         <div class="row">
@@ -746,18 +793,6 @@
                                 <div class="form-group">
                                     <label>Cheque Number <span class="text-danger">*</span></label>
                                     <input type="text" name="premium_cheque_number" class="form-control" value="{{ $lead->premium_cheque_number }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Amount <span class="text-danger">*</span></label>
-                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
                                 </div>
                             </div>
                         </div>
@@ -775,18 +810,6 @@
                                     <input type="text" name="premium_upi_id" class="form-control" value="{{ $lead->premium_upi_id }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Amount <span class="text-danger">*</span></label>
-                                    <input type="number" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
-                                </div>
-                            </div>
                         </div>
                         <div class="form-group">
                             <label>Upload Image</label>
@@ -796,12 +819,6 @@
                 } else if (type === 'Bank Transfer') {
                     fields = `
                         <div class="row">
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Amount <span class="text-danger">*</span></label>
-                                    <input type="number" step="0.01" name="premium_payment_amount" class="form-control" value="{{ $lead->premium_payment_amount }}" required>
-                                </div>
-                            </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label>Account Holder Name <span class="text-danger">*</span></label>
@@ -828,12 +845,6 @@
                                     <input type="text" name="premium_ifsc_code" class="form-control" value="{{ $lead->premium_ifsc_code }}" required>
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="form-group">
-                                    <label>Date <span class="text-danger">*</span></label>
-                                    <input type="date" name="premium_payment_date" class="form-control" value="{{ $lead->premium_payment_date ? $lead->premium_payment_date->format('Y-m-d') : '' }}" required>
-                                </div>
-                            </div>
                         </div>
                         <div class="form-group">
                             <label>Upload Image</label>
@@ -843,6 +854,51 @@
                 }
                 fieldsContainer.html(fields);
             }).trigger('change');
+
+            function recalculatePremiumTotals() {
+                let total = 0;
+                $('.premium-part-amount').each(function() {
+                    const val = parseFloat($(this).val());
+                    if (!isNaN(val) && val > 0) {
+                        total += val;
+                    }
+                });
+                total = Math.round(total * 100) / 100;
+                $('#premium_payment_amount_total').val(total ? total.toFixed(2) : '');
+
+                const premium = parseFloat($('input[name="insurance_premium_amount"]').val()) || 0;
+                const balance = Math.max(0, Math.round((premium - total) * 100) / 100);
+                $('#premium_balance_amount_display').val(balance.toFixed(2));
+            }
+
+            $('#add-premium-part').on('click', function() {
+                $('#premium-payment-parts').append(`
+                    <div class="row premium-part-row mb-2">
+                        <div class="col-md-5">
+                            <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
+                        </div>
+                        <div class="col-md-5">
+                            <input type="date" name="premium_payment_part_date[]" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                `);
+            });
+
+            $(document).on('click', '.remove-premium-part', function() {
+                const rows = $('.premium-part-row').length;
+                if (rows > 1) {
+                    $(this).closest('.premium-part-row').remove();
+                } else {
+                    $(this).closest('.premium-part-row').find('input').val('');
+                }
+                recalculatePremiumTotals();
+            });
+
+            $(document).on('input change', '.premium-part-amount, input[name="insurance_premium_amount"]', recalculatePremiumTotals);
+            recalculatePremiumTotals();
         });
     </script>
 @stop

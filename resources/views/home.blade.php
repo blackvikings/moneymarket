@@ -47,7 +47,7 @@
             </div>
             <div class="dashboard-card__value">{{ $directRtoLeads }}</div>
             <div class="dashboard-card__label">Direct RTO Leads</div>
-            <a href="{{ route(get_route_prefix() . 'leads.index', ['lead_type' => 'RTO']) }}" class="dashboard-card__link">Open RTO leads <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'rto.index') }}" class="dashboard-card__link">Open RTO leads <i class="fas fa-arrow-circle-right"></i></a>
         </div>
         <div class="dashboard-card dashboard-card-primary dashboard-card-half">
             <div class="dashboard-card__top">

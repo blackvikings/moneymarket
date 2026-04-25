@@ -32,10 +32,10 @@ class HomeController extends Controller
         $totalLeads = $query->clone()->count();
         $confirmedLeads = $query->clone()->where('status', 'Lead')->count();
         $assignedToBank = $query->clone()->whereNotNull('bank_id')->count();
-        $directRtoLeads = $query->clone()
-            ->where('lead_type', 'RTO')
-            ->where('status', 'Lead')
-            ->count();
+        $directRtoLeads = Lead::where(function ($q) {
+            $q->whereNotNull('rto_stage')
+                ->orWhere('lead_type', 'RTO');
+        })->count();
         $directInsuranceLeads = $query->clone()
             ->where('lead_type', 'Insurance')
             ->where('status', 'Lead')

@@ -235,19 +235,21 @@
                             </td>
                             <td>{{ $lead->currentCity->name ?? '-' }}</td>
                             <td>
-                                @if(!empty($lead->insurance_lead_stage))
-                                    <span class="badge badge-success mr-1">Already moved to Insurance</span>
-                                    <button type="button"
-                                            class="btn btn-outline-info btn-sm icon-action-btn view-crm-details-btn"
-                                            data-url="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}"
-                                            title="Lead Details"
-                                            aria-label="Lead Details">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                @else
-                                    <button type="button" class="btn btn-info btn-sm icon-action-btn view-rto-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
-                                @endif
-                                <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                @can('view lead')
+                                    @if(!empty($lead->insurance_lead_stage))
+                                        <span class="badge badge-success mr-1">Already moved to Insurance</span>
+                                        <button type="button"
+                                                class="btn btn-outline-info btn-sm icon-action-btn view-crm-details-btn"
+                                                data-url="{{ route(get_route_prefix() . 'crm.show', $lead->id) }}"
+                                                title="Lead Details"
+                                                aria-label="Lead Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    @else
+                                        <button type="button" class="btn btn-info btn-sm icon-action-btn view-rto-btn" data-id="{{ $lead->id }}" title="View Lead" aria-label="View Lead"><i class="fas fa-eye"></i></button>
+                                    @endif
+                                    <a href="{{ route(get_route_prefix() . 'leads.full-details', $lead->id) }}" class="btn btn-secondary btn-sm icon-action-btn" title="Full Details" aria-label="Full Details"><i class="fas fa-file-alt"></i></a>
+                                @endcan
                             </td>
                         </tr>
                     @empty
