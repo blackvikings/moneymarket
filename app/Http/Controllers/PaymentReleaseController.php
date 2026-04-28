@@ -58,7 +58,11 @@ class PaymentReleaseController extends Controller
         $validator = Validator::make($request->all(), [
             'payment_type' => 'required|in:Cash,Cheque,Online,Bank Transfer',
             'payment_amount' => 'required_if:payment_type,Cash,Cheque,Online,Bank Transfer|nullable|numeric',
-            'payment_date' => 'required|date',
+            'payment_date' => 'nullable|date',
+            'payment_part_amount' => 'required|array|min:1',
+            'payment_part_amount.*' => 'required|numeric|min:0.01',
+            'payment_part_paid_at' => 'required|array|min:1',
+            'payment_part_paid_at.*' => 'required|date',
             'payment_remarks' => 'nullable|string',
             'payment_cheque_number' => 'required_if:payment_type,Cheque|nullable|string|max:255',
             'payment_cheque_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -78,9 +82,19 @@ class PaymentReleaseController extends Controller
                 ->with('payment_release_lead_id', $lead->id);
         }
 
-        if (round((float) $request->payment_amount, 2) !== round((float) $lead->disbursal_amount, 2)) {
+        $parts = $this->extractPaymentParts($request);
+        $totalPaid = $this->sumPaymentParts($parts);
+
+        if (empty($parts)) {
             return back()
-                ->withErrors(['payment_amount' => 'Payment amount must match the disbursal amount of ' . number_format((float) $lead->disbursal_amount, 2) . '.'])
+                ->withErrors(['payment_part_amount' => 'Please add at least one payment part entry.'])
+                ->withInput()
+                ->with('payment_release_lead_id', $lead->id);
+        }
+
+        if (round($totalPaid, 2) !== round((float) $lead->disbursal_amount, 2)) {
+            return back()
+                ->withErrors(['payment_part_amount' => 'Total part payment amount must match the disbursal amount of ' . number_format((float) $lead->disbursal_amount, 2) . '.'])
                 ->withInput()
                 ->with('payment_release_lead_id', $lead->id);
         }
@@ -97,8 +111,16 @@ class PaymentReleaseController extends Controller
         $lead->payment_ifsc_code = null;
         $lead->payment_bank_transfer_image_path = null;
 
-        $lead->payment_amount = (float) $request->payment_amount;
-        $lead->payment_date = $request->payment_date;
+        $lead->payment_amount = $totalPaid;
+        $lead->payment_parts = $parts;
+        $lead->payment_date = collect($parts)
+            ->pluck('paid_at')
+            ->filter()
+            ->map(function ($paidAt) {
+                return \Illuminate\Support\Carbon::parse($paidAt);
+            })
+            ->sort()
+            ->last()?->toDateString() ?? $request->payment_date;
         $lead->payment_remarks = $request->payment_remarks;
 
         if ($request->payment_type === 'Cheque') {
@@ -129,5 +151,42 @@ class PaymentReleaseController extends Controller
         $lead->save();
 
         return back()->with('success', 'Payment details saved and status updated to Done.');
+    }
+
+    private function extractPaymentParts(Request $request): array
+    {
+        $amounts = $request->input('payment_part_amount', []);
+        $paidAts = $request->input('payment_part_paid_at', []);
+
+        $parts = [];
+        foreach ((array) $amounts as $idx => $amount) {
+            if ($amount === null || $amount === '') {
+                continue;
+            }
+
+            $amountValue = (float) $amount;
+            if ($amountValue <= 0) {
+                continue;
+            }
+
+            $paidAt = $paidAts[$idx] ?? null;
+            if (!$paidAt) {
+                continue;
+            }
+
+            $parts[] = [
+                'amount' => round($amountValue, 2),
+                'paid_at' => \Illuminate\Support\Carbon::parse($paidAt)->format('Y-m-d H:i:s'),
+            ];
+        }
+
+        return $parts;
+    }
+
+    private function sumPaymentParts(array $parts): float
+    {
+        return (float) collect($parts)->sum(function ($part) {
+            return (float) ($part['amount'] ?? 0);
+        });
     }
 }

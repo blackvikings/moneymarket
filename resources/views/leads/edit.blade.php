@@ -132,6 +132,11 @@
 @stop
 
 @section('content')
+    @php
+        $canCreateReferralPerson = auth()->user()->hasRole('admin') || auth()->user()->can('create referral person');
+        $canCreateVehicleManufacture = auth()->user()->hasRole('admin') || auth()->user()->can('create vehicle manufacture');
+        $canCreateInsurance = auth()->user()->hasRole('admin') || auth()->user()->can('create insurance');
+    @endphp
     <div id="alert-container"></div>
 
     <div class="card">
@@ -257,11 +262,13 @@
                                         <option value="{{ $lead->lead_source_person_name }}" selected>{{ $lead->lead_source_person_name }}</option>
                                     @endif
                                 </select>
-                                <div class="input-group-append" id="lead_source_person_name_add_btn_wrap">
-                                    <button class="btn btn-outline-secondary" type="button" id="lead_source_person_name_add_btn" data-toggle="modal" data-target="#addReferralPersonModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
+                                @if($canCreateReferralPerson)
+                                    <div class="input-group-append" id="lead_source_person_name_add_btn_wrap">
+                                        <button class="btn btn-outline-secondary" type="button" id="lead_source_person_name_add_btn" data-toggle="modal" data-target="#addReferralPersonModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                             @error('lead_source_person_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                         </div>
@@ -755,11 +762,13 @@
                                                     <option value="{{ $mfg->id }}" {{ old('manufacture_id', $lead->manufacture_id) == $mfg->id ? 'selected' : '' }}>{{ $mfg->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
+                                            @if($canCreateVehicleManufacture)
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </div>
                                         @error('manufacture_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
@@ -818,11 +827,13 @@
                                                     <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <div class="input-group-append">
-                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                                    <i class="fas fa-plus"></i>
-                                                </button>
-                                            </div>
+                                            @if($canCreateVehicleManufacture)
+                                                <div class="input-group-append">
+                                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                            @endif
                                         </div>
                                         @error('rto_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                     </div>
@@ -867,9 +878,11 @@
                                             <div class="form-group">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <label class="mb-0">Insurance Company</label>
-                                                    <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
-                                                        <i class="fas fa-plus-circle"></i>
-                                                    </button>
+                                                    @if($canCreateInsurance)
+                                                        <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
+                                                            <i class="fas fa-plus-circle"></i>
+                                                        </button>
+                                                    @endif
                                                 </div>
                                                 <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                                     <option value="">Select Insurance Company</option>
@@ -913,7 +926,7 @@
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label>Financer Name</label>
-                                        <select name="old_financer" class="form-control @error('old_financer') is-invalid @enderror">
+                                        <select name="old_financer" class="form-control hp-optional-field @error('old_financer') is-invalid @enderror">
                                             <option value="">Select Financer</option>
                                             @foreach($banks as $bank)
                                                 <option value="{{ $bank->name }}" {{ old('old_financer', $lead->old_financer) == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
@@ -976,11 +989,13 @@
                                             <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('rto_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
                                         @endforeach
                                     </select>
-                                    <div class="input-group-append">
-                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
+                                    @if($canCreateVehicleManufacture)
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                <i class="fas fa-plus"></i>
+                                            </button>
+                                        </div>
+                                    @endif
                                 </div>
                                 @error('rto_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                             </div>
@@ -1023,9 +1038,11 @@
                                     <div class="form-group">
                                         <div class="d-flex justify-content-between align-items-center">
                                             <label class="mb-0">Insurance Company</label>
-                                            <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
-                                                <i class="fas fa-plus-circle"></i>
-                                            </button>
+                                            @if($canCreateInsurance)
+                                                <button type="button" class="btn btn-link btn-sm p-0 add-insurance-company-btn" title="Add Insurance Company">
+                                                    <i class="fas fa-plus-circle"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                         <select name="insurance_id" class="form-control @error('insurance_id') is-invalid @enderror">
                                             <option value="">Select Insurance Company</option>
@@ -1110,11 +1127,13 @@
                                                 <option value="{{ $mfg->name }}" data-id="{{ $mfg->id }}" {{ old('ins_mfg_name', $lead->mfg_name) == $mfg->name ? 'selected' : '' }}>{{ $mfg->name }}</option>
                                             @endforeach
                                         </select>
-                                        <div class="input-group-append">
-                                            <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
-                                        </div>
+                                        @if($canCreateVehicleManufacture)
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        @endif
                                     </div>
                                     @error('ins_mfg_name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                                 </div>
@@ -2406,9 +2425,10 @@
                 $('#hp_related_fields, #total_loan_div').toggle(isHp);
 
                 if (isHp) {
-                    $('#hp_related_fields').find('input').prop('disabled', false);
+                    $('#hp_related_fields').find('input, select').prop('disabled', false).prop('required', false);
                 } else {
                     $('#hp_related_fields').find('input').prop('disabled', true).val('');
+                    $('#hp_related_fields').find('select').prop('disabled', true).prop('required', false).val('');
                 }
                 calculateTotal();
             }).trigger('change');

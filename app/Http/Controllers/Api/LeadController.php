@@ -309,6 +309,13 @@ class LeadController extends Controller
 
         $data = $request->all();
         $actor = Auth::user();
+        $data['contact_number'] = Lead::normalizeContactNumber($data['contact_number'] ?? null) ?? ($data['contact_number'] ?? null);
+
+        if ($duplicateLead = Lead::findDuplicateByContact($data['contact_number'] ?? null)) {
+            throw ValidationException::withMessages([
+                'contact_number' => 'This contact number already exists for lead #' . $duplicateLead->id . ' (' . ($duplicateLead->customer_name ?? 'Unknown') . ').',
+            ]);
+        }
 
         if ($this->isSelfLeadSource($data['lead_source'] ?? null)) {
             $this->applySelfLeadAssignment($data);

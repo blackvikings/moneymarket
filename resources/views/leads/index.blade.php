@@ -21,6 +21,9 @@
 @stop
 
 @section('content')
+    @php
+        $canCreateBank = auth()->user()->hasRole('admin') || auth()->user()->can('create bank');
+    @endphp
     <style>
         /* Custom Tab Design */
         .leads-tabs-wrapper {
@@ -433,18 +436,29 @@
                                                                         <option value="{{ $bank->id }}">{{ $bank->name }}</option>
                                                                     @endforeach
                                                                 </select>
-                                                                <div class="input-group-append">
-                                                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
-                                                                        <i class="fas fa-plus"></i>
-                                                                    </button>
-                                                                </div>
+                                                                @if($canCreateBank)
+                                                                    <div class="input-group-append">
+                                                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
+                                                                            <i class="fas fa-plus"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </div>
                                                         <div class="form-group">
                                                             <label>Assign Branch <span class="text-danger">*</span></label>
-                                                            <select name="bank_branch_id" class="form-control branch-select" required>
-                                                                <option value="">Select Bank First</option>
-                                                            </select>
+                                                            <div class="input-group">
+                                                                <select name="bank_branch_id" class="form-control branch-select" required>
+                                                                    <option value="">Select Bank First</option>
+                                                                </select>
+                                                                @if($canCreateBank)
+                                                                    <div class="input-group-append">
+                                                                        <button class="btn btn-outline-secondary add-branch-trigger" type="button" data-toggle="modal" data-target="#addBranchModal">
+                                                                            <i class="fas fa-plus"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                @endif
+                                                            </div>
                                                         </div>
                                                         <div class="form-group">
                                                             <label>Executive Name</label>
@@ -555,18 +569,29 @@
                                                                                     <option value="{{ $bank->id }}">{{ $bank->name }}</option>
                                                                                 @endforeach
                                                                             </select>
-                                                                            <div class="input-group-append">
-                                                                                <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
-                                                                                    <i class="fas fa-plus"></i>
-                                                                                </button>
-                                                                            </div>
+                                                                            @if($canCreateBank)
+                                                                                <div class="input-group-append">
+                                                                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addBankModal">
+                                                                                        <i class="fas fa-plus"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            @endif
                                                                         </div>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label>Assign Branch <span class="text-danger">*</span></label>
-                                                                        <select name="bank_branch_id" class="form-control branch-select" required>
-                                                                            <option value="">Select Bank First</option>
-                                                                        </select>
+                                                                        <div class="input-group">
+                                                                            <select name="bank_branch_id" class="form-control branch-select" required>
+                                                                                <option value="">Select Bank First</option>
+                                                                            </select>
+                                                                            @if($canCreateBank)
+                                                                                <div class="input-group-append">
+                                                                                    <button class="btn btn-outline-secondary add-branch-trigger" type="button" data-toggle="modal" data-target="#addBranchModal">
+                                                                                        <i class="fas fa-plus"></i>
+                                                                                    </button>
+                                                                                </div>
+                                                                            @endif
+                                                                        </div>
                                                                     </div>
                                                                     <div class="form-group">
                                                                         <label>Executive Name</label>
@@ -676,13 +701,52 @@
                             <input type="text" name="name" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label>Branch Name <span class="text-danger">*</span></label>
-                            <input type="text" name="branch_name" class="form-control" required>
+                            <label>Branch Name <small class="text-muted">(Optional)</small></label>
+                            <input type="text" name="branch_name" class="form-control">
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Save Bank</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="addBranchModal" tabindex="-1" role="dialog" aria-labelledby="addBranchModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBranchModalLabel">Add New Branch</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="addBranchForm">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="bank_id" id="branch_modal_bank_id">
+                        <div class="form-group">
+                            <label>Bank</label>
+                            <input type="text" id="branch_modal_bank_name" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Branch Name <span class="text-danger">*</span></label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input type="text" name="address_line" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Pincode</label>
+                            <input type="text" name="pincode" class="form-control">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save Branch</button>
                     </div>
                 </form>
             </div>
@@ -696,6 +760,7 @@
     <script>
         $(document).ready(function() {
             $('.table').DataTable();
+            let activeBranchContext = null;
 
             // --- AJAX View Modal ---
             $('.view-lead-btn').click(function() {
@@ -796,6 +861,27 @@
                 }
             });
 
+            $(document).on('click', '.add-branch-trigger', function() {
+                const modal = $(this).closest('.modal');
+                const bankSelect = modal.find('.bank-select');
+                const bankId = bankSelect.val();
+                const bankName = bankSelect.find('option:selected').text();
+
+                if (!bankId) {
+                    alert('Please select bank first.');
+                    return false;
+                }
+
+                activeBranchContext = {
+                    modal: modal,
+                    branchSelect: modal.find('.branch-select'),
+                    bankSelect: bankSelect,
+                };
+
+                $('#branch_modal_bank_id').val(bankId);
+                $('#branch_modal_bank_name').val(bankName);
+            });
+
             // Select All Checkbox
             $('#selectAll').click(function() {
                 $('.lead-checkbox').prop('checked', this.checked);
@@ -829,6 +915,37 @@
                     },
                     error: function(xhr) {
                         alert('Error adding bank. Please check inputs.');
+                    }
+                });
+            });
+
+            $('#addBranchForm').submit(function(e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+
+                $.ajax({
+                    url: "{{ route(get_route_prefix() . 'banks.store-branch-ajax') }}",
+                    type: "POST",
+                    data: formData,
+                    success: function(response) {
+                        if (response.success && activeBranchContext) {
+                            const branchSelect = activeBranchContext.branchSelect;
+                            const branch = response.branch;
+
+                            if (!branchSelect.find(`option[value="${branch.id}"]`).length) {
+                                branchSelect.append(`<option value="${branch.id}">${branch.name}</option>`);
+                            }
+
+                            branchSelect.val(String(branch.id)).trigger('change');
+                            $('#addBranchModal').modal('hide');
+                            $('#addBranchForm')[0].reset();
+                            $('#branch_modal_bank_id').val('');
+                            $('#branch_modal_bank_name').val('');
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                        alert('Error adding branch. Please check inputs.');
                     }
                 });
             });

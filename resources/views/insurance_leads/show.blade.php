@@ -57,10 +57,22 @@
 @stop
 
 @section('content_header')
-    <h1>Insurance Lead: {{ $lead->customer_name }}</h1>
+    @php
+        $backUrl = url()->previous();
+        if (!$backUrl || $backUrl === url()->current()) {
+            $backUrl = route(get_route_prefix() . 'insurance-leads.index');
+        }
+    @endphp
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0">Insurance Lead: {{ $lead->customer_name }}</h1>
+        <a href="{{ $backUrl }}" class="btn btn-secondary">Back</a>
+    </div>
 @stop
 
 @section('content')
+    @php
+        $canCreateReferralPerson = auth()->user()->hasRole('admin') || auth()->user()->can('create referral person');
+    @endphp
     <div id="alert-container"></div>
 
     @if(session('success'))
@@ -235,24 +247,26 @@
                                 <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2">
                                     {{-- JS will handle pre-selection --}}
                                 </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
+                                @if($canCreateReferralPerson)
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance Start Date</label>
-                            <input type="date" name="insurance_start_date" id="insurance_start_date" class="form-control" value="{{ $lead->insurance_start_date ? $lead->insurance_start_date->format('Y-m-d') : '' }}" required>
+                            <input type="text" name="insurance_start_date" id="insurance_start_date" class="form-control ddmmyyyy-date" value="{{ $lead->insurance_start_date ? $lead->insurance_start_date->format('d/m/Y') : '' }}" placeholder="DD/MM/YYYY" required>
                         </div>
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
                             <label>Insurance End Date</label>
-                            <input type="date" name="insurance_end_date" id="insurance_end_date" class="form-control" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('Y-m-d') : '' }}" required>
+                            <input type="text" name="insurance_end_date" id="insurance_end_date" class="form-control ddmmyyyy-date" value="{{ $lead->insurance_end_date ? $lead->insurance_end_date->format('d/m/Y') : '' }}" placeholder="DD/MM/YYYY" required>
                         </div>
                     </div>
                 </div>
@@ -369,7 +383,7 @@
                                         <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" value="{{ $part['amount'] ?? '' }}" placeholder="Collected Amount">
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="date" name="premium_payment_part_date[]" class="form-control" value="{{ $part['date'] ?? '' }}">
+                                        <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" value="{{ !empty($part['date']) ? (str_contains($part['date'], '/') ? $part['date'] : \Carbon\Carbon::parse($part['date'])->format('d/m/Y')) : '' }}" placeholder="DD/MM/YYYY">
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
@@ -381,7 +395,7 @@
                                         <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="date" name="premium_payment_part_date[]" class="form-control">
+                                        <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" placeholder="DD/MM/YYYY">
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
@@ -753,15 +767,52 @@
 
             // --- Auto-calculate Insurance End Date ---
             $('#insurance_start_date').change(function() {
-                var startDate = $(this).val();
+                var startDate = parseDdMmYyyyDate($(this).val());
                 if (startDate) {
-                    var start = new Date(startDate);
+                    var start = new Date(startDate.getTime());
                     start.setFullYear(start.getFullYear() + 1);
-                    // Subtract 1 day so it is exactly a 1-year period
                     start.setDate(start.getDate() - 1);
-                    var endDate = start.toISOString().split('T')[0];
-                    $('#insurance_end_date').val(endDate);
+                    $('#insurance_end_date').val(formatDateDdMmYyyy(start));
                 }
+            });
+
+            function parseDdMmYyyyDate(value) {
+                const normalized = (value || '').trim();
+                if (!normalized) {
+                    return null;
+                }
+
+                const match = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                if (!match) {
+                    return null;
+                }
+
+                const parsed = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            }
+
+            function formatDateDdMmYyyy(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            function normalizeDdMmYyyyInput(input) {
+                const digits = (input.value || '').replace(/\D/g, '').slice(0, 8);
+                if (digits.length <= 2) {
+                    input.value = digits;
+                    return;
+                }
+                if (digits.length <= 4) {
+                    input.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                    return;
+                }
+                input.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+            }
+
+            $(document).on('input', '.ddmmyyyy-date', function() {
+                normalizeDdMmYyyyInput(this);
             });
 
             // --- Premium Payment Logic ---
@@ -878,7 +929,7 @@
                             <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
                         </div>
                         <div class="col-md-5">
-                            <input type="date" name="premium_payment_part_date[]" class="form-control">
+                            <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" placeholder="DD/MM/YYYY">
                         </div>
                         <div class="col-md-2">
                             <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>

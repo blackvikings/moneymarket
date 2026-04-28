@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\RtoExport;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class RtoController extends Controller
 {
@@ -92,6 +93,14 @@ class RtoController extends Controller
         }
 
         $data = $request->except(['current_address_proof', 'residence_type']);
+        $data['contact_number'] = Lead::normalizeContactNumber($data['contact_number'] ?? null) ?? ($data['contact_number'] ?? null);
+
+        if ($duplicateLead = Lead::findDuplicateByContact($data['contact_number'] ?? null)) {
+            throw ValidationException::withMessages([
+                'contact_number' => 'This contact number already exists for lead #' . $duplicateLead->id . ' (' . ($duplicateLead->customer_name ?? 'Unknown') . ').',
+            ]);
+        }
+
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead';
         $data['rto_stage'] = 'New';
@@ -303,26 +312,30 @@ class RtoController extends Controller
 
     public function updateRtoDone(Request $request, Lead $lead)
     {
+        $canMoveToInsurance = $lead->canBeMovedToInsurance();
+
         $request->validate([
-            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'rto_approved_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'remark' => 'nullable|string',
             'action_type' => 'nullable|in:mark_rto_done,move_to_insurance,save',
         ]);
 
-        $path = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
-
         $updateData = [
-            'rto_approved_doc_path' => $path,
             'rto_work_done_at' => now(),
             'remark' => $request->input('remark'),
         ];
 
-        if ($request->input('action_type') === 'move_to_insurance') {
+        if ($request->hasFile('rto_approved_doc')) {
+            $path = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
+            $updateData['rto_approved_doc_path'] = $path;
+        }
+
+        if ($request->input('action_type') === 'move_to_insurance' && $canMoveToInsurance) {
             $updateData['insurance_lead_stage'] = 'New';
             $updateData['lead_type'] = 'Insurance'; // Update lead type to Insurance if needed, depending on business logic
             $updateData['rto_stage'] = null;
             $lead->update($updateData);
-            return redirect()->back()->with('success', 'Final document uploaded. RTO process complete and moved to Insurance.');
+            return redirect()->back()->with('success', 'RTO process complete and moved to Insurance.');
         } else {
             $lead->update($updateData);
             return redirect()->back()->with('success', 'RTO marked as done successfully.');
@@ -343,5 +356,14 @@ class RtoController extends Controller
     {
         $lead->update(['rto_stage' => 'Loan Return', 'loan_return_reason' => $request->rejection_reason, 'loan_return_date' => now()]);
         return redirect()->back();
+    }
+
+    public function export(Request $request)
+    {
+        if (!Auth::user()->hasRole('admin') && !Auth::user()->can('export rto')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return (new RtoExport($request))->download('rto-leads.csv');
     }
 }

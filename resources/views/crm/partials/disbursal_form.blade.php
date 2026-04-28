@@ -47,21 +47,25 @@
                         <label class="form-check-label" for="move_to_rto_{{ $lead->id }}">Move to RTO</label>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input move-to-insurance-check" id="move_to_insurance_{{ $lead->id }}" name="move_to_insurance" value="1" data-target="#insurance_expiry_container_{{ $lead->id }}">
-                        <label class="form-check-label" for="move_to_insurance_{{ $lead->id }}">Move to Insurance</label>
+                @if($lead->canBeMovedToInsurance())
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input move-to-insurance-check" id="move_to_insurance_{{ $lead->id }}" name="move_to_insurance" value="1" data-target="#insurance_expiry_container_{{ $lead->id }}">
+                            <label class="form-check-label" for="move_to_insurance_{{ $lead->id }}">Move to Insurance</label>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            @if($lead->canBeMovedToInsurance())
+                <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
+                    <div class="col-md-6 offset-md-6">
+                        <div class="form-group">
+                            <label>Insurance Expiry Date <span class="text-danger">*</span></label>
+                            <input type="date" name="insurance_expiry_date" class="form-control">
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
-                <div class="col-md-6 offset-md-6">
-                    <div class="form-group">
-                        <label>Insurance Expiry Date <span class="text-danger">*</span></label>
-                        <input type="date" name="insurance_expiry_date" class="form-control">
-                    </div>
-                </div>
-            </div>
+            @endif
         </div>
     </div>
 

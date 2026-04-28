@@ -3,13 +3,19 @@
 @section('title', 'Payment Release Details')
 
 @section('content_header')
+    @php
+        $backUrl = url()->previous();
+        if (!$backUrl || $backUrl === url()->current()) {
+            $backUrl = route(get_route_prefix() . 'payment-release.index');
+        }
+    @endphp
     <div class="d-flex justify-content-between align-items-center">
         <div>
             <h1>Payment Release Details</h1>
             <p class="text-muted mb-0">Lead #{{ $lead->id }} - {{ $lead->customer_name }}</p>
         </div>
-        <a href="{{ route(get_route_prefix() . 'payment-release.index') }}" class="btn btn-secondary">
-            Back to List
+        <a href="{{ $backUrl }}" class="btn btn-secondary">
+            Back
         </a>
     </div>
 @stop
@@ -45,58 +51,84 @@
                     </span>
                 </div>
                 <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-            <div class="detail-label">Payment Type</div>
-            <div class="detail-value">
-                @if($lead->payment_type === 'Online')
-                    UPI/QR
-                @elseif($lead->payment_type === 'Bank Transfer')
-                    NEFT/RTGS
-                @else
-                    {{ $lead->payment_type ?? '-' }}
-                @endif
-            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="detail-label">Payment Amount</div>
-                            <div class="detail-value">{{ $lead->payment_amount !== null ? number_format($lead->payment_amount, 2) : '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="detail-label">Disbursal Amount</div>
-                            <div class="detail-value">{{ $lead->disbursal_amount !== null ? number_format($lead->disbursal_amount, 2) : '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="detail-label">Payment Date</div>
-                            <div class="detail-value">{{ $lead->payment_date ? $lead->payment_date->format('d-m-Y') : '-' }}</div>
-                        </div>
+                    @php
+                        $paymentParts = $lead->payment_parts ?? [];
+                        if (empty($paymentParts) && !empty($lead->payment_amount)) {
+                            $paymentParts = [[
+                                'amount' => $lead->payment_amount,
+                                'paid_at' => optional($lead->payment_date)->format('Y-m-d 00:00:00'),
+                            ]];
+                        }
+                    @endphp
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm mb-4">
+                            <tbody>
+                                <tr>
+                                    <th style="width: 22%;">Payment Type</th>
+                                    <td style="width: 28%;">
+                                        @if($lead->payment_type === 'Online')
+                                            UPI/QR
+                                        @elseif($lead->payment_type === 'Bank Transfer')
+                                            NEFT/RTGS
+                                        @else
+                                            {{ $lead->payment_type ?? '-' }}
+                                        @endif
+                                    </td>
+                                    <th style="width: 22%;">Payment Amount</th>
+                                    <td style="width: 28%;">{{ $lead->payment_amount !== null ? number_format($lead->payment_amount, 2) : '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Disbursal Amount</th>
+                                    <td>{{ $lead->disbursal_amount !== null ? number_format($lead->disbursal_amount, 2) : '-' }}</td>
+                                    <th>Payment Date</th>
+                                    <td>{{ $lead->payment_date ? $lead->payment_date->format('d-m-Y') : '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Released At</th>
+                                    <td>{{ $lead->payment_release_detail_at ? $lead->payment_release_detail_at->format('d-m-Y H:i') : '-' }}</td>
+                                    <th>Disbursal Date</th>
+                                    <td>{{ $lead->disbursal_date ? $lead->disbursal_date->format('d-m-Y') : '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <th>CRM Stage</th>
+                                    <td>{{ $lead->crm_stage ?? 'New' }}</td>
+                                    <th>Remarks</th>
+                                    <td>{{ $lead->payment_remarks ?: '-' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="detail-label">Released At</div>
-                            <div class="detail-value">{{ $lead->payment_release_detail_at ? $lead->payment_release_detail_at->format('d-m-Y H:i') : '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="detail-label">Disbursal Date</div>
-                            <div class="detail-value">{{ $lead->disbursal_date ? $lead->disbursal_date->format('d-m-Y') : '-' }}</div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="detail-label">CRM Stage</div>
-                            <div class="detail-value">{{ $lead->crm_stage ?? 'New' }}</div>
-                        </div>
+                    <div class="detail-label">Part Payment History</div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 80px;">Part</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($paymentParts as $index => $part)
+                                    @php
+                                        $partPaidAt = !empty($part['paid_at']) ? \Illuminate\Support\Carbon::parse($part['paid_at']) : null;
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $partPaidAt ? $partPaidAt->format('d-m-Y') : '-' }}</td>
+                                        <td>{{ $partPaidAt ? $partPaidAt->format('H:i') : '-' }}</td>
+                                        <td>{{ isset($part['amount']) ? number_format((float) $part['amount'], 2) : '-' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">No part payment history found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
                     </div>
-
-                    @if($lead->payment_remarks)
-                        <div class="row">
-                            <div class="col-md-12">
-                                <div class="detail-label">Remarks</div>
-                                <div class="detail-value">{{ $lead->payment_remarks }}</div>
-                            </div>
-                        </div>
-                    @endif
-
-                    <hr>
 
                     <div class="row">
                         @if($lead->payment_type === 'Cheque')

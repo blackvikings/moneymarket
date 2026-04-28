@@ -3,39 +3,8 @@
 @section('title', 'Add New Insurance Lead')
 
 @section('css')
-    <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
-        .dropzone {
-            border: 2px dashed #007bff;
-            border-radius: 10px;
-            background: #f8f9fa;
-            min-height: 150px;
-            padding: 20px;
-        }
-        .dropzone .dz-message {
-            font-weight: 400;
-        }
-        .dropzone .dz-message .note {
-            font-size: 0.8em;
-            font-weight: 200;
-            display: block;
-            margin-top: 1.4rem;
-        }
-        .dropzone .dz-preview .dz-remove {
-            color: #fff;
-            background: #dc3545;
-            padding: 2px 5px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            margin-top: 5px;
-            display: block;
-        }
-        .dropzone .dz-preview .dz-remove:hover {
-            background: #a71d2a;
-            color: #fff;
-        }
         .select2-container .select2-selection--single {
             height: 38px !important;
         }
@@ -50,6 +19,10 @@
 @stop
 
 @section('content')
+    @php
+        $canCreateReferralPerson = auth()->user()->hasRole('admin') || auth()->user()->can('create referral person');
+        $canCreateVehicleManufacture = auth()->user()->hasRole('admin') || auth()->user()->can('create vehicle manufacture');
+    @endphp
     <div class="card">
         <div class="card-body">
             <form action="{{ route(get_route_prefix() . 'insurance-leads.store') }}" method="POST" enctype="multipart/form-data" id="insuranceLeadForm">
@@ -123,11 +96,13 @@
                                 <select name="lead_source_person_name" id="lead_source_person_name" class="form-control select2 @error('lead_source_person_name') is-invalid @enderror">
                                     <option value="">Search for a person...</option>
                                 </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
+                                @if($canCreateReferralPerson)
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addReferralPersonModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -146,11 +121,13 @@
                                         <option value="{{ $mfg->id }}">{{ $mfg->name }}</option>
                                     @endforeach
                                 </select>
-                                <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
+                                @if($canCreateVehicleManufacture)
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" type="button" data-toggle="modal" data-target="#addManufactureModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -267,34 +244,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>Address Proof Type <span class="text-danger">*</span></label>
-                            <select name="insurance_address_proof_type" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <option value="Aadhar">Aadhar</option>
-                                <option value="Voter Id">Voter Id</option>
-                                <option value="Driving Licence">Driving Licence</option>
-                                <option value="Pancard">Pancard</option>
-                                <option value="Passport">Passport</option>
-                                <option value="Electricity Bill">Electricity Bill</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>Address Proof Upload <small class="text-muted">(Max 5MB per file, JPG, PNG, PDF)</small> <span class="text-danger">*</span></label>
-                            <div id="addressProofDropzone" class="dropzone">
-                                <div class="dz-message">
-                                    <h3>Drop files here or click to upload.</h3>
-                                    <span class="note">Multiple files allowed. Previews will be shown below.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <hr>
                 <h5>Premium Collection Amount Details</h5>
                 <div class="row">
@@ -322,7 +271,7 @@
                                         <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" value="{{ $partAmount }}" placeholder="Collected Amount">
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="date" name="premium_payment_part_date[]" class="form-control" value="{{ $partDates[$idx] ?? '' }}">
+                                        <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" value="{{ !empty($partDates[$idx]) ? (str_contains($partDates[$idx], '/') ? $partDates[$idx] : \Carbon\Carbon::parse($partDates[$idx])->format('d/m/Y')) : '' }}" placeholder="DD/MM/YYYY">
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
@@ -334,7 +283,7 @@
                                         <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="date" name="premium_payment_part_date[]" class="form-control">
+                                        <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" placeholder="DD/MM/YYYY">
                                     </div>
                                     <div class="col-md-2">
                                         <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>
@@ -464,11 +413,8 @@
 @stop
 
 @section('js')
-    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        Dropzone.autoDiscover = false;
-
         $(document).ready(function() {
             // --- Select2 for Lead Source Person ---
             $('#lead_source_person_name').select2({
@@ -528,46 +474,12 @@
             $('#vehicle_loan_type').change(toggleOtherVehicle);
             toggleOtherVehicle();
 
-            // --- Dropzone Initialization ---
-            var myDropzone = new Dropzone("#addressProofDropzone", {
-                url: "{{ route(get_route_prefix() . 'insurance-leads.store') }}",
-                autoProcessQueue: false,
-                uploadMultiple: true,
-                parallelUploads: 10,
-                maxFiles: 10,
-                paramName: "insurance_address_proof",
-                addRemoveLinks: true,
-                dictRemoveFile: "Remove File",
-                acceptedFiles: "image/*,application/pdf",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                init: function() {
-                    var dz = this;
-
-                    $("#submitBtn").click(function(e) {
-                        e.preventDefault();
-                        if ($("#insuranceLeadForm")[0].checkValidity()) {
-                            if (dz.getQueuedFiles().length > 0) {
-                                dz.processQueue();
-                            } else {
-                                alert("Please upload at least one address proof.");
-                            }
-                        } else {
-                            $("#insuranceLeadForm")[0].reportValidity();
-                        }
-                    });
-
-                    this.on("sendingmultiple", function(data, xhr, formData) {
-                        var formArray = $("#insuranceLeadForm").serializeArray();
-                        $.each(formArray, function(i, field) {
-                            formData.append(field.name, field.value);
-                        });
-                    });
-
-                    this.on("successmultiple", function(files, response) {
-                        window.location.href = "{{ route(get_route_prefix() . 'insurance-leads.index') }}";
-                    });
+            $("#submitBtn").click(function(e) {
+                e.preventDefault();
+                if ($("#insuranceLeadForm")[0].checkValidity()) {
+                    $("#insuranceLeadForm")[0].submit();
+                } else {
+                    $("#insuranceLeadForm")[0].reportValidity();
                 }
             });
 
@@ -727,15 +639,52 @@
 
             // --- Auto-calculate Insurance End Date ---
             $('#insurance_start_date').change(function() {
-                var startDate = $(this).val();
-                if (startDate) {
-                    var start = new Date(startDate);
+                    var startDate = parseDdMmYyyyDate($(this).val());
+                    if (startDate) {
+                    var start = new Date(startDate.getTime());
                     start.setFullYear(start.getFullYear() + 1);
-                    // Subtract 1 day so it is exactly a 1-year period
                     start.setDate(start.getDate() - 1);
-                    var endDate = start.toISOString().split('T')[0];
-                    $('#insurance_end_date').val(endDate);
+                    $('#insurance_end_date').val(formatDateDdMmYyyy(start));
                 }
+            });
+
+            function parseDdMmYyyyDate(value) {
+                const normalized = (value || '').trim();
+                if (!normalized) {
+                    return null;
+                }
+
+                const match = normalized.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                if (!match) {
+                    return null;
+                }
+
+                const parsed = new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            }
+
+            function formatDateDdMmYyyy(date) {
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            function normalizeDdMmYyyyInput(input) {
+                const digits = (input.value || '').replace(/\D/g, '').slice(0, 8);
+                if (digits.length <= 2) {
+                    input.value = digits;
+                    return;
+                }
+                if (digits.length <= 4) {
+                    input.value = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                    return;
+                }
+                input.value = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+            }
+
+            $(document).on('input', '.ddmmyyyy-date', function() {
+                normalizeDdMmYyyyInput(this);
             });
 
             // --- Add Manufacture AJAX ---
@@ -893,7 +842,7 @@
                             <input type="number" step="0.01" min="0.01" name="premium_payment_part_amount[]" class="form-control premium-part-amount" placeholder="Collected Amount">
                         </div>
                         <div class="col-md-5">
-                            <input type="date" name="premium_payment_part_date[]" class="form-control">
+                            <input type="text" name="premium_payment_part_date[]" class="form-control ddmmyyyy-date" placeholder="DD/MM/YYYY">
                         </div>
                         <div class="col-md-2">
                             <button type="button" class="btn btn-outline-danger btn-block remove-premium-part"><i class="fas fa-trash"></i></button>

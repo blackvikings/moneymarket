@@ -85,6 +85,22 @@
                                     </div>
                                     <form action="{{ route(get_route_prefix() . 'payment-release.store-details', $lead->id) }}" method="POST" enctype="multipart/form-data" data-confirm-message="Save these payment release details?">
                                         @csrf
+                                        @php
+                                            $oldPartAmounts = session('payment_release_lead_id') == $lead->id ? old('payment_part_amount') : null;
+                                            $oldPartPaidAts = session('payment_release_lead_id') == $lead->id ? old('payment_part_paid_at') : null;
+                                            $existingParts = is_array($oldPartAmounts)
+                                                ? collect($oldPartAmounts)->map(function ($amount, $idx) use ($oldPartPaidAts) {
+                                                    return ['amount' => $amount, 'paid_at' => $oldPartPaidAts[$idx] ?? null];
+                                                })->all()
+                                                : [];
+
+                                            if (empty($existingParts)) {
+                                                $existingParts = [[
+                                                    'amount' => number_format((float) $lead->disbursal_amount, 2, '.', ''),
+                                                    'paid_at' => '',
+                                                ]];
+                                            }
+                                        @endphp
                                         <div class="modal-body">
                                             <div class="alert alert-info py-2">
                                                 Release amount is locked to disbursal amount: <strong>{{ number_format((float) $lead->disbursal_amount, 2) }}</strong>
@@ -107,15 +123,15 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
-                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control payment-total-amount"
                                                                     value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="payment_date" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                                <label>Last Payment Date</label>
+                                                                <input type="date" name="payment_date" class="form-control payment-last-date"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" readonly>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -135,7 +151,7 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
-                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control payment-total-amount"
                                                                     value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
@@ -143,9 +159,9 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="payment_date" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                                <label>Last Payment Date</label>
+                                                                <input type="date" name="payment_date" class="form-control payment-last-date"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" readonly>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -171,7 +187,7 @@
                                                         <div class="col-md-6">
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
-                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control payment-total-amount"
                                                                     value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
@@ -179,9 +195,9 @@
                                                     <div class="row">
                                                         <div class="col-md-6">
                                                             <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="payment_date" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                                <label>Last Payment Date</label>
+                                                                <input type="date" name="payment_date" class="form-control payment-last-date"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" readonly>
                                                             </div>
                                                         </div>
                                                         <div class="col-md-6">
@@ -200,7 +216,7 @@
                                                         <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label>Amount <span class="text-danger">*</span></label>
-                                                                <input type="number" step="0.01" name="payment_amount" class="form-control"
+                                                                <input type="number" step="0.01" name="payment_amount" class="form-control payment-total-amount"
                                                                     value="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}" readonly>
                                                             </div>
                                                         </div>
@@ -236,9 +252,9 @@
                                                         </div>
                                                         <div class="col-md-4">
                                                             <div class="form-group">
-                                                                <label>Date <span class="text-danger">*</span></label>
-                                                                <input type="date" name="payment_date" class="form-control"
-                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" required>
+                                                                <label>Last Payment Date</label>
+                                                                <input type="date" name="payment_date" class="form-control payment-last-date"
+                                                                    value="{{ session('payment_release_lead_id') == $lead->id ? old('payment_date') : '' }}" readonly>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -247,6 +263,43 @@
                                                         <input type="file" name="payment_bank_transfer_image" class="form-control-file">
                                                     </div>
                                                     </fieldset>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label class="d-block">Part Payment Entries <span class="text-danger">*</span></label>
+                                                <div class="payment-part-list" data-disbursal-amount="{{ number_format((float) $lead->disbursal_amount, 2, '.', '') }}">
+                                                    @foreach($existingParts as $part)
+                                                        <div class="row payment-part-row mb-2">
+                                                            <div class="col-md-5">
+                                                                <input type="number" step="0.01" min="0.01" name="payment_part_amount[]" class="form-control payment-part-amount" value="{{ $part['amount'] ?? '' }}" placeholder="Part Amount" required>
+                                                            </div>
+                                                            <div class="col-md-5">
+                                                                <input type="datetime-local" name="payment_part_paid_at[]" class="form-control payment-part-paid-at" value="{{ !empty($part['paid_at']) ? \Illuminate\Support\Carbon::parse($part['paid_at'])->format('Y-m-d\TH:i') : '' }}" required>
+                                                            </div>
+                                                            <div class="col-md-2">
+                                                                <button type="button" class="btn btn-outline-danger btn-block remove-payment-part">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                                <button type="button" class="btn btn-sm btn-outline-primary mt-1 add-payment-part">
+                                                    <i class="fas fa-plus"></i> Add Part
+                                                </button>
+                                                @error('payment_part_amount')
+                                                    <div class="text-danger mt-1">{{ $message }}</div>
+                                                @enderror
+                                                <div class="row mt-2">
+                                                    <div class="col-md-6">
+                                                        <label class="mb-1">Entered Total</label>
+                                                        <input type="text" class="form-control payment-parts-total-display" readonly>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="mb-1">Balance to Match Disbursal</label>
+                                                        <input type="text" class="form-control payment-parts-balance-display" readonly>
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -277,6 +330,36 @@
 
 @section('js')
     <script>
+        function formatPaymentAmount(value) {
+            return (Math.round((Number(value) + Number.EPSILON) * 100) / 100).toFixed(2);
+        }
+
+        function updatePaymentPartsSummary($modal) {
+            const $partList = $modal.find('.payment-part-list');
+            const disbursalAmount = Number($partList.data('disbursal-amount') || 0);
+
+            let total = 0;
+            let lastPaidAt = '';
+
+            $partList.find('.payment-part-row').each(function () {
+                const amount = Number($(this).find('.payment-part-amount').val() || 0);
+                const paidAt = $(this).find('.payment-part-paid-at').val() || '';
+
+                total += amount;
+                if (paidAt && (!lastPaidAt || paidAt > lastPaidAt)) {
+                    lastPaidAt = paidAt;
+                }
+            });
+
+            const balance = disbursalAmount - total;
+            const lastDate = lastPaidAt ? lastPaidAt.split('T')[0] : '';
+
+            $modal.find('.payment-total-amount').val(formatPaymentAmount(total));
+            $modal.find('.payment-last-date').val(lastDate);
+            $modal.find('.payment-parts-total-display').val(formatPaymentAmount(total));
+            $modal.find('.payment-parts-balance-display').val(formatPaymentAmount(balance));
+        }
+
         function togglePaymentTypeFields($select) {
             const type = ($select.val() || '').trim();
             const $modal = $select.closest('.payment-release-modal');
@@ -293,12 +376,51 @@
             togglePaymentTypeFields($(this));
         });
 
+        $(document).on('click', '.add-payment-part', function () {
+            const $modal = $(this).closest('.payment-release-modal');
+            const rowHtml = `
+                <div class="row payment-part-row mb-2">
+                    <div class="col-md-5">
+                        <input type="number" step="0.01" min="0.01" name="payment_part_amount[]" class="form-control payment-part-amount" placeholder="Part Amount" required>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="datetime-local" name="payment_part_paid_at[]" class="form-control payment-part-paid-at" required>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-outline-danger btn-block remove-payment-part">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>`;
+
+            $modal.find('.payment-part-list').append(rowHtml);
+            updatePaymentPartsSummary($modal);
+        });
+
+        $(document).on('click', '.remove-payment-part', function () {
+            const $modal = $(this).closest('.payment-release-modal');
+            const $rows = $modal.find('.payment-part-row');
+
+            if ($rows.length === 1) {
+                $rows.find('input').val('');
+            } else {
+                $(this).closest('.payment-part-row').remove();
+            }
+
+            updatePaymentPartsSummary($modal);
+        });
+
+        $(document).on('input change', '.payment-part-amount, .payment-part-paid-at', function () {
+            updatePaymentPartsSummary($(this).closest('.payment-release-modal'));
+        });
+
         $(document).on('show.bs.modal', '.payment-release-modal', function () {
             const $select = $(this).find('.payment-type');
             if (!$select.val()) {
                 $select.val('Cash');
             }
             togglePaymentTypeFields($select);
+            updatePaymentPartsSummary($(this));
         });
 
         $(document).on('submit', 'form[data-confirm-message]', function(event) {
@@ -315,6 +437,10 @@
             if (reopenLeadId) {
                 $('#paymentModal' + reopenLeadId).modal('show');
             }
+
+            $('.payment-release-modal').each(function () {
+                updatePaymentPartsSummary($(this));
+            });
         });
     </script>
 @stop

@@ -127,21 +127,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Address Proof Upload</label>
-                            <input type="file" name="insurance_address_proof" class="form-control-file">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Address Proof Type</label>
-                            <input type="text" name="insurance_address_proof_type" class="form-control" placeholder="e.g., Aadhar, Voter ID">
-                        </div>
-                    </div>
-                </div>
-
                 <button type="submit" class="btn btn-primary mt-3">Add Insurance Lead</button>
             </form>
         </div>

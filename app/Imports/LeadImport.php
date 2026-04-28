@@ -14,6 +14,12 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
+        $contactNumber = Lead::normalizeContactNumber($row['contact_number'] ?? null);
+
+        if (Lead::findDuplicateByContact($contactNumber)) {
+            return null;
+        }
+
         // Find firm by name or ID
         $firmId = null;
         if (isset($row['firm_name'])) {
@@ -36,7 +42,7 @@ class LeadImport implements ToModel, WithHeadingRow, WithValidation
 
         return new Lead([
             'customer_name' => $row['customer_name'],
-            'contact_number' => $row['contact_number'],
+            'contact_number' => $contactNumber,
             'father_name' => $row['father_name'] ?? null,
             'email' => $row['email'] ?? null,
             'firm_id' => $firmId,

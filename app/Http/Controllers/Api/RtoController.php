@@ -157,6 +157,13 @@ class RtoController extends Controller
 
         $actor = Auth::user();
         $data = $validated;
+        $data['contact_number'] = Lead::normalizeContactNumber($data['contact_number'] ?? null) ?? ($data['contact_number'] ?? null);
+
+        if ($duplicateLead = Lead::findDuplicateByContact($data['contact_number'] ?? null)) {
+            throw ValidationException::withMessages([
+                'contact_number' => 'This contact number already exists for lead #' . $duplicateLead->id . ' (' . ($duplicateLead->customer_name ?? 'Unknown') . ').',
+            ]);
+        }
 
         $data['created_by'] = $actor->id;
         $data['status'] = 'Lead';
@@ -238,6 +245,14 @@ class RtoController extends Controller
         ]);
 
         $data = $validated;
+        $data['contact_number'] = Lead::normalizeContactNumber($data['contact_number'] ?? null) ?? ($data['contact_number'] ?? null);
+
+        if ($duplicateLead = Lead::findDuplicateByContact($data['contact_number'] ?? null)) {
+            throw ValidationException::withMessages([
+                'contact_number' => 'This contact number already exists for lead #' . $duplicateLead->id . ' (' . ($duplicateLead->customer_name ?? 'Unknown') . ').',
+            ]);
+        }
+
         $data['created_by'] = Auth::id();
         $data['status'] = 'Lead';
         $data['lead_type'] = 'Insurance';
@@ -461,30 +476,31 @@ class RtoController extends Controller
         }
 
         $request->validate([
-            'rto_approved_doc' => 'required|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'rto_approved_doc' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
             'action_type' => 'nullable|in:move_to_insurance,stay_rto',
         ]);
 
-        if ($lead->rto_approved_doc_path) {
-            Storage::disk('public')->delete($lead->rto_approved_doc_path);
-        }
-
-        $path = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
-
         $updateData = [
-            'rto_approved_doc_path' => $path,
             'rto_work_done_at' => now(),
             'rto_done_at' => now(),
         ];
+
+        if ($request->hasFile('rto_approved_doc')) {
+            if ($lead->rto_approved_doc_path) {
+                Storage::disk('public')->delete($lead->rto_approved_doc_path);
+            }
+
+            $updateData['rto_approved_doc_path'] = $request->file('rto_approved_doc')->store('rto_final_docs', 'public');
+        }
 
         if ($request->input('action_type') === 'move_to_insurance') {
             $updateData['insurance_lead_stage'] = 'New';
             $updateData['insurance_lead_status'] = 'In Progress';
             $updateData['lead_type'] = 'Insurance';
             $updateData['rto_stage'] = null;
-            $message = 'Final document uploaded. RTO process complete and moved to Insurance.';
+            $message = 'RTO process complete and moved to Insurance.';
         } else {
-            $message = 'Final document uploaded successfully.';
+            $message = 'RTO marked as done successfully.';
         }
 
         $lead->update($updateData);

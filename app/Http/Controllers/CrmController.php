@@ -110,6 +110,16 @@ class CrmController extends Controller
         }
 
         if ($request->input('action') === 'move_to_insurance') {
+            if (!$lead->canBeMovedToInsurance()) {
+                $message = 'This lead is already available in the Insurance tab.';
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message, 'lead' => $lead]);
+                }
+
+                return redirect()->back()->with('info', $message);
+            }
+
             $request->validate([
                 'insurance_assigned_to' => 'required|exists:users,id',
             ]);
@@ -129,6 +139,8 @@ class CrmController extends Controller
         }
 
         // Validate only completed_stages, as action and current_stage are no longer sent directly
+        $canMoveToInsurance = $lead->canBeMovedToInsurance();
+
         $request->validate([
             'completed_stages' => 'nullable|array', // Allow array of stages, can be empty
             'completed_stages.*' => 'in:' . implode(',', $this->stages), // Each stage must be valid
@@ -137,7 +149,7 @@ class CrmController extends Controller
             'disbursal_amount' => 'nullable|numeric',
             'move_to_rto' => 'nullable|string',
             'move_to_insurance' => 'nullable|string',
-            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,yes|date',
+            'insurance_expiry_date' => ($canMoveToInsurance ? 'nullable|required_if:move_to_insurance,yes|' : 'nullable|') . 'date',
             'payment_amount' => 'nullable|numeric',
             'payment_date' => 'nullable|date',
             'payment_remarks' => 'nullable|string',
@@ -199,7 +211,7 @@ class CrmController extends Controller
                         $lead->rto_new_at = now();
                     }
                     // Handle move to Insurance
-                    if ($request->move_to_insurance == 'yes') {
+                    if ($request->move_to_insurance == 'yes' && $canMoveToInsurance) {
                         $lead->insurance_lead_stage = 'New';
                         $lead->insurance_end_date = $request->insurance_expiry_date;
                     }
@@ -238,13 +250,15 @@ class CrmController extends Controller
 
     public function storeDisbursal(Request $request, Lead $lead)
     {
+        $canMoveToInsurance = $lead->canBeMovedToInsurance();
+
         $request->validate([
             'disbursal_date' => 'required|date',
             'finance_amount' => 'required|numeric',
             'disbursal_amount' => 'required|numeric',
             'move_to_rto' => 'nullable|boolean',
             'move_to_insurance' => 'nullable|boolean',
-            'insurance_expiry_date' => 'nullable|required_if:move_to_insurance,1|date',
+            'insurance_expiry_date' => ($canMoveToInsurance ? 'nullable|required_if:move_to_insurance,1|' : 'nullable|') . 'date',
         ]);
 
         $data = [
@@ -264,7 +278,7 @@ class CrmController extends Controller
         }
 
         // Move to Insurance if requested
-        if ($request->boolean('move_to_insurance') === true) {
+        if ($request->boolean('move_to_insurance') === true && $canMoveToInsurance) {
             $data['insurance_lead_stage'] = 'New';
             $data['insurance_end_date'] = $request->insurance_expiry_date;
             $messages[] = 'Lead moved to Insurance.';

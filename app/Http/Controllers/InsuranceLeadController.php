@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Exports\InsuranceLeadExport;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Carbon\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class InsuranceLeadController extends Controller
 {
@@ -24,7 +25,7 @@ class InsuranceLeadController extends Controller
 
     public function index(Request $request)
     {
-        $query = Lead::whereNotNull('insurance_lead_stage');
+        $query = Lead::forInsuranceModule();
 
         if ($request->has('status') && $request->status != '') {
             $query->where('insurance_lead_status', $request->status);
@@ -59,6 +60,8 @@ class InsuranceLeadController extends Controller
 
     public function store(Request $request)
     {
+        $this->normalizeInsuranceDateInputs($request, false);
+
         // Validation logic should match what's in LeadController or customized here
         $request->validate([
             'customer_name' => 'required|string|max:255',
@@ -86,6 +89,13 @@ class InsuranceLeadController extends Controller
         ]);
 
         $data = $request->except(['insurance_address_proof', 'residence_type', 'aadhar_front', 'aadhar_back']);
+        $data['contact_number'] = Lead::normalizeContactNumber($data['contact_number'] ?? null) ?? ($data['contact_number'] ?? null);
+
+        if ($duplicateLead = Lead::findDuplicateByContact($data['contact_number'] ?? null)) {
+            throw ValidationException::withMessages([
+                'contact_number' => 'This contact number already exists for lead #' . $duplicateLead->id . ' (' . ($duplicateLead->customer_name ?? 'Unknown') . ').',
+            ]);
+        }
 
         if ($request->input('lead_source') !== 'Any person') {
             $data['lead_source_person_name'] = null;
@@ -200,7 +210,7 @@ class InsuranceLeadController extends Controller
 
     public function show(Request $request, Lead $lead)
     {
-        if (!$lead->insurance_lead_stage) {
+        if (!$lead->isVisibleInInsuranceModule()) {
             return redirect()->back()->with('error', 'This lead is not in the Insurance module.');
         }
 
@@ -217,6 +227,8 @@ class InsuranceLeadController extends Controller
 
     public function updateDetails(Request $request, Lead $lead)
     {
+        $this->normalizeInsuranceDateInputs($request, true);
+
         $request->validate([
             'insurance_id' => 'required|exists:insurances,id',
             'insurance_start_date' => 'required|date',
@@ -381,6 +393,46 @@ class InsuranceLeadController extends Controller
         return (float) collect($parts)->sum(function ($part) {
             return (float) ($part['amount'] ?? 0);
         });
+    }
+
+    private function normalizeInsuranceDateInputs(Request $request, bool $includePolicyDates): void
+    {
+        $merge = [];
+
+        if ($includePolicyDates) {
+            $merge['insurance_start_date'] = $this->normalizeSingleDateInput($request->input('insurance_start_date'));
+            $merge['insurance_end_date'] = $this->normalizeSingleDateInput($request->input('insurance_end_date'));
+        }
+
+        $partDates = $request->input('premium_payment_part_date', []);
+        $merge['premium_payment_part_date'] = collect((array) $partDates)
+            ->map(fn ($date) => $this->normalizeSingleDateInput($date))
+            ->all();
+
+        if ($request->has('premium_payment_date')) {
+            $merge['premium_payment_date'] = $this->normalizeSingleDateInput($request->input('premium_payment_date'));
+        }
+
+        $request->merge($merge);
+    }
+
+    private function normalizeSingleDateInput($value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (['d/m/Y', 'd-m-Y', 'Y-m-d'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $value)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                // Try next format.
+            }
+        }
+
+        return $value;
     }
 
     public function deleteDocument(Media $document)

@@ -3,7 +3,16 @@
 @section('title', 'View Employee')
 
 @section('content_header')
-    <h1>View Employee</h1>
+    @php
+        $backUrl = url()->previous();
+        if (!$backUrl || $backUrl === url()->current()) {
+            $backUrl = route('employees.index');
+        }
+    @endphp
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0">View Employee</h1>
+        <a href="{{ $backUrl }}" class="btn btn-secondary">Back</a>
+    </div>
 @stop
 
 @section('content')
@@ -99,7 +108,6 @@
             </div>
 
             <hr>
-            <a href="{{ route('employees.index') }}" class="btn btn-secondary">Back</a>
             <a href="{{ route('employees.edit', $employee->id) }}" class="btn btn-primary">Edit</a>
         </div>
     </div>

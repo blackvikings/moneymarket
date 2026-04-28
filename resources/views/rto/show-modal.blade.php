@@ -86,7 +86,21 @@
                 @include('rto.partials.approval_form')
 
             @elseif($currentStage == 'RTO Done')
-                @include('rto.partials.final_done_form')
+                <div class="alert alert-success mb-3">
+                    <strong>RTO marked as done.</strong>
+                </div>
+
+                @if($lead->rto_approved_doc_path)
+                    <div class="mb-2">
+                        <a href="{{ asset('storage/' . $lead->rto_approved_doc_path) }}" target="_blank" class="btn btn-sm btn-info">
+                            View Final Document
+                        </a>
+                    </div>
+                @endif
+
+                @if($lead->remark)
+                    <p class="mb-0"><strong>Remark:</strong> {{ $lead->remark }}</p>
+                @endif
 
             @elseif($currentStage == 'Loan Return')
                 <div class="alert alert-warning">

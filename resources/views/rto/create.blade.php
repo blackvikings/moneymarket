@@ -3,7 +3,6 @@
 @section('title', 'Add New RTO Lead')
 
 @section('css')
-        <link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css" />
     <style>
         .error {
             color: red;
@@ -11,36 +10,6 @@
         }
         input.error, select.error, textarea.error {
             border: 1px solid red;
-        }
-        .dropzone {
-            border: 2px dashed #007bff;
-            border-radius: 10px;
-            background: #f8f9fa;
-            min-height: 150px;
-            padding: 20px;
-        }
-        .dropzone .dz-message {
-            font-weight: 400;
-        }
-        .dropzone .dz-message .note {
-            font-size: 0.8em;
-            font-weight: 200;
-            display: block;
-            margin-top: 1.4rem;
-        }
-        .dropzone .dz-preview .dz-remove {
-            color: #fff;
-            background: #dc3545;
-            padding: 2px 5px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            margin-top: 5px;
-            display: block;
-        }
-        .dropzone .dz-preview .dz-remove:hover {
-            background: #a71d2a;
-            color: #fff;
         }
     </style>
 @stop
@@ -190,35 +159,6 @@
                         </div>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>Address Proof Type</label>
-                            <select name="proof_id_type" class="form-control @error('proof_id_type') is-invalid @enderror">
-                                <option value="">Select Type</option>
-                                <option value="Aadhar" {{ old('proof_id_type') == 'Aadhar' ? 'selected' : '' }}>Aadhar</option>
-                                <option value="Voter Id" {{ old('proof_id_type') == 'Voter Id' ? 'selected' : '' }}>Voter Id</option>
-                                <option value="Driving Licence" {{ old('proof_id_type') == 'Driving Licence' ? 'selected' : '' }}>Driving Licence</option>
-                                <option value="Pancard" {{ old('proof_id_type') == 'Pancard' ? 'selected' : '' }}>Pancard</option>
-                                <option value="Passport" {{ old('proof_id_type') == 'Passport' ? 'selected' : '' }}>Passport</option>
-                                <option value="Electricity Bill" {{ old('proof_id_type') == 'Electricity Bill' ? 'selected' : '' }}>Electricity Bill</option>
-                            </select>
-                            @error('proof_id_type') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label>Address Proof Upload <small class="text-muted">(Max 5MB per file, JPG, PNG, PDF)</small></label>
-                            <div id="addressProofDropzone" class="dropzone">
-                                <div class="dz-message">
-                                    <h3>Drop files here or click to upload.</h3>
-                                    <span class="note">Multiple files allowed. Previews will be shown below.</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <hr>
                 <h5>RTO Details</h5>
                 <div class="row">
@@ -302,7 +242,6 @@
                         <div class="row">
                             <div class="col-md-4"><div class="form-group"><label>Financer Name</label><input type="text" name="rto_old_financer" class="form-control @error('rto_old_financer') is-invalid @enderror" value="{{ old('rto_old_financer') }}">@error('rto_old_financer') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                             {{-- <div class="col-md-4"><div class="form-group"><label>Close Amount</label><input type="number" step="0.01" name="rto_close_amount" class="form-control @error('rto_close_amount') is-invalid @enderror" value="{{ old('rto_close_amount') }}">@error('rto_close_amount') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div> --}}
-                            <div class="col-md-4"><div class="form-group"><label>EMI Paid Count</label><input type="number" name="rto_emi_paid_count" class="form-control @error('rto_emi_paid_count') is-invalid @enderror" value="{{ old('rto_emi_paid_count') }}">@error('rto_emi_paid_count') <span class="invalid-feedback">{{ $message }}</span> @enderror</div></div>
                         </div>
                     </div>
                 </div>
@@ -314,76 +253,9 @@
 @stop
 
 @section('js')
-    <script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script>
-        Dropzone.autoDiscover = false;
-
         $(document).ready(function() {
-            // --- Dropzone Initialization ---
-            var myDropzone = new Dropzone("#addressProofDropzone", {
-                url: "{{ route(get_route_prefix() . 'rto.store') }}",
-                autoProcessQueue: false,
-                uploadMultiple: true,
-                parallelUploads: 10,
-                maxFiles: 10,
-                paramName: "current_address_proof",
-                addRemoveLinks: true,
-                dictRemoveFile: "Remove File",
-                acceptedFiles: "image/*,application/pdf",
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                init: function() {
-                    var dz = this;
-
-                    $("#submitBtn").click(function(e) {
-                        e.preventDefault();
-                        if ($("#rtoLeadForm").valid()) {
-                            if (dz.getQueuedFiles().length > 0) {
-                                dz.processQueue();
-                            } else {
-                                // If no files, show alert or handle as required
-                                // For RTO, address proof might be optional now, so we can submit directly
-                                // But if you want to enforce at least one file if Dropzone is used:
-                                // alert("Please upload at least one address proof.");
-
-                                // Submitting form directly if no files in queue (assuming optional or handled by backend validation)
-                                var formData = new FormData($("#rtoLeadForm")[0]);
-                                $.ajax({
-                                    url: $("#rtoLeadForm").attr('action'),
-                                    type: 'POST',
-                                    data: formData,
-                                    processData: false,
-                                    contentType: false,
-                                    success: function(response) {
-                                        window.location.href = "{{ route(get_route_prefix() . 'rto.index') }}";
-                                    },
-                                    error: function(err) {
-                                        alert("Error creating lead.");
-                                    }
-                                });
-                            }
-                        }
-                    });
-
-                    this.on("sendingmultiple", function(data, xhr, formData) {
-                        var formArray = $("#rtoLeadForm").serializeArray();
-                        $.each(formArray, function(i, field) {
-                            formData.append(field.name, field.value);
-                        });
-                    });
-
-                    this.on("successmultiple", function(files, response) {
-                        window.location.href = "{{ route(get_route_prefix() . 'rto.index') }}";
-                    });
-
-                    this.on("errormultiple", function(files, response) {
-                        alert("Error uploading files. Please check form data.");
-                    });
-                }
-            });
-
             // Initialize validation
             $('#rtoLeadForm').validate({
                 rules: {
@@ -403,6 +275,28 @@
                     },
                     rto_rc_number: "Please enter the RC number"
                 }
+            });
+
+            $("#submitBtn").click(function(e) {
+                e.preventDefault();
+                if (!$("#rtoLeadForm").valid()) {
+                    return;
+                }
+
+                var formData = new FormData($("#rtoLeadForm")[0]);
+                $.ajax({
+                    url: $("#rtoLeadForm").attr('action'),
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function() {
+                        window.location.href = "{{ route(get_route_prefix() . 'rto.index') }}";
+                    },
+                    error: function() {
+                        alert("Error creating lead.");
+                    }
+                });
             });
 
             // --- Location Scripts ---

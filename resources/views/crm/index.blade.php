@@ -326,9 +326,11 @@
                                          <button type="button" class="btn btn-warning btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToRtoModal{{ $lead->id }}" title="Move to RTO" aria-label="Move to RTO">
                                              <i class="fas fa-share"></i>
                                          </button>
-                                         <button type="button" class="btn btn-success btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToInsuranceModal{{ $lead->id }}" title="Move to Insurance" aria-label="Move to Insurance">
-                                             <i class="fas fa-shield-alt"></i>
-                                         </button>
+                                         @if($lead->canBeMovedToInsurance())
+                                             <button type="button" class="btn btn-success btn-sm icon-action-btn" data-toggle="modal" data-target="#moveToInsuranceModal{{ $lead->id }}" title="Move to Insurance" aria-label="Move to Insurance">
+                                                 <i class="fas fa-shield-alt"></i>
+                                             </button>
+                                         @endif
                                      @endif
                                      @if($lead->crm_stage !== 'Disbursal')
                                          <button type="button" class="btn btn-primary btn-sm icon-action-btn" data-toggle="modal" data-target="#actionModal{{ $lead->id }}" title="Update Stage" aria-label="Update Stage">
@@ -380,7 +382,7 @@
                                  </div>
                                  @endif
 
-                                 @if($lead->status === 'Bank Assign')
+                                 @if($lead->status === 'Bank Assign' && $lead->canBeMovedToInsurance())
                                  <div class="modal fade move-to-insurance-modal" id="moveToInsuranceModal{{ $lead->id }}" tabindex="-1" role="dialog" aria-hidden="true">
                                     <div class="modal-dialog modal-dialog-centered" role="document">
                                         <div class="modal-content">
@@ -483,21 +485,25 @@
                                                                     <label class="form-check-label">Move to RTO</label>
                                                                 </div>
                                                             </div>
-                                                            <div class="col-md-6">
-                                                                <div class="form-check">
-                                                                    <input type="checkbox" class="form-check-input move-to-insurance-check" name="move_to_insurance" value="yes" data-target="#insurance_expiry_container_{{ $lead->id }}">
-                                                                    <label class="form-check-label">Move to Insurance</label>
+                                                            @if($lead->canBeMovedToInsurance())
+                                                                <div class="col-md-6">
+                                                                    <div class="form-check">
+                                                                        <input type="checkbox" class="form-check-input move-to-insurance-check" name="move_to_insurance" value="yes" data-target="#insurance_expiry_container_{{ $lead->id }}">
+                                                                        <label class="form-check-label">Move to Insurance</label>
+                                                                    </div>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                        @if($lead->canBeMovedToInsurance())
+                                                            <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
+                                                                <div class="col-md-6 offset-md-6">
+                                                                    <div class="form-group">
+                                                                        <label>Insurance Expiry Date <span class="text-danger">*</span></label>
+                                                                        <input type="date" name="insurance_expiry_date" class="form-control">
+                                                                    </div>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="row mt-2 d-none" id="insurance_expiry_container_{{ $lead->id }}">
-                                                            <div class="col-md-6 offset-md-6">
-                                                                <div class="form-group">
-                                                                    <label>Insurance Expiry Date <span class="text-danger">*</span></label>
-                                                                    <input type="date" name="insurance_expiry_date" class="form-control">
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                                        @endif
                                                     </div>
 
                                                     <p class="text-muted small">Select stages to complete. You can select multiple stages at once.</p>

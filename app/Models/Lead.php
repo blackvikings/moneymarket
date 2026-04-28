@@ -13,6 +13,38 @@ class Lead extends Model implements HasMedia
 {
     use HasFactory, InteractsWithMedia;
 
+    public static function normalizeContactNumber(?string $contactNumber): ?string
+    {
+        $contactNumber = trim((string) $contactNumber);
+
+        if ($contactNumber === '') {
+            return null;
+        }
+
+        $digitsOnly = preg_replace('/\D+/', '', $contactNumber);
+
+        return $digitsOnly !== '' ? $digitsOnly : $contactNumber;
+    }
+
+    public static function findDuplicateByContact(?string $contactNumber, ?int $ignoreLeadId = null): ?self
+    {
+        $normalized = static::normalizeContactNumber($contactNumber);
+
+        if ($normalized === null) {
+            return null;
+        }
+
+        return static::query()
+            ->select(['id', 'customer_name', 'contact_number'])
+            ->when($ignoreLeadId, function ($query) use ($ignoreLeadId) {
+                $query->whereKeyNot($ignoreLeadId);
+            })
+            ->get()
+            ->first(function (self $lead) use ($normalized) {
+                return static::normalizeContactNumber($lead->contact_number) === $normalized;
+            });
+    }
+
     protected $guarded = ['id'];
 
     protected $fillable = [
@@ -264,6 +296,7 @@ class Lead extends Model implements HasMedia
         'premium_amount_collected',
         'premium_payment_type',
         'premium_payment_amount',
+        'payment_parts',
         'premium_payment_parts',
         'premium_payment_date',
         'premium_cheque_number',
@@ -287,6 +320,7 @@ class Lead extends Model implements HasMedia
         'loan_return_date' => 'date',
         'disbursal_date' => 'date',
         'payment_date' => 'date',
+        'payment_parts' => 'array',
         'premium_payment_date' => 'date',
         'premium_payment_parts' => 'array',
         'reporting_manager_ids' => 'array',
@@ -435,5 +469,40 @@ class Lead extends Model implements HasMedia
             return $days . ' ' . Str::plural('day', $days);
         }
         return '-';
+    }
+
+    public function hasActiveInsuranceFlag(): bool
+    {
+        return in_array($this->insurance_available, [true, 1, '1', 'Yes', 'yes'], true);
+    }
+
+    public function isLoanLeadWithoutInsurance(): bool
+    {
+        return $this->lead_type === 'Loan' && !$this->hasActiveInsuranceFlag();
+    }
+
+    public function isVisibleInInsuranceModule(): bool
+    {
+        return !empty($this->insurance_lead_stage) || $this->isLoanLeadWithoutInsurance();
+    }
+
+    public function canBeMovedToInsurance(): bool
+    {
+        return !$this->isVisibleInInsuranceModule();
+    }
+
+    public function scopeForInsuranceModule($query)
+    {
+        return $query->where(function ($insuranceQuery) {
+            $insuranceQuery->whereNotNull('insurance_lead_stage')
+                ->orWhere(function ($loanQuery) {
+                    $loanQuery->where('lead_type', 'Loan')
+                        ->where(function ($flagQuery) {
+                            $flagQuery->whereNull('insurance_available')
+                                ->orWhere('insurance_available', 0)
+                                ->orWhere('insurance_available', '0');
+                        });
+                });
+        });
     }
 }

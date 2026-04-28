@@ -3,11 +3,23 @@
 @section('title', 'Dashboard')
 
 @section('content_header')
+    @php
+        $dashboardFilters = array_filter([
+            'start_date' => request('start_date'),
+            'end_date' => request('end_date'),
+        ]);
+    @endphp
     <div class="dashboard-header">
         <div>
             <h1>Dashboard</h1>
             <p>Lead summary by module and assignment flow</p>
         </div>
+        <form action="{{ route('home') }}" method="GET" class="dashboard-filter-form">
+            <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
+            <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{{ route('home') }}" class="btn btn-secondary">Reset</a>
+        </form>
     </div>
 @stop
 
@@ -20,7 +32,7 @@
             </div>
             <div class="dashboard-card__value">{{ $totalLeads }}</div>
             <div class="dashboard-card__label">Total Leads</div>
-            <a href="{{ route(get_route_prefix() . 'leads.index') }}" class="dashboard-card__link">Open leads <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'leads.index', $dashboardFilters) }}" class="dashboard-card__link">Open leads <i class="fas fa-arrow-circle-right"></i></a>
         </div>
         <div class="dashboard-card dashboard-card-success">
             <div class="dashboard-card__top">
@@ -29,7 +41,7 @@
             </div>
             <div class="dashboard-card__value">{{ $confirmedLeads }}</div>
             <div class="dashboard-card__label">Confirmed Leads</div>
-            <a href="{{ route(get_route_prefix() . 'leads.index', ['status' => 'Lead']) }}" class="dashboard-card__link">Open leads <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'leads.index', array_merge($dashboardFilters, ['status' => 'Lead'])) }}" class="dashboard-card__link">Open leads <i class="fas fa-arrow-circle-right"></i></a>
         </div>
         <div class="dashboard-card dashboard-card-warning">
             <div class="dashboard-card__top">
@@ -38,7 +50,7 @@
             </div>
             <div class="dashboard-card__value">{{ $assignedToBank }}</div>
             <div class="dashboard-card__label">Assigned to Bank</div>
-            <a href="{{ route(get_route_prefix() . 'crm.index') }}" class="dashboard-card__link">Open CRM <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'crm.index', $dashboardFilters) }}" class="dashboard-card__link">Open CRM <i class="fas fa-arrow-circle-right"></i></a>
         </div>
         <div class="dashboard-card dashboard-card-danger dashboard-card-half">
             <div class="dashboard-card__top">
@@ -47,7 +59,7 @@
             </div>
             <div class="dashboard-card__value">{{ $directRtoLeads }}</div>
             <div class="dashboard-card__label">Direct RTO Leads</div>
-            <a href="{{ route(get_route_prefix() . 'rto.index') }}" class="dashboard-card__link">Open RTO leads <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'rto.index', $dashboardFilters) }}" class="dashboard-card__link">Open RTO leads <i class="fas fa-arrow-circle-right"></i></a>
         </div>
         <div class="dashboard-card dashboard-card-primary dashboard-card-half">
             <div class="dashboard-card__top">
@@ -56,7 +68,16 @@
             </div>
             <div class="dashboard-card__value">{{ $directInsuranceLeads }}</div>
             <div class="dashboard-card__label">Direct Insurance Leads</div>
-            <a href="{{ route(get_route_prefix() . 'insurance-leads.index') }}" class="dashboard-card__link">Open insurance leads <i class="fas fa-arrow-circle-right"></i></a>
+            <a href="{{ route(get_route_prefix() . 'insurance-leads.index', $dashboardFilters) }}" class="dashboard-card__link">Open insurance leads <i class="fas fa-arrow-circle-right"></i></a>
+        </div>
+        <div class="dashboard-card dashboard-card-half" style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);">
+            <div class="dashboard-card__top">
+                <div class="dashboard-card__icon"><i class="ion ion-alert-circled"></i></div>
+                <span class="dashboard-card__tag">Insurance</span>
+            </div>
+            <div class="dashboard-card__value">{{ $thisMonthExpiringInsuranceLeads }}</div>
+            <div class="dashboard-card__label">This Month Expiring Leads</div>
+            <a href="{{ route(get_route_prefix() . 'insurance-leads.expiring') }}" class="dashboard-card__link">Open expiring leads <i class="fas fa-arrow-circle-right"></i></a>
         </div>
     </div>
 @stop
@@ -69,6 +90,7 @@
             justify-content: space-between;
             gap: 1rem;
             margin-bottom: 1rem;
+            flex-wrap: wrap;
         }
 
         .dashboard-header h1 {
@@ -81,6 +103,17 @@
             margin: 0.35rem 0 0;
             color: #6c757d;
             font-size: 0.95rem;
+        }
+
+        .dashboard-filter-form {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-filter-form .form-control {
+            min-width: 170px;
         }
 
         .dashboard-grid {

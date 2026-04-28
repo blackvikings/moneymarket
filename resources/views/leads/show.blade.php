@@ -104,12 +104,21 @@
 @stop
 
 @section('content_header')
+    @php
+        $backUrl = url()->previous();
+        if (!$backUrl || $backUrl === url()->current()) {
+            $backUrl = route(get_route_prefix() . 'leads.index');
+        }
+    @endphp
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center" style="gap: 12px;">
         <div>
             <h1 class="mb-1">Lead Details: {{ $lead->customer_name }}</h1>
             <div class="text-muted">Profile, workflow, documents, and raw stored data</div>
         </div>
         <div class="d-flex flex-wrap hero-actions" style="gap: 8px;">
+            <a href="{{ $backUrl }}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left mr-1"></i> Back
+            </a>
             <button type="button" class="btn btn-outline-secondary" onclick="window.print()">
                 <i class="fas fa-print mr-1"></i> Print
             </button>
@@ -269,7 +278,7 @@
                                 <span class="summary-pill"><i class="fas fa-university"></i> {{ $lead->bank->name }}</span>
                             @endif
                         </div>
-                        <h4 class="mb-1">{{ $lead->father_name ?: 'Lead Overview' }}</h4>
+                        <h4 class="mb-1">{{ $lead->customer_name ?: 'Lead Overview' }}</h4>
                         <div class="text-muted">
                             Created by {{ $createdName }} | Assigned to {{ $assignedName }} | Created at {{ $lead->created_at->format('d-m-Y H:i') }}
                         </div>

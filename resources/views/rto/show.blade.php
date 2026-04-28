@@ -3,7 +3,16 @@
 @section('title', 'RTO Lead Details')
 
 @section('content_header')
-    <h1>RTO Lead: {{ $lead->customer_name }}</h1>
+    @php
+        $backUrl = url()->previous();
+        if (!$backUrl || $backUrl === url()->current()) {
+            $backUrl = route(get_route_prefix() . 'rto.index');
+        }
+    @endphp
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-0">RTO Lead: {{ $lead->customer_name }}</h1>
+        <a href="{{ $backUrl }}" class="btn btn-secondary">Back</a>
+    </div>
 @stop
 
 @section('content')

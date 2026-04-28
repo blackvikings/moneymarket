@@ -177,44 +177,46 @@
                 Open RTO Flow
             </button>
         @endif
-        @if(!$lead->insurance_lead_stage)
+        @if($lead->canBeMovedToInsurance())
             <button type="button" class="btn btn-info" onclick="$('#insuranceExpiryModal').modal('show');">Move to Insurance</button>
         @endif
     @endif
     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 </div>
 
-<!-- Insurance Expiry Modal -->
-<div class="modal fade" id="insuranceExpiryModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Move to Insurance</h5>
-                <button type="button" class="close" onclick="$('#insuranceExpiryModal').modal('hide');">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" data-confirm-message="Move this lead to Insurance?">
-                @csrf
-                <div class="modal-body">
-                    <input type="hidden" name="disbursal_date" value="{{ $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '' }}">
-                    <input type="hidden" name="finance_amount" value="{{ $lead->finance_amount }}">
-                    <input type="hidden" name="disbursal_amount" value="{{ $lead->disbursal_amount }}">
-                    <input type="hidden" name="move_to_insurance" value="1">
+@if($lead->canBeMovedToInsurance())
+    <!-- Insurance Expiry Modal -->
+    <div class="modal fade" id="insuranceExpiryModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Move to Insurance</h5>
+                    <button type="button" class="close" onclick="$('#insuranceExpiryModal').modal('hide');">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ route(get_route_prefix() . 'crm.store-disbursal', $lead->id) }}" method="POST" data-confirm-message="Move this lead to Insurance?">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="disbursal_date" value="{{ $lead->disbursal_date ? $lead->disbursal_date->format('Y-m-d') : '' }}">
+                        <input type="hidden" name="finance_amount" value="{{ $lead->finance_amount }}">
+                        <input type="hidden" name="disbursal_amount" value="{{ $lead->disbursal_amount }}">
+                        <input type="hidden" name="move_to_insurance" value="1">
 
-                    <div class="form-group">
-                        <label>Insurance Expiry Date <span class="text-danger">*</span></label>
-                        <input type="date" name="insurance_expiry_date" class="form-control" required>
+                        <div class="form-group">
+                            <label>Insurance Expiry Date <span class="text-danger">*</span></label>
+                            <input type="date" name="insurance_expiry_date" class="form-control" required>
+                        </div>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Confirm & Move</button>
-                    <button type="button" class="btn btn-secondary" onclick="$('#insuranceExpiryModal').modal('hide');">Cancel</button>
-                </div>
-            </form>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Confirm & Move</button>
+                        <button type="button" class="btn btn-secondary" onclick="$('#insuranceExpiryModal').modal('hide');">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+@endif
 
 <script>
     $(document).off('click.printLeadDetails').on('click.printLeadDetails', '#printLeadDetailsBtn', function() {

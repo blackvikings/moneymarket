@@ -3,7 +3,7 @@
 @section('title', 'Expiring Insurance Leads')
 
 @section('content_header')
-    <h1>Expiring Insurance Leads (Next 30 Days)</h1>
+    <h1>Expiring Insurance Leads (Coming 30 Days)</h1>
 @stop
 
 @section('content')

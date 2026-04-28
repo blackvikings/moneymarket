@@ -88,6 +88,7 @@ Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.ti
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
     Route::post('banks/store-ajax', [BankController::class, 'storeAjax'])->name('banks.store-ajax');
+    Route::post('banks/store-branch-ajax', [BankController::class, 'storeBranchAjax'])->name('banks.store-branch-ajax');
     Route::resource('banks', BankController::class);
 
     Route::get('firms/export', [FirmController::class, 'export'])->name('firms.export');
@@ -106,6 +107,10 @@ Route::group(['middleware' => ['auth', 'single.admin.session', 'admin.session.ti
     Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
     Route::get('vehicle-manufactures/{vehicleManufacture}/variants', [VehicleManufactureController::class, 'getVariants'])->name('vehicle-manufactures.variants');
     Route::resource('vehicle-manufactures', VehicleManufactureController::class);
+
+    Route::get('cities/export', [CityController::class, 'export'])->name('cities.export');
+    Route::post('cities/{city}/toggle-status', [CityController::class, 'toggleStatus'])->name('cities.toggle-status');
+    Route::resource('cities', CityController::class);
 
     // Admin can also manage leads, CRM, RTO
     Route::get('leads/export', [LeadController::class, 'export'])->name('leads.export');
@@ -248,6 +253,7 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::get('banks/export', [BankController::class, 'export'])->name('banks.export');
     Route::post('banks/{bank}/toggle-status', [BankController::class, 'toggleStatus'])->name('banks.toggle-status');
     Route::post('banks/store-ajax', [BankController::class, 'storeAjax'])->name('banks.store-ajax');
+    Route::post('banks/store-branch-ajax', [BankController::class, 'storeBranchAjax'])->name('banks.store-branch-ajax');
     Route::resource('banks', BankController::class);
 
     // Masters Routes for Employees (if they have permission)
@@ -267,6 +273,10 @@ Route::group(['middleware' => ['auth'], 'prefix' => 'employee', 'as' => 'employe
     Route::post('vehicle-manufactures/{vehicleManufacture}/toggle-status', [VehicleManufactureController::class, 'toggleStatus'])->name('vehicle-manufactures.toggle-status');
     Route::get('vehicle-manufactures/{vehicleManufacture}/variants', [VehicleManufactureController::class, 'getVariants'])->name('vehicle-manufactures.variants');
     Route::resource('vehicle-manufactures', VehicleManufactureController::class);
+
+    Route::get('cities/export', [CityController::class, 'export'])->name('cities.export');
+    Route::post('cities/{city}/toggle-status', [CityController::class, 'toggleStatus'])->name('cities.toggle-status');
+    Route::resource('cities', CityController::class);
 
     // Employee Management Routes for Employees (if they have permission)
     Route::get('employees/export', [EmployeeController::class, 'export'])->name('employees.export');
