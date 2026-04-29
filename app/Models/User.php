@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use App\Notifications\BrevoPasswordResetNotification;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Log;
 
@@ -94,6 +95,11 @@ class User extends Authenticatable
     public function reportingManager()
     {
         return $this->belongsTo(User::class, 'reporting_manager_id');
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        (new BrevoPasswordResetNotification($token))->send($this);
     }
 
     // public function bank()

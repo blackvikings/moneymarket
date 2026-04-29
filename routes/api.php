@@ -12,6 +12,8 @@ use App\Http\Controllers\Api\DataController;
 
 // Public route for login
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 
 // Authenticated routes for employees
 Route::middleware('auth:sanctum')->group(function () {

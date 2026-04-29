@@ -49,6 +49,19 @@ class SwaggerController extends Controller
                     'password' => ['type' => 'string', 'format' => 'password', 'example' => 'password'],
                 ], false, ['200' => 'Login successful', '403' => 'Admin login blocked', '422' => 'Validation error']),
             ],
+            '/forgot-password' => [
+                'post' => $this->operation('Auth', 'Forgot password', 'Sends a password reset link to an employee email address.', null, [
+                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'employee@example.com'],
+                ], false, ['200' => 'Reset link sent', '403' => 'Admin reset blocked', '422' => 'Validation error']),
+            ],
+            '/reset-password' => [
+                'post' => $this->operation('Auth', 'Reset password', 'Resets an employee password using a password reset token.', null, [
+                    'token' => ['type' => 'string'],
+                    'email' => ['type' => 'string', 'format' => 'email', 'example' => 'employee@example.com'],
+                    'password' => ['type' => 'string', 'format' => 'password', 'minLength' => 8],
+                    'password_confirmation' => ['type' => 'string', 'format' => 'password', 'minLength' => 8],
+                ], false, ['200' => 'Password reset', '403' => 'Admin reset blocked', '422' => 'Validation error']),
+            ],
             '/user' => [
                 'get' => $this->operation('Auth', 'Authenticated user', 'Returns the current authenticated user.'),
             ],
