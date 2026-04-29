@@ -26,10 +26,14 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\PaymentReleaseController;
 use App\Http\Controllers\ReferralPersonController;
+use App\Http\Controllers\Api\SwaggerController;
 
 Route::get('/', function () {
     return redirect()->route('employee.login');
 });
+
+Route::get('/api/documentation', [SwaggerController::class, 'index'])->name('api.documentation');
+Route::get('/api/docs.json', [SwaggerController::class, 'json'])->name('api.docs.json');
 
 // Admin Authentication Routes
 Route::prefix('admin')->group(function () {
